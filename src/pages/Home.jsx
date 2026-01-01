@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -182,7 +181,7 @@ export default function Home() {
     <Link to={to} className="w-full sm:w-64">
       <Button
         variant="outline"
-        className="w-full h-28 text-xl bg-white border-slate-200 hover:bg-slate-100 hover:border-cyan-600 shadow-sm transition-all duration-300 flex flex-col gap-2 items-center justify-center text-cyan-800 hover:text-cyan-900 rounded-xl"
+        className="w-full h-28 text-xl bg-white/90 backdrop-blur-sm border-purple-200 hover:bg-gradient-to-br hover:from-purple-500 hover:to-cyan-500 hover:border-transparent shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col gap-2 items-center justify-center text-purple-900 hover:text-white rounded-2xl font-bold"
       >
         {icon}
         <span>{children}</span>
@@ -195,7 +194,7 @@ export default function Home() {
       <Button
         variant="outline"
         disabled
-        className="w-full h-28 text-xl bg-white border-slate-200 text-slate-400 shadow-sm rounded-xl cursor-not-allowed flex flex-col gap-2 items-center justify-center"
+        className="w-full h-28 text-xl bg-white/50 border-purple-200 text-slate-400 shadow-sm rounded-2xl cursor-not-allowed flex flex-col gap-2 items-center justify-center"
       >
         {icon}
         <span>{children}</span>
@@ -204,13 +203,13 @@ export default function Home() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50 flex flex-col items-center justify-center p-6" dir="rtl">
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-purple-700 flex flex-col items-center justify-center p-6" dir="rtl">
       <div className="text-center mb-12">
-        <h1 className="text-5xl font-bold text-cyan-900">Shoshi</h1>
-        <p className="text-slate-500 mt-2">
+        <h1 className="text-6xl font-extrabold bg-gradient-to-r from-cyan-300 via-purple-300 to-pink-300 bg-clip-text text-transparent drop-shadow-lg">Shoshi</h1>
+        <p className="text-purple-100 mt-3 text-lg font-medium">
           VR Device Management System – Accounts & Application Inventory Control
         </p>
-        <p className="text-slate-400 mt-1">
+        <p className="text-purple-300 mt-2 text-sm">
           Made By Yoya
         </p>
       </div>
@@ -249,7 +248,7 @@ export default function Home() {
         <div className="w-full sm:w-64">
           <Button
             variant="outline"
-            className="w-full h-28 text-xl bg-white border-slate-200 hover:bg-slate-100 hover:border-rose-400 shadow-sm transition-all duration-300 flex flex-col gap-2 items-center justify-center text-rose-700 hover:text-rose-800 rounded-xl"
+            className="w-full h-28 text-xl bg-white/90 backdrop-blur-sm border-pink-200 hover:bg-gradient-to-br hover:from-pink-500 hover:to-rose-500 hover:border-transparent shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col gap-2 items-center justify-center text-pink-700 hover:text-white rounded-2xl font-bold"
             onClick={() => setSecretOpen(true)}
           >
             אל תלחץ כאן
@@ -263,7 +262,7 @@ export default function Home() {
             <div className="w-full sm:w-64">
               <Button
                 variant="outline"
-                className="w-full h-28 text-xl bg-purple-500 hover:bg-purple-600 border-purple-600 text-white shadow-sm transition-all duration-300 flex flex-col gap-2 items-center justify-center rounded-xl"
+                className="w-full h-28 text-xl bg-gradient-to-br from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 border-transparent text-white shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col gap-2 items-center justify-center rounded-2xl font-bold"
                 onClick={() => setExportOpen(true)}
               >
                 <Download className="w-8 h-8" />
@@ -312,7 +311,7 @@ export default function Home() {
                 setSecretOpen(false);
                 setShowHidden(true);
               }}
-              className="bg-cyan-600 hover:bg-cyan-700"
+              className="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-bold"
             >
               המשך
             </Button>
@@ -340,7 +339,7 @@ export default function Home() {
                 variant="outline" 
                 size="sm" 
                 onClick={selectAll}
-                className="border-cyan-300 text-cyan-700 hover:bg-cyan-50"
+                className="border-purple-300 text-purple-700 hover:bg-purple-50"
               >
                 בחר הכל
               </Button>
@@ -387,7 +386,7 @@ export default function Home() {
             <Button 
               onClick={handleExport}
               disabled={isExporting || selectedFields.size === 0}
-              className="bg-purple-600 hover:bg-purple-700 text-white"
+              className="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-bold"
             >
               {isExporting ? 'מייצא...' : 'ייצא CSV'}
             </Button>

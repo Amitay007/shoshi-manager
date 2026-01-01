@@ -1,73 +1,73 @@
-import Home from './pages/Home';
-import DeviceMenu from './pages/DeviceMenu';
-import GeneralInfo from './pages/GeneralInfo';
-import AppDevices from './pages/AppDevices';
-import DeviceInfo from './pages/DeviceInfo';
-import DataUpdater from './pages/DataUpdater';
-import AddAppToDevice from './pages/AddAppToDevice';
-import AddAppPage from './pages/AddAppPage';
-import ResearchPage from './pages/ResearchPage';
-import AppDetailsPage from './pages/AppDetailsPage';
 import AccountsAndUsers from './pages/AccountsAndUsers';
-import GeneralApps from './pages/GeneralApps';
+import ActiveSchedulesSummary from './pages/ActiveSchedulesSummary';
+import AddAppPage from './pages/AddAppPage';
+import AddAppToDevice from './pages/AddAppToDevice';
+import AddAppsFromList from './pages/AddAppsFromList';
 import AddNewHeadset from './pages/AddNewHeadset';
-import EditHeadset from './pages/EditHeadset';
+import AppDetailsPage from './pages/AppDetailsPage';
+import AppDevices from './pages/AppDevices';
+import BinocularCalculator from './pages/BinocularCalculator';
+import BulkDataLoader from './pages/BulkDataLoader';
+import CRMHub from './pages/CRMHub';
+import DataImport from './pages/DataImport';
 import DataRepositories from './pages/DataRepositories';
 import DataRepositoryList from './pages/DataRepositoryList';
-import AddAppsFromList from './pages/AddAppsFromList';
-import DataImport from './pages/DataImport';
-import SyllabusWizard from './pages/SyllabusWizard';
-import Programs from './pages/Programs';
-import Schools from './pages/Schools';
-import SchoolDetails from './pages/SchoolDetails';
+import DataUpdater from './pages/DataUpdater';
+import DeviceInfo from './pages/DeviceInfo';
+import DeviceMenu from './pages/DeviceMenu';
+import EditHeadset from './pages/EditHeadset';
+import GeneralApps from './pages/GeneralApps';
+import GeneralInfo from './pages/GeneralInfo';
+import Home from './pages/Home';
 import ProgramView from './pages/ProgramView';
-import UploadLogo from './pages/UploadLogo';
-import BulkDataLoader from './pages/BulkDataLoader';
-import UpdateAppsFromPDF from './pages/UpdateAppsFromPDF';
+import Programs from './pages/Programs';
+import ResearchPage from './pages/ResearchPage';
 import SchedulerPage from './pages/SchedulerPage';
-import SyllabusValuesManager from './pages/SyllabusValuesManager';
-import UpdateAppStatus from './pages/UpdateAppStatus';
-import ActiveSchedulesSummary from './pages/ActiveSchedulesSummary';
+import SchoolDetails from './pages/SchoolDetails';
+import Schools from './pages/Schools';
 import SyllabusHub from './pages/SyllabusHub';
-import CRMHub from './pages/CRMHub';
-import BinocularCalculator from './pages/BinocularCalculator';
+import SyllabusValuesManager from './pages/SyllabusValuesManager';
+import SyllabusWizard from './pages/SyllabusWizard';
+import UpdateAppStatus from './pages/UpdateAppStatus';
+import UpdateAppsFromPDF from './pages/UpdateAppsFromPDF';
+import UploadLogo from './pages/UploadLogo';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Home": Home,
-    "DeviceMenu": DeviceMenu,
-    "GeneralInfo": GeneralInfo,
-    "AppDevices": AppDevices,
-    "DeviceInfo": DeviceInfo,
-    "DataUpdater": DataUpdater,
-    "AddAppToDevice": AddAppToDevice,
-    "AddAppPage": AddAppPage,
-    "ResearchPage": ResearchPage,
-    "AppDetailsPage": AppDetailsPage,
     "AccountsAndUsers": AccountsAndUsers,
-    "GeneralApps": GeneralApps,
+    "ActiveSchedulesSummary": ActiveSchedulesSummary,
+    "AddAppPage": AddAppPage,
+    "AddAppToDevice": AddAppToDevice,
+    "AddAppsFromList": AddAppsFromList,
     "AddNewHeadset": AddNewHeadset,
-    "EditHeadset": EditHeadset,
+    "AppDetailsPage": AppDetailsPage,
+    "AppDevices": AppDevices,
+    "BinocularCalculator": BinocularCalculator,
+    "BulkDataLoader": BulkDataLoader,
+    "CRMHub": CRMHub,
+    "DataImport": DataImport,
     "DataRepositories": DataRepositories,
     "DataRepositoryList": DataRepositoryList,
-    "AddAppsFromList": AddAppsFromList,
-    "DataImport": DataImport,
-    "SyllabusWizard": SyllabusWizard,
-    "Programs": Programs,
-    "Schools": Schools,
-    "SchoolDetails": SchoolDetails,
+    "DataUpdater": DataUpdater,
+    "DeviceInfo": DeviceInfo,
+    "DeviceMenu": DeviceMenu,
+    "EditHeadset": EditHeadset,
+    "GeneralApps": GeneralApps,
+    "GeneralInfo": GeneralInfo,
+    "Home": Home,
     "ProgramView": ProgramView,
-    "UploadLogo": UploadLogo,
-    "BulkDataLoader": BulkDataLoader,
-    "UpdateAppsFromPDF": UpdateAppsFromPDF,
+    "Programs": Programs,
+    "ResearchPage": ResearchPage,
     "SchedulerPage": SchedulerPage,
-    "SyllabusValuesManager": SyllabusValuesManager,
-    "UpdateAppStatus": UpdateAppStatus,
-    "ActiveSchedulesSummary": ActiveSchedulesSummary,
+    "SchoolDetails": SchoolDetails,
+    "Schools": Schools,
     "SyllabusHub": SyllabusHub,
-    "CRMHub": CRMHub,
-    "BinocularCalculator": BinocularCalculator,
+    "SyllabusValuesManager": SyllabusValuesManager,
+    "SyllabusWizard": SyllabusWizard,
+    "UpdateAppStatus": UpdateAppStatus,
+    "UpdateAppsFromPDF": UpdateAppsFromPDF,
+    "UploadLogo": UploadLogo,
 }
 
 export const pagesConfig = {
