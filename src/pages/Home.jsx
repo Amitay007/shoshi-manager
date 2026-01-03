@@ -1,324 +1,398 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
+import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Glasses, Calendar, School, AlertCircle, TrendingUp, Users, Bell } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { VRDevice } from "@/entities/VRDevice";
-import { ScheduleEntry } from "@/entities/ScheduleEntry";
-import { EducationInstitution } from "@/entities/EducationInstitution";
-import { Syllabus } from "@/entities/Syllabus";
-import { format } from "date-fns";
+import { Orbit, AppWindow, Users, Layers, ListPlus, UploadCloud, GraduationCap, Building2, RefreshCw, Calendar, BookOpen, TrendingUp, Link2, Download } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { VRApp } from "@/entities/VRApp";
 
 export default function Home() {
-  const [devices, setDevices] = useState([]);
-  const [schedules, setSchedules] = useState([]);
-  const [schools, setSchools] = useState([]);
-  const [programs, setPrograms] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [secretOpen, setSecretOpen] = React.useState(false);
+  const [showHidden, setShowHidden] = React.useState(false);
+  const [exportOpen, setExportOpen] = React.useState(false);
+  const [selectedFields, setSelectedFields] = React.useState(new Set());
+  const [isExporting, setIsExporting] = React.useState(false);
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  // Define all available fields with their display names
+  const availableFields = [
+    { key: 'name', label: 'שם האפליקציה' },
+    { key: 'description', label: 'תיאור' },
+    { key: 'purchase_type', label: 'סוג רכישה' },
+    { key: 'store_link', label: 'קישור לחנות' },
+    { key: 'website_link', label: 'קישור לאתר חברה' },
+    { key: 'subscription_store_link', label: 'קישור למנוי' },
+    { key: 'subscription_type', label: 'סוג מנוי' },
+    { key: 'subscription_price', label: 'מחיר מנוי' },
+    { key: 'subscription_currency', label: 'מטבע מנוי' },
+    { key: 'subscription_start_date', label: 'תאריך התחלת מנוי' },
+    { key: 'subscription_end_date', label: 'תאריך סיום מנוי' },
+    { key: 'purchase_price', label: 'מחיר רכישה' },
+    { key: 'purchase_currency', label: 'מטבע רכישה' },
+    { key: 'purchased_on', label: 'תאריך רכישה' },
+    { key: 'downloaded_on', label: 'תאריך הורדה' },
+    { key: 'internet_required', label: 'דורש אינטרנט' },
+    { key: 'hand_tracking', label: 'תומך ב-Hand Tracking' },
+    { key: 'is_research', label: 'אפליקציית מחקר' },
+    { key: 'is_installed', label: 'מותקנת' },
+    { key: 'in_onboarding', label: 'בתהליך קליטה' },
+    { key: 'rating', label: 'דירוג' },
+    { key: 'genre', label: 'ז\'אנרים' },
+    { key: 'education_field', label: 'תחום חינוכי' },
+    { key: 'supported_platforms', label: 'פלטפורמות נתמכות' },
+    { key: 'custom_tags', label: 'תגיות מותאמות אישית' },
+    { key: 'research_by', label: 'נחקר על ידי (צוות)' },
+    { key: 'purchased_by', label: 'נרכש על ידי (צוות)' },
+    { key: 'installed_by', label: 'הותקן על ידי (צוות)' },
+    { key: 'player_count_details', label: 'פרטי מספר שחקנים' },
+    { key: 'developer', label: 'מפתח' },
+    { key: 'other_purchase_text', label: 'פרטי רכישה אחרים' },
+    { key: 'custom_fields', label: 'שדות מותאמים אישית' },
+  ];
 
-  const loadData = async () => {
-    setIsLoading(true);
-    try {
-      const [devicesData, schedulesData, schoolsData, programsData] = await Promise.all([
-        VRDevice.list(),
-        ScheduleEntry.list(),
-        EducationInstitution.list(),
-        Syllabus.list()
-      ]);
-      
-      setDevices(devicesData || []);
-      setSchedules(schedulesData || []);
-      setSchools(schoolsData || []);
-      setPrograms(programsData || []);
-    } catch (error) {
-      console.error("Error loading dashboard data:", error);
+  // Default selected fields (recommended fields)
+  const defaultFields = [
+    'name', 'description', 'purchase_type', 'store_link', 'website_link',
+    'subscription_type', 'subscription_price', 'purchase_price',
+    'internet_required', 'hand_tracking', 'is_research', 'is_installed',
+    'in_onboarding', 'rating', 'genre', 'education_field',
+    'supported_platforms', 'custom_tags'
+  ];
+
+  // Initialize with default fields when opening the export dialog
+  React.useEffect(() => {
+    if (exportOpen && selectedFields.size === 0) {
+      setSelectedFields(new Set(defaultFields));
     }
-    setIsLoading(false);
+  }, [exportOpen, selectedFields.size]); // Added selectedFields.size to dependencies to prevent infinite loop
+
+  const toggleField = (fieldKey) => {
+    setSelectedFields(prev => {
+      const next = new Set(prev);
+      if (next.has(fieldKey)) {
+        next.delete(fieldKey);
+      } else {
+        next.add(fieldKey);
+      }
+      return next;
+    });
   };
 
-  // Calculate statistics
-  const availableDevices = devices.filter(d => !d.is_disabled && d.status !== "בתיקון").length;
-  const thisWeekSchedules = schedules.filter(s => {
-    const start = new Date(s.start_datetime);
-    const now = new Date();
-    const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-    return start >= now && start <= weekFromNow;
-  }).length;
-  const activePrograms = programs.filter(p => p.status !== "draft").length;
-  const educationalCenters = schools.length;
+  const selectAll = () => {
+    setSelectedFields(new Set(availableFields.map(f => f.key)));
+  };
 
-  // Upcoming schedules
-  const upcomingSchedules = schedules
-    .filter(s => new Date(s.start_datetime) > new Date() && s.status !== "בוטל")
-    .sort((a, b) => new Date(a.start_datetime) - new Date(b.start_datetime))
-    .slice(0, 3);
+  const clearAll = () => {
+    setSelectedFields(new Set());
+  };
 
-  // Device status for pie chart
-  const activeDevicesCount = devices.filter(d => !d.is_disabled && d.status !== "בתיקון").length;
-  const maintenanceDevicesCount = devices.filter(d => d.status === "בתיקון" || d.status === "בתחזוקה").length;
-  const disabledDevicesCount = devices.filter(d => d.is_disabled).length;
+  // Team ID to name mapping
+  const teamNames = {
+    "tm-amitza": "אמיצה",
+    "tm-natznatzit": "נאצנאצית",
+    "tm-gibor": "גיבור"
+  };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center" dir="rtl">
-        <div className="text-center">
-          <div className="text-2xl font-bold text-slate-900 mb-2">טוען נתונים...</div>
-          <div className="text-slate-500">אנא המתן</div>
-        </div>
-      </div>
-    );
-  }
+  const formatValue = (value, fieldKey) => {
+    if (value === null || value === undefined) return '';
+    
+    // Handle arrays (lists)
+    if (Array.isArray(value)) {
+      // For team fields, convert IDs to names
+      if (['research_by', 'purchased_by', 'installed_by'].includes(fieldKey)) {
+        return value.map(id => teamNames[id] || id).join(', ');
+      }
+      // For other arrays, just join with commas
+      return value.join(', ');
+    }
+    
+    // Handle complex objects - convert to JSON string
+    if (typeof value === 'object') {
+      return JSON.stringify(value);
+    }
+    
+    // Handle booleans
+    if (typeof value === 'boolean') {
+      return value ? 'כן' : 'לא';
+    }
+    
+    return String(value);
+  };
 
-  const StatCard = ({ title, value, icon: Icon, color, link }) => (
-    <Link to={link}>
-      <Card className="hover:shadow-lg transition-shadow cursor-pointer border-t-4" style={{ borderTopColor: color }}>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-slate-600 mb-2">{title}</p>
-              <p className="text-4xl font-bold text-slate-900">{value}</p>
-            </div>
-            <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: `${color}20` }}>
-              <Icon className="w-8 h-8" style={{ color }} />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+  const handleExport = async () => {
+    if (selectedFields.size === 0) {
+      alert('אנא בחר לפחות שדה אחד לייצוא');
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      // Fetch all apps
+      const apps = await VRApp.list();
+      
+      // Get selected field keys in order
+      const selectedFieldKeys = availableFields
+        .filter(f => selectedFields.has(f.key))
+        .map(f => f.key);
+      
+      // Create CSV header
+      const headerLabels = availableFields
+        .filter(f => selectedFields.has(f.key))
+        .map(f => f.label);
+      
+      const csvRows = [];
+      csvRows.push(headerLabels.join(','));
+      
+      // Add data rows
+      apps.forEach(app => {
+        const row = selectedFieldKeys.map(key => {
+          const value = formatValue(app[key], key);
+          // Escape values that contain commas or quotes
+          if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
+            return `"${value.replace(/"/g, '""')}"`;
+          }
+          return value;
+        });
+        csvRows.push(row.join(','));
+      });
+      
+      // Create and download CSV file
+      const csvContent = '\uFEFF' + csvRows.join('\n'); // Add BOM for Hebrew support
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `apps_export_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      setExportOpen(false);
+    } catch (error) {
+      console.error('Error exporting data:', error);
+      alert('שגיאה בייצוא הנתונים. אנא נסה שוב.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const NavButton = ({ to, children, icon }) => (
+    <Link to={to} className="w-full sm:w-64">
+      <Button
+        variant="outline"
+        className="w-full h-28 text-xl bg-white/90 backdrop-blur-sm border-purple-200 hover:bg-gradient-to-br hover:from-purple-500 hover:to-cyan-500 hover:border-transparent shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col gap-2 items-center justify-center text-purple-900 hover:text-white rounded-2xl font-bold"
+      >
+        {icon}
+        <span>{children}</span>
+      </Button>
     </Link>
   );
 
+  const InactiveButton = ({ children, icon }) => (
+    <div className="w-full sm:w-64">
+      <Button
+        variant="outline"
+        disabled
+        className="w-full h-28 text-xl bg-white/50 border-purple-200 text-slate-400 shadow-sm rounded-2xl cursor-not-allowed flex flex-col gap-2 items-center justify-center"
+      >
+        {icon}
+        <span>{children}</span>
+      </Button>
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-slate-50 p-6" dir="rtl">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-slate-900">דאשבורד</h1>
-          <p className="text-slate-600 mt-2">מידע כללי על Yoya VR Education מערכת ניהול VR</p>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <StatCard 
-            title="משקפות זמינות" 
-            value={availableDevices} 
-            icon={Glasses}
-            color="#00d4ff"
-            link={createPageUrl("GeneralInfo")}
-          />
-          <StatCard 
-            title="שיעורים השבוע" 
-            value={thisWeekSchedules} 
-            icon={Calendar}
-            color="#00d4ff"
-            link={createPageUrl("SchedulerPage")}
-          />
-          <StatCard 
-            title="כיתות VR" 
-            value={activePrograms} 
-            icon={Users}
-            color="#9f7aea"
-            link={createPageUrl("Programs")}
-          />
-          <StatCard 
-            title="מרכזי חינוכיים" 
-            value={educationalCenters} 
-            icon={School}
-            color="#10b981"
-            link={createPageUrl("Schools")}
-          />
-        </div>
-
-        {/* Charts Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Weekly Activity */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-cyan-600" />
-                פעילות שבועית
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-64 flex items-end justify-around gap-2">
-                {['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'].map((day, index) => {
-                  const height = Math.floor(Math.random() * 60) + 40;
-                  return (
-                    <div key={day} className="flex-1 flex flex-col items-center">
-                      <div 
-                        className="w-full bg-gradient-to-t from-cyan-500 to-cyan-400 rounded-t-lg hover:from-cyan-600 hover:to-cyan-500 transition-all cursor-pointer"
-                        style={{ height: `${height}%` }}
-                      />
-                      <p className="text-xs text-slate-600 mt-2">{day}</p>
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Device Status */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Glasses className="w-5 h-5 text-cyan-600" />
-                סטטוס מכשירים
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-center h-64">
-                <div className="relative w-48 h-48">
-                  <svg viewBox="0 0 100 100" className="transform -rotate-90">
-                    {/* Active devices - cyan */}
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="40"
-                      fill="none"
-                      stroke="#00d4ff"
-                      strokeWidth="20"
-                      strokeDasharray={`${(activeDevicesCount / devices.length) * 251.2} 251.2`}
-                    />
-                    {/* Maintenance - orange */}
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="40"
-                      fill="none"
-                      stroke="#f97316"
-                      strokeWidth="20"
-                      strokeDasharray={`${(maintenanceDevicesCount / devices.length) * 251.2} 251.2`}
-                      strokeDashoffset={-((activeDevicesCount / devices.length) * 251.2)}
-                    />
-                    {/* Disabled - gray */}
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="40"
-                      fill="none"
-                      stroke="#94a3b8"
-                      strokeWidth="20"
-                      strokeDasharray={`${(disabledDevicesCount / devices.length) * 251.2} 251.2`}
-                      strokeDashoffset={-(((activeDevicesCount + maintenanceDevicesCount) / devices.length) * 251.2)}
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                      <p className="text-3xl font-bold text-slate-900">{devices.length}</p>
-                      <p className="text-sm text-slate-600">סה״כ</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="mr-8 space-y-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded-full bg-cyan-500" />
-                    <span className="text-sm text-slate-700">פעילים ({activeDevicesCount})</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded-full bg-orange-500" />
-                    <span className="text-sm text-slate-700">בתחזוקה ({maintenanceDevicesCount})</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded-full bg-slate-400" />
-                    <span className="text-sm text-slate-700">לא זמינים ({disabledDevicesCount})</span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Bottom Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Upcoming Classes */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-cyan-600" />
-                שיעורים קרובים
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {upcomingSchedules.length > 0 ? (
-                <div className="space-y-3">
-                  {upcomingSchedules.map((schedule) => {
-                    const program = programs.find(p => p.id === schedule.program_id);
-                    return (
-                      <Link 
-                        key={schedule.id}
-                        to={createPageUrl("SchedulerPage")}
-                        className="block p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors border border-slate-200"
-                      >
-                        <div className="flex justify-between items-start mb-2">
-                          <p className="font-semibold text-slate-900">
-                            {program?.title || program?.course_topic || "תוכנית"}
-                          </p>
-                          <Badge className="bg-cyan-100 text-cyan-800">
-                            {schedule.status || "מתוכנן"}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-slate-600">
-                          {format(new Date(schedule.start_datetime), 'dd/MM/yyyy HH:mm')}
-                        </p>
-                        <p className="text-xs text-slate-500 mt-1">
-                          {schedule.learning_space || "מיקום לא צוין"}
-                        </p>
-                      </Link>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-slate-500">
-                  <Calendar className="w-12 h-12 mx-auto mb-2 text-slate-300" />
-                  <p>אין שיעורים קרובים</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* System Alerts */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Bell className="w-5 h-5 text-cyan-600" />
-                התראות מהמערכת
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {maintenanceDevicesCount > 0 && (
-                  <div className="flex items-start gap-3 p-4 bg-orange-50 rounded-lg border border-orange-200">
-                    <AlertCircle className="w-5 h-5 text-orange-600 mt-0.5" />
-                    <div>
-                      <p className="font-semibold text-orange-900">משקפת VR לתחזוקה</p>
-                      <p className="text-sm text-orange-700">{maintenanceDevicesCount} מכשירים בתחזוקה</p>
-                    </div>
-                  </div>
-                )}
-                {disabledDevicesCount > 0 && (
-                  <div className="flex items-start gap-3 p-4 bg-red-50 rounded-lg border border-red-200">
-                    <AlertCircle className="w-5 h-5 text-red-600 mt-0.5" />
-                    <div>
-                      <p className="font-semibold text-red-900">משקפת VR מושבתת</p>
-                      <p className="text-sm text-red-700">{disabledDevicesCount} מכשירים מושבתים</p>
-                    </div>
-                  </div>
-                )}
-                {maintenanceDevicesCount === 0 && disabledDevicesCount === 0 && (
-                  <div className="text-center py-8 text-slate-500">
-                    <Bell className="w-12 h-12 mx-auto mb-2 text-slate-300" />
-                    <p>אין התראות פעילות</p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-purple-700 flex flex-col items-center justify-center p-6" dir="rtl">
+      <div className="text-center mb-12">
+        <h1 className="text-6xl font-extrabold bg-gradient-to-r from-cyan-300 via-purple-300 to-pink-300 bg-clip-text text-transparent drop-shadow-lg">Shoshi</h1>
+        <p className="text-purple-100 mt-3 text-lg font-medium">
+          VR Device Management System – Accounts & Application Inventory Control
+        </p>
+        <p className="text-purple-300 mt-2 text-sm">
+          Made By Yoya
+        </p>
       </div>
+      <div className="flex flex-col sm:flex-row flex-wrap gap-8 justify-center items-center">
+        <NavButton to={createPageUrl(`GeneralInfo`)} icon={<Orbit className="w-8 h-8" />}>
+          משקפות
+        </NavButton>
+        <NavButton to={createPageUrl(`GeneralApps`)} icon={<AppWindow className="w-8 h-8" />}>
+          אפליקציות
+        </NavButton>
+        <NavButton to={createPageUrl(`AccountsAndUsers`)} icon={<Users className="w-8 h-8" />}>
+          חשבונות ומשתמשים
+        </NavButton>
+
+        <NavButton to={createPageUrl(`Programs`)} icon={<GraduationCap className="w-8 h-8" />}>
+          תוכניות
+        </NavButton>
+
+        <NavButton to={createPageUrl(`Schools`)} icon={<Building2 className="w-8 h-8" />}>
+          בתי ספר
+        </NavButton>
+
+        <NavButton to={createPageUrl(`SchedulerPage`)} icon={<Calendar className="w-8 h-8" />}>
+          לוח זמנים
+        </NavButton>
+
+        <NavButton to={createPageUrl(`SyllabusHub`)} icon={<BookOpen className="w-8 h-8" />}>
+          מרכז סילבוסים
+        </NavButton>
+
+        <NavButton to={createPageUrl(`CRMHub`)} icon={<TrendingUp className="w-8 h-8" />}>
+          CRM
+        </NavButton>
+
+        {/* Secret gate button */}
+        <div className="w-full sm:w-64">
+          <Button
+            variant="outline"
+            className="w-full h-28 text-xl bg-white/90 backdrop-blur-sm border-pink-200 hover:bg-gradient-to-br hover:from-pink-500 hover:to-rose-500 hover:border-transparent shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col gap-2 items-center justify-center text-pink-700 hover:text-white rounded-2xl font-bold"
+            onClick={() => setSecretOpen(true)}
+          >
+            אל תלחץ כאן
+          </Button>
+        </div>
+
+        {/* Reveal these ONLY after pressing 'המשך' in the dialog */}
+        {showHidden && (
+          <>
+            {/* NEW: Export button with bright purple color */}
+            <div className="w-full sm:w-64">
+              <Button
+                variant="outline"
+                className="w-full h-28 text-xl bg-gradient-to-br from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 border-transparent text-white shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col gap-2 items-center justify-center rounded-2xl font-bold"
+                onClick={() => setExportOpen(true)}
+              >
+                <Download className="w-8 h-8" />
+                <span>ייצוא אפליקציות ל-CSV</span>
+              </Button>
+            </div>
+
+            {/* Group all data tools together here */}
+            <NavButton to={createPageUrl(`DataRepositories`)} icon={<Layers className="w-8 h-8" />}>
+              מאגרי מידע
+            </NavButton>
+            <NavButton to={createPageUrl(`AddAppsFromList`)} icon={<ListPlus className="w-8 h-8" />}>
+              הוספת אפליקציות
+            </NavButton>
+            <NavButton to={createPageUrl(`BulkDataLoader`)} icon={<UploadCloud className="w-8 h-8" />}>
+              טעינת נתונים מקבצים
+            </NavButton>
+            <NavButton to={createPageUrl(`UpdateAppsFromPDF`)} icon={<RefreshCw className="w-8 h-8" />}>
+              עדכון אפליקציות
+            </NavButton>
+            <NavButton to={createPageUrl(`DataImport`)} icon={<UploadCloud className="w-8 h-8" />}>
+              ייבוא נתונים
+            </NavButton>
+            <NavButton to={createPageUrl(`DataUpdater`)} icon={<Link2 className="w-8 h-8" />}>
+              עדכון
+            </NavButton>
+            <NavButton to={createPageUrl(`UpdateAppStatus`)} icon={<RefreshCw className="w-8 h-8" />}>
+              עדכון סטטוס אפליקציות
+            </NavButton>
+          </>
+        )}
+      </div>
+
+      {/* Secret Dialog */}
+      <Dialog open={secretOpen} onOpenChange={setSecretOpen}>
+        <DialogContent dir="rtl">
+          <DialogHeader>
+            <DialogTitle>מזל שאתה לא נשיא ארצות הברית וזה לא הכפתור האדום</DialogTitle>
+          </DialogHeader>
+          <div className="text-slate-600">
+            לחץ המשך
+          </div>
+          <DialogFooter className="justify-end">
+            <Button
+              onClick={() => {
+                setSecretOpen(false);
+                setShowHidden(true);
+              }}
+              className="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-bold"
+            >
+              המשך
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Export Dialog */}
+      <Dialog open={exportOpen} onOpenChange={setExportOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl flex items-center gap-2">
+              <Download className="w-6 h-6 text-purple-600" />
+              ייצוא אפליקציות ל-CSV
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="text-slate-600">
+              בחר את השדות שתרצה לייצא. שדות מומלצים כבר מסומנים עבורך.
+            </div>
+
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={selectAll}
+                className="border-purple-300 text-purple-700 hover:bg-purple-50"
+              >
+                בחר הכל
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={clearAll}
+                className="border-slate-300 text-slate-700 hover:bg-slate-50"
+              >
+                בטל בחירה
+              </Button>
+            </div>
+
+            <div className="border rounded-lg p-4 bg-slate-50">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                {availableFields.map(field => (
+                  <label 
+                    key={field.key}
+                    className="flex items-center gap-2 cursor-pointer hover:bg-white p-2 rounded transition-colors"
+                  >
+                    <Checkbox
+                      checked={selectedFields.has(field.key)}
+                      onCheckedChange={() => toggleField(field.key)}
+                    />
+                    <span className="text-sm">{field.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="text-sm text-slate-500">
+              נבחרו {selectedFields.size} שדות
+            </div>
+          </div>
+
+          <DialogFooter className="flex gap-2 justify-end">
+            <Button 
+              variant="outline" 
+              onClick={() => setExportOpen(false)}
+              disabled={isExporting}
+            >
+              ביטול
+            </Button>
+            <Button 
+              onClick={handleExport}
+              disabled={isExporting || selectedFields.size === 0}
+              className="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-bold"
+            >
+              {isExporting ? 'מייצא...' : 'ייצא CSV'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
