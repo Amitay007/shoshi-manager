@@ -33,6 +33,9 @@ export default function GeneralInfo() {
   const [selectedAppIds, setSelectedAppIds] = useState([]);
   const [appsModalOpen, setAppsModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState("cards");
+  const [activeTab, setActiveTab] = useState("all");
+  const [selectedDevices, setSelectedDevices] = useState(new Set());
+  const [statusFilter, setStatusFilter] = useState([]);
 
   // NEW: Device details modal state
   const [selectedDevice, setSelectedDevice] = useState(null);
@@ -264,14 +267,29 @@ export default function GeneralInfo() {
 
   const filteredAndSortedDevices = useMemo(() => {
     let filtered = (devices || []).filter(device => {
-      const numberMatch = device.binocular_number.toString().includes((searchTerm || "").trim());
+      const searchMatch = (searchTerm || "").trim() === "" || 
+        device.binocular_number.toString().includes((searchTerm || "").trim()) ||
+        (device.serial_number || "").toLowerCase().includes((searchTerm || "").trim().toLowerCase());
+      
       const accountsMatch =
         (selectedAccountTypes || []).length === 0 ||
         (device.accountTypes || []).some(t => (selectedAccountTypes || []).includes(t));
+      
       const appsMatch =
         (selectedAppIds || []).length === 0 ||
         (device.installedAppIds || []).some(id => (selectedAppIds || []).includes(id));
-      return numberMatch && accountsMatch && appsMatch;
+      
+      // Tab filtering
+      let tabMatch = true;
+      if (activeTab === "active") {
+        tabMatch = !device.is_disabled && device.status !== "בתיקון";
+      } else if (activeTab === "maintenance") {
+        tabMatch = device.status === "בתיקון" || device.status === "בתחזוקה";
+      } else if (activeTab === "issues") {
+        tabMatch = device.is_disabled || device.status === "מושבת";
+      }
+      
+      return searchMatch && accountsMatch && appsMatch && tabMatch;
     });
     
     filtered.sort((a, b) => {
@@ -280,7 +298,7 @@ export default function GeneralInfo() {
     });
     
     return filtered;
-  }, [devices, searchTerm, sortOrder, selectedAccountTypes, selectedAppIds]);
+  }, [devices, searchTerm, sortOrder, selectedAccountTypes, selectedAppIds, activeTab]);
 
   const devicesGroupedByEmail = useMemo(() => {
     if (viewMode !== "columns") return {};
@@ -325,234 +343,235 @@ export default function GeneralInfo() {
     </div>
   );
 
+  const allDevicesCount = devices.length;
+  const activeCount = devices.filter(d => !d.is_disabled && d.status !== "בתיקון").length;
+  const maintenanceCount = devices.filter(d => d.status === "בתיקון" || d.status === "בתחזוקה").length;
+  const issuesCount = devices.filter(d => d.is_disabled || d.status === "מושבת").length;
+
+  const toggleDeviceSelection = (deviceId) => {
+    setSelectedDevices(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(deviceId)) {
+        newSet.delete(deviceId);
+      } else {
+        newSet.add(deviceId);
+      }
+      return newSet;
+    });
+  };
+
+  const selectAllVisible = () => {
+    const allIds = new Set(filteredAndSortedDevices.map(d => d.id));
+    setSelectedDevices(allIds);
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50 p-4 sm:p-5" dir="rtl">
+    <div className="min-h-screen bg-white p-6" dir="rtl">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-5">
+        {/* Header */}
+        <div className="flex justify-between items-start mb-6">
+          <div>
+            <h1 className="text-4xl font-bold text-slate-900 mb-2">מלאי מכשירים</h1>
+            <p className="text-slate-500 text-lg">ניהול חכם של משקפות VR</p>
+          </div>
+          <Link to={createPageUrl("AddNewHeadset")}>
+            <Button className="bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white gap-2 px-6 py-6 text-lg rounded-xl shadow-lg">
+              <Plus className="w-5 h-5" />
+              הוסף מכשיר
+            </Button>
+          </Link>
+        </div>
+
+        {/* Search and Filters */}
+        <div className="mb-6 space-y-4">
+          {/* Search Bar */}
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-              <Orbit className="w-7 h-7 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-cyan-900">משקפות</h1>
-              <p className="text-slate-500 text-sm">ניהול משקפות VR</p>
+            <div className="flex-1 max-w-2xl relative">
+              <Input 
+                type="text" 
+                placeholder="חיפוש לפי מספר המשקפת או S/N..." 
+                className="w-full h-12 pr-12 text-base rounded-xl border-slate-300"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Link to={createPageUrl("AddNewHeadset")}>
-              <Button className="bg-green-600 hover:bg-green-700 gap-2">
-                הוסף משקפת
+
+          {/* Tabs and Actions */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1 border-b border-slate-200">
+              <button
+                onClick={() => setActiveTab("all")}
+                className={`px-6 py-3 text-sm font-medium transition-all relative ${
+                  activeTab === "all"
+                    ? "text-slate-900 border-b-2 border-slate-900"
+                    : "text-slate-500 hover:text-slate-700"
+                }`}
+              >
+                הכל ({allDevicesCount})
+              </button>
+              <button
+                onClick={() => setActiveTab("active")}
+                className={`px-6 py-3 text-sm font-medium transition-all relative ${
+                  activeTab === "active"
+                    ? "text-green-700 border-b-2 border-green-700"
+                    : "text-slate-500 hover:text-slate-700"
+                }`}
+              >
+                פעילים ({activeCount})
+              </button>
+              <button
+                onClick={() => setActiveTab("maintenance")}
+                className={`px-6 py-3 text-sm font-medium transition-all relative ${
+                  activeTab === "maintenance"
+                    ? "text-orange-700 border-b-2 border-orange-700"
+                    : "text-slate-500 hover:text-slate-700"
+                }`}
+              >
+                בתחזוקה ({maintenanceCount})
+              </button>
+              <button
+                onClick={() => setActiveTab("issues")}
+                className={`px-6 py-3 text-sm font-medium transition-all relative ${
+                  activeTab === "issues"
+                    ? "text-red-700 border-b-2 border-red-700"
+                    : "text-slate-500 hover:text-slate-700"
+                }`}
+              >
+                בעיות ({issuesCount})
+              </button>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={selectAllVisible}
+                className="text-slate-600 hover:text-slate-900"
+              >
+                בחר הכל
               </Button>
-            </Link>
-            <BackHomeButtons />
+              <span className="text-slate-600 font-medium">
+                {filteredAndSortedDevices.length} מכשירים
+              </span>
+            </div>
           </div>
         </div>
 
-        <Card className="mb-5 shadow-sm">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">סינון ומיון</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex gap-2 pb-3 border-b border-slate-200">
-              <div className="px-1 py-1 rounded-md flex gap-1 border">
-                <Button
-                  variant={viewMode === "cards" ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setViewMode("cards")}
-                  className="h-8 px-3"
-                >
-                  <Grid className="w-4 h-4 mr-1" />
-                  כרטיסיות
-                </Button>
-                <Button
-                  variant={viewMode === "tiles" ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setViewMode("tiles")}
-                  className="h-8 px-3"
-                >
-                  <LayoutGrid className="w-4 h-4 mr-1" />
-                  כוביות
-                </Button>
-                <Button
-                  variant={viewMode === "columns" ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setViewMode("columns")}
-                  className="h-8 px-3"
-                >
-                  <List className="w-4 h-4 mr-1" />
-                  לפי ABC
-                </Button>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-3 items-center">
-              <div className="flex items-center gap-2">
-                <Input 
-                  type="text" 
-                  placeholder="חיפוש לפי מספר משקפת..." 
-                  className="w-44 sm:w-56"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-                  title="סדר עולה/יורד"
-                >
-                  {sortOrder === "asc" ? 
-                    <ArrowUp className="w-5 h-5" /> : 
-                    <ArrowDown className="w-5 h-5" />
-                  }
-                </Button>
-              </div>
-
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="gap-2">
-                    סינון לפי חשבון ({selectedAccountTypes.length})
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-72" align="start">
-                  <div className="max-h-64 overflow-auto space-y-2">
-                    {allAccountTypes.length === 0 && (
-                      <div className="text-sm text-slate-500">אין סוגי חשבונות זמינים</div>
-                    )}
-                    {allAccountTypes.map(t => {
-                      const checked = selectedAccountTypes.includes(t);
-                      return (
-                        <label key={t} className="flex items-center gap-2 cursor-pointer">
-                          <Checkbox
-                            checked={checked}
-                            onCheckedChange={() => {
-                              setSelectedAccountTypes(prev => {
-                                if (prev.includes(t)) return prev.filter(x => x !== t);
-                                return [...prev, t];
-                              });
-                            }}
-                          />
-                          <span className="text-sm">{t}</span>
-                        </label>
-                      );
-                    })}
-                  </div>
-                  <div className="mt-3 flex justify-between">
-                    <Button variant="outline" size="sm" onClick={() => setSelectedAccountTypes([])}>נקה</Button>
-                    <Button size="sm">סגור</Button>
-                  </div>
-                </PopoverContent>
-              </Popover>
-
-              <Button variant="outline" onClick={() => setAppsModalOpen(true)}>
-                סינון לפי אפליקציות ({selectedAppIds.length})
-              </Button>
-
-              {(selectedAccountTypes.length > 0 || selectedAppIds.length > 0 || (searchTerm || "").length > 0) && (
-                <Button variant="ghost" onClick={() => { setSearchTerm(""); setSelectedAccountTypes([]); setSelectedAppIds([]); }}>
-                  נקה סינונים
-                </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
         {viewMode === "cards" ? (
-          <div className="space-y-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {filteredAndSortedDevices.length === 0 && (
-              <div className="text-center py-12 text-slate-500">אין משקפות תואמות.</div>
+              <div className="col-span-full text-center py-12 text-slate-500">אין משקפות תואמות.</div>
             )}
-            {filteredAndSortedDevices.map(device => (
-              <div key={device.id} className="bg-white rounded-md shadow-sm border border-slate-200 hover:shadow-md transition-all duration-200">
-                <div className="p-3">
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-cyan-100 rounded-lg flex items-center justify-center">
-                        <Orbit className="w-4.5 h-4.5 text-cyan-600" />
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-bold text-slate-800">משקפת {device.binocular_number}</h3>
-                        <p className="text-slate-500 text-[11px]">{device.model || 'Meta Quest'}</p>
-                      </div>
-                    </div>
-                    <span className={`px-3 py-1.5 rounded-lg text-sm font-semibold shadow-sm ${
-                      device.is_disabled 
-                        ? 'bg-red-100 text-red-700 border border-red-300' 
-                        : 'bg-green-100 text-green-700 border border-green-300'
-                    }`}>
-                      {device.is_disabled ? 'מושבת' : 'פעיל'}
-                    </span>
+            {filteredAndSortedDevices.map(device => {
+              const isSelected = selectedDevices.has(device.id);
+              const borderColor = device.is_disabled || device.status === "מושבת" 
+                ? "border-t-red-500" 
+                : device.status === "בתיקון" || device.status === "בתחזוקה"
+                ? "border-t-orange-500"
+                : "border-t-green-500";
+              
+              const statusText = device.is_disabled || device.status === "מושבת" 
+                ? "תקול" 
+                : device.status === "בתיקון" || device.status === "בתחזוקה"
+                ? "בתחזוקה"
+                : "פעיל";
+
+              return (
+                <div 
+                  key={device.id} 
+                  className={`bg-white rounded-xl shadow-sm border-2 border-slate-200 hover:shadow-md transition-all duration-200 ${borderColor} border-t-4 cursor-pointer relative ${
+                    isSelected ? "ring-2 ring-cyan-500" : ""
+                  }`}
+                  onClick={() => openDeviceModal(device)}
+                >
+                  {/* Checkbox */}
+                  <div 
+                    className="absolute top-3 right-3 z-10"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleDeviceSelection(device.id);
+                    }}
+                  >
+                    <Checkbox checked={isSelected} />
                   </div>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-3">
-                    <div className="space-y-1 text-xs">
-                      <div className="flex items-center gap-2">
-                        <Hash className="w-4 h-4 text-slate-400" />
-                        <span className="text-slate-600">מספר סידורי:</span>
-                        <span className="font-medium truncate max-w-[55%]">{device.serial_number || 'N/A'}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-slate-400" />
-                        <span className="text-slate-600">תאריך רכישה:</span>
-                        <span className="font-medium">{device.purchase_date ? new Date(device.purchase_date).toLocaleDateString('he-IL') : 'N/A'}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Mail className="w-4 h-4 text-slate-400" />
-                        <span className="text-slate-600">אימייל:</span>
-                        <span className="font-medium truncate max-w-[55%]">{device.primary_email || 'N/A'}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <AppWindow className="w-4 h-4 text-slate-400" />
-                        <span className="text-slate-600">אפליקציות מותקנות:</span>
-                        <span className="font-medium">{device.appCount || 0}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Users className="w-4 h-4 text-slate-400" />
-                        <span className="text-slate-600">חשבונות קיימים:</span>
-                        <span className="font-medium">{device.accountCount || 0}</span>
-                      </div>
+                  {/* 3-dot menu */}
+                  <div className="absolute top-3 left-3 z-10">
+                    <Popover>
+                      <PopoverTrigger asChild onClick={(e) => e.stopPropagation()}>
+                        <button className="text-slate-400 hover:text-slate-600 p-1">
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                          </svg>
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-48" align="start" onClick={(e) => e.stopPropagation()}>
+                        <div className="space-y-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="w-full justify-start"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openDeviceModal(device);
+                            }}
+                          >
+                            פתח
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteHeadset(device);
+                            }}
+                          >
+                            מחק
+                          </Button>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  <div className="p-6 pt-12">
+                    {/* Large Number */}
+                    <div className="text-center mb-2">
+                      <div className="text-5xl font-bold text-slate-900">{device.binocular_number}</div>
+                      <div className="text-sm text-slate-600 mt-1">{statusText}</div>
                     </div>
 
-                    <div>
-                      <div className="text-xs text-slate-600 mb-1">אפליקציות מותקנות:</div>
-                      {device.installedAppNames && device.installedAppNames.length > 0 ? (
-                        <div className="flex flex-wrap gap-1">
-                          {device.installedAppNames.map((name, idx) => (
-                            <Link 
-                              key={`${device.id}-app-${idx}`}
-                              to={createPageUrl(`AppDetailsPage?name=${encodeURIComponent(name)}`)}
-                              className="px-1.5 py-0.5 text-[10px] rounded bg-cyan-50 text-cyan-700 border border-cyan-200 hover:bg-cyan-100 transition-colors"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              {name}
-                            </Link>
-                          ))}
+                    {/* Details */}
+                    <div className="space-y-2 mt-4 text-xs text-slate-600">
+                      <div className="flex items-center justify-between">
+                        <span>S/N:</span>
+                        <span className="font-mono text-slate-900">{device.serial_number || 'N/A'}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>MAC:</span>
+                        <span className="font-mono text-slate-900 text-[10px]">AA:BB:CC:DD:EE:{String(device.binocular_number).padStart(2, '0')}</span>
+                      </div>
+                      <div className="text-center mt-3 text-slate-700 font-medium">
+                        {device.model || device.headset_type || 'Meta Quest 3'}
+                      </div>
+                      {device.primary_email && (
+                        <div className="flex items-center justify-center gap-1 mt-2">
+                          <svg className="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
+                          </svg>
                         </div>
-                      ) : (
-                        <div className="text-[11px] text-slate-400">אין אפליקציות מותקנות.</div>
                       )}
                     </div>
                   </div>
-
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      variant="destructive"
-                      className="gap-2 h-8 px-3"
-                      onClick={() => handleDeleteHeadset(device)}
-                      title="מחק משקפת"
-                      disabled={deletingId === device.id}
-                    >
-                      {deletingId === device.id ? "מוחק..." : "הסר משקפת"}
-                    </Button>
-                    <Button 
-                      className="bg-cyan-600 hover:bg-cyan-700 text-white h-8 px-4 rounded-lg"
-                      onClick={() => openDeviceModal(device)}
-                    >
-                      ניהול משקפת
-                    </Button>
-                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : viewMode === "tiles" ? (
           <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 xl:grid-cols-16 gap-2">

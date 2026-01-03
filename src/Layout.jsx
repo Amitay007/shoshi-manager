@@ -1,10 +1,15 @@
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import ChatBot from "@/components/ChatBot";
+import Sidebar from "@/components/common/Sidebar";
 
 export default function Layout({ children, currentPageName }) {
+  // Pages that should NOT show the sidebar
+  const pagesWithoutSidebar = ["Home"];
+  const showSidebar = !pagesWithoutSidebar.includes(currentPageName);
+
   return (
-    <div dir="rtl" className="min-h-screen bg-gradient-to-br from-purple-50 via-cyan-50 to-blue-50 text-slate-900">
+    <div dir="rtl" className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 text-slate-900">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap');
         
@@ -21,7 +26,13 @@ export default function Layout({ children, currentPageName }) {
           font-family: 'Assistant', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
         }
       `}</style>
-      {children}
+      
+      {showSidebar && <Sidebar />}
+      
+      <div className={showSidebar ? "mr-64" : ""}>
+        {children}
+      </div>
+      
       <ChatBot />
       <Toaster />
     </div>
