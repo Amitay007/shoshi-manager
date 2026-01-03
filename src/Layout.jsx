@@ -1,6 +1,5 @@
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
-import ChatBot from "@/components/ChatBot";
 import Sidebar from "@/components/common/Sidebar";
 
 export default function Layout({ children, currentPageName }) {
@@ -32,8 +31,7 @@ export default function Layout({ children, currentPageName }) {
       <div className={showSidebar ? "mr-64" : ""}>
         {children}
       </div>
-      
-      <ChatBot />
+
       <Toaster />
     </div>
   );

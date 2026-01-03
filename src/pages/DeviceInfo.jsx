@@ -1,16 +1,13 @@
-
 import React, { useState, useEffect, useCallback } from "react";
 import { VRDevice } from "@/entities/VRDevice";
 import { DeviceLinkedAccount } from "@/entities/DeviceLinkedAccount";
 import { VRApp } from "@/entities/VRApp";
 import { DeviceApp } from "@/entities/DeviceApp";
 import { PlatformOption } from "@/entities/PlatformOption";
-import { ScheduleEntry } from "@/entities/ScheduleEntry";
-import { Syllabus } from "@/entities/Syllabus";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Star, ArrowLeft, Mail, Calendar, Hash, AppWindow, Plus, Edit, Save, X, Clock, MapPin, AlertCircle, CheckCircle } from "lucide-react";
+import { Star, ArrowLeft, Mail, Hash, AppWindow, Plus, Edit, Save, X, AlertCircle, CheckCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,7 +16,6 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import AddAppsFromCatalogModal from "@/components/modals/AddAppsFromCatalogModal";
 import { with429Retry } from "@/components/utils/retry";
-import { format } from "date-fns";
 
 export default function DeviceInfo() {
   const [device, setDevice] = useState(null);
@@ -451,24 +447,7 @@ export default function DeviceInfo() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle className="flex items-center gap-3">
-                    <Calendar className="w-6 h-6" />
-                    שיבוצים קרובים
-                  </CardTitle>
-                  <Link to={createPageUrl(`SchedulerPage`)}>
-                    <Button variant="outline" size="sm">
-                      לוח זמנים מלא
-                    </Button>
-                  </Link>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <UpcomingSchedules deviceId={device.id} />
-              </CardContent>
-            </Card>
+
           </div>
         </div>
       </div>
@@ -524,98 +503,6 @@ export default function DeviceInfo() {
           }}
         />
       )}
-    </div>
-  );
-}
-
-function UpcomingSchedules({ deviceId }) {
-  const [schedules, setSchedules] = React.useState([]);
-  const [programs, setPrograms] = React.useState([]);
-  const [loading, setLoading] = React.useState(true);
-
-  React.useEffect(() => {
-    loadSchedules();
-  }, [deviceId]);
-
-  const loadSchedules = async () => {
-    setLoading(true);
-    try {
-      const [allSchedules, allPrograms] = await Promise.all([
-        with429Retry(() => ScheduleEntry.list()),
-        with429Retry(() => Syllabus.list())
-      ]);
-
-      const now = new Date();
-      const relevantSchedules = (allSchedules || [])
-        .filter(s => 
-          (s.device_ids || []).includes(deviceId) &&
-          new Date(s.end_datetime) > now &&
-          s.status !== "בוטל"
-        )
-        .sort((a, b) => new Date(a.start_datetime) - new Date(b.start_datetime))
-        .slice(0, 5);
-
-      setSchedules(relevantSchedules);
-      setPrograms(allPrograms || []);
-    } catch (error) {
-      console.error("Error loading schedules:", error);
-      setSchedules([]);
-      setPrograms([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
-    return <div className="text-sm text-slate-500">טוען...</div>;
-  }
-
-  if (schedules.length === 0) {
-    return <div className="text-sm text-slate-500 text-center py-4">אין שיבוצים קרובים</div>;
-  }
-
-  const programById = Object.fromEntries(programs.map(p => [p.id, p]));
-
-  return (
-    <div className="space-y-3">
-      {schedules.map(schedule => {
-        const program = programById[schedule.program_id];
-        const startDate = new Date(schedule.start_datetime);
-        const endDate = new Date(schedule.end_datetime);
-
-        return (
-          <div key={schedule.id} className="p-3 border border-slate-200 rounded-lg hover:border-cyan-400 transition-colors">
-            <div className="flex justify-between items-start mb-2">
-              <div className="font-semibold text-slate-800">
-                {program?.title || program?.course_topic || "תוכנית"}
-              </div>
-              <Badge className={
-                schedule.status === "מתוכנן" ? "bg-blue-100 text-blue-800" :
-                schedule.status === "פעיל" ? "bg-green-100 text-green-800" :
-                "bg-slate-100 text-slate-600"
-              }>
-                {schedule.status}
-              </Badge>
-            </div>
-            <div className="text-sm text-slate-600 space-y-1">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                {format(startDate, 'dd/MM/yyyy')}
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4" />
-                {format(startDate, 'HH:mm')} - {format(endDate, 'HH:mm')}
-              </div>
-              {schedule.location && (
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4" />
-                  {schedule.location}
-                </div>
-              )}
-            </div>
-          </div>
-        );
-      })}
     </div>
   );
 }

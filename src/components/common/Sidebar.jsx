@@ -5,12 +5,7 @@ import {
   Home, 
   Glasses, 
   AppWindow, 
-  BookOpen, 
-  Calendar, 
-  School, 
-  Users, 
-  CalendarDays,
-  Calculator,
+  BookOpen,
   ChevronRight
 } from "lucide-react";
 
@@ -21,12 +16,7 @@ export default function Sidebar() {
     { id: "dashboard", label: "דאשבורד", icon: Home, page: "Dashboard" },
     { id: "devices", label: "מכשירי VR", icon: Glasses, page: "GeneralInfo" },
     { id: "apps", label: "אפליקציות", icon: AppWindow, page: "GeneralApps" },
-    { id: "syllabus", label: "סילבוסים", icon: BookOpen, page: "SyllabusHub" },
-    { id: "programs", label: "תוכניות", icon: Calendar, page: "Programs" },
-    { id: "schools", label: "בתי ספר", icon: School, page: "Schools" },
-    { id: "teachers", label: "מורים", icon: Users, page: "CRMHub" },
-    { id: "schedule", label: "לוח שנה", icon: CalendarDays, page: "SchedulerPage" },
-    { id: "calculator", label: "מחשבון זמינות", icon: Calculator, page: "BinocularCalculator" },
+    { id: "data", label: "מאגרי מידע", icon: BookOpen, page: "DataRepositoryList" },
   ];
 
   const isActive = (page) => {

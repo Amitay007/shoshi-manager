@@ -1,38 +1,31 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { VRDevice } from "@/entities/VRDevice";
-import { ScheduleEntry } from "@/entities/ScheduleEntry";
-import { Syllabus } from "@/entities/Syllabus";
 import { VRApp } from "@/entities/VRApp";
-import { EducationInstitution } from "@/entities/EducationInstitution";
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { Glasses, Calendar, BookOpen, School, AlertTriangle } from "lucide-react";
+import { DeviceApp } from "@/entities/DeviceApp";
+import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import { Glasses, AppWindow, AlertTriangle, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { format, isAfter, isBefore, addDays, startOfWeek, endOfWeek } from "date-fns";
-import { he } from "date-fns/locale";
 
 export default function Dashboard() {
   const [devices, setDevices] = useState([]);
-  const [schedules, setSchedules] = useState([]);
-  const [programs, setPrograms] = useState([]);
-  const [schools, setSchools] = useState([]);
+  const [apps, setApps] = useState([]);
+  const [deviceApps, setDeviceApps] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [devicesData, schedulesData, programsData, schoolsData] = await Promise.all([
+        const [devicesData, appsData, deviceAppsData] = await Promise.all([
           VRDevice.list(),
-          ScheduleEntry.list(),
-          Syllabus.list(),
-          EducationInstitution.list()
+          VRApp.list(),
+          DeviceApp.list()
         ]);
 
         setDevices(devicesData || []);
-        setSchedules(schedulesData || []);
-        setPrograms(programsData || []);
-        setSchools(schoolsData || []);
+        setApps(appsData || []);
+        setDeviceApps(deviceAppsData || []);
       } catch (error) {
         console.error("Error loading dashboard data:", error);
       } finally {
@@ -45,11 +38,8 @@ export default function Dashboard() {
 
   // Statistics
   const activeDevices = devices.filter(d => !d.is_disabled && d.status !== "בתיקון").length;
-  const upcomingSchedules = schedules.filter(s => {
-    const start = new Date(s.start_datetime);
-    return isAfter(start, new Date()) && isBefore(start, addDays(new Date(), 7));
-  }).length;
-  const totalPrograms = programs.length;
+  const totalApps = apps.length;
+  const installedApps = apps.filter(a => a.is_installed).length;
   const issuesCount = devices.filter(d => d.is_disabled || d.status === "מושבת" || d.status === "בתיקון").length;
 
   // Device status breakdown
@@ -71,34 +61,9 @@ export default function Dashboard() {
     }
   ];
 
-  // Weekly activity (schedules by day)
-  const weekStart = startOfWeek(new Date(), { locale: he });
-  const weekEnd = endOfWeek(new Date(), { locale: he });
-  const daysOfWeek = ["א'", "ב'", "ג'", "ד'", "ה'", "ו'", "ש'"];
-  const weeklyActivityData = daysOfWeek.map((day, index) => {
-    const dayDate = addDays(weekStart, index);
-    const daySchedules = schedules.filter(s => {
-      const scheduleDate = new Date(s.start_datetime);
-      return format(scheduleDate, 'yyyy-MM-dd') === format(dayDate, 'yyyy-MM-dd');
-    });
-    return {
-      name: day,
-      value: daySchedules.length
-    };
-  });
-
   // Alerts (devices with issues)
   const alerts = devices
     .filter(d => d.is_disabled || d.status === "בתיקון" || d.status === "מושבת")
-    .slice(0, 5);
-
-  // Upcoming schedules
-  const upcomingSchedulesList = schedules
-    .filter(s => {
-      const start = new Date(s.start_datetime);
-      return isAfter(start, new Date());
-    })
-    .sort((a, b) => new Date(a.start_datetime) - new Date(b.start_datetime))
     .slice(0, 5);
 
   if (isLoading) {
@@ -127,7 +92,7 @@ export default function Dashboard() {
                   <div>
                     <p className="text-sm text-slate-600 mb-1">משקפות פעילות</p>
                     <p className="text-4xl font-bold text-slate-900">{activeDevices}</p>
-                    <p className="text-xs text-slate-500 mt-1">סה"כ כובל טווח</p>
+                    <p className="text-xs text-slate-500 mt-1">מתוך {devices.length} סה"כ</p>
                   </div>
                   <div className="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center">
                     <Glasses className="w-8 h-8 text-green-600" />
@@ -137,34 +102,34 @@ export default function Dashboard() {
             </Card>
           </Link>
 
-          <Link to={createPageUrl("SchedulerPage")}>
+          <Link to={createPageUrl("GeneralApps")}>
             <Card className="hover:shadow-lg transition-shadow cursor-pointer border-r-4 border-r-cyan-500">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-slate-600 mb-1">שיעורים הבא</p>
-                    <p className="text-4xl font-bold text-slate-900">{upcomingSchedules}</p>
-                    <p className="text-xs text-slate-500 mt-1">סטטוס סה"כ בוקרותואחת</p>
+                    <p className="text-sm text-slate-600 mb-1">אפליקציות במערכת</p>
+                    <p className="text-4xl font-bold text-slate-900">{totalApps}</p>
+                    <p className="text-xs text-slate-500 mt-1">{installedApps} מותקנות</p>
                   </div>
                   <div className="w-14 h-14 bg-cyan-100 rounded-xl flex items-center justify-center">
-                    <Calendar className="w-8 h-8 text-cyan-600" />
+                    <AppWindow className="w-8 h-8 text-cyan-600" />
                   </div>
                 </div>
               </CardContent>
             </Card>
           </Link>
 
-          <Link to={createPageUrl("Programs")}>
+          <Link to={createPageUrl("GeneralApps?filter=installed")}>
             <Card className="hover:shadow-lg transition-shadow cursor-pointer border-r-4 border-r-purple-500">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-slate-600 mb-1">מד ספר</p>
-                    <p className="text-4xl font-bold text-slate-900">{totalPrograms}</p>
-                    <p className="text-xs text-slate-500 mt-1">היה אחת מילולה</p>
+                    <p className="text-sm text-slate-600 mb-1">אפליקציות מותקנות</p>
+                    <p className="text-4xl font-bold text-slate-900">{installedApps}</p>
+                    <p className="text-xs text-slate-500 mt-1">על המשקפות</p>
                   </div>
                   <div className="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center">
-                    <BookOpen className="w-8 h-8 text-purple-600" />
+                    <TrendingUp className="w-8 h-8 text-purple-600" />
                   </div>
                 </div>
               </CardContent>
@@ -176,9 +141,9 @@ export default function Dashboard() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-slate-600 mb-1">מסביב חקרקום</p>
+                    <p className="text-sm text-slate-600 mb-1">משקפות בתקלה</p>
                     <p className="text-4xl font-bold text-slate-900">{issuesCount}</p>
-                    <p className="text-xs text-slate-500 mt-1">חיצוית חקר</p>
+                    <p className="text-xs text-slate-500 mt-1">דורשות טיפול</p>
                   </div>
                   <div className="w-14 h-14 bg-red-100 rounded-xl flex items-center justify-center">
                     <AlertTriangle className="w-8 h-8 text-red-600" />
@@ -189,9 +154,8 @@ export default function Dashboard() {
           </Link>
         </div>
 
-        {/* Charts Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Device Status Pie Chart */}
+        {/* Device Status Chart */}
+        <div className="mb-8">
           <Card>
             <CardHeader>
               <CardTitle>סטטוס מכשירים</CardTitle>
@@ -221,114 +185,45 @@ export default function Dashboard() {
                 {deviceStatusData.map((item, index) => (
                   <div key={index} className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
-                    <span className="text-sm text-slate-600">{item.name}</span>
+                    <span className="text-sm text-slate-600">{item.name}: {item.value}</span>
                   </div>
                 ))}
               </div>
             </CardContent>
           </Card>
-
-          {/* Weekly Activity Bar Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle>פעילות שבועית</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={weeklyActivityData}>
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="value" fill="#06b6d4" radius={[8, 8, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
         </div>
 
-        {/* Bottom Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Alerts */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5 text-orange-600" />
-                התרעות במכשירים
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {alerts.length > 0 ? (
-                <div className="space-y-3">
-                  {alerts.map((device) => (
-                    <div key={device.id} className="flex items-start justify-between p-3 bg-red-50 rounded-lg border border-red-200">
+        {/* Alerts */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-orange-600" />
+              התרעות במכשירים
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {alerts.length > 0 ? (
+              <div className="space-y-3">
+                {alerts.map((device) => (
+                  <Link key={device.id} to={createPageUrl(`DeviceInfo?id=${device.binocular_number}`)}>
+                    <div className="flex items-start justify-between p-3 bg-red-50 rounded-lg border border-red-200 hover:bg-red-100 transition-colors cursor-pointer">
                       <div className="flex-1">
-                        <div className="font-semibold text-slate-900">משקפת {device.binocular_number} במצוקה</div>
+                        <div className="font-semibold text-slate-900">משקפת #{device.binocular_number}</div>
                         <div className="text-sm text-slate-600 mt-1">
                           {device.disable_reason || "לא צוין סיבה"}
                         </div>
-                        <div className="text-xs text-slate-500 mt-1">
-                          {device.updated_date ? format(new Date(device.updated_date), 'dd/MM/yyyy HH:mm') : ''}
-                        </div>
                       </div>
-                      <Link to={createPageUrl(`GeneralInfo`)}>
-                        <button className="text-red-600 hover:text-red-800 text-sm font-medium">
-                          צפייה
-                        </button>
-                      </Link>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-slate-500">
-                  אין התרעות פעילות
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Upcoming Schedules */}
-          <Card>
-            <CardHeader>
-              <CardTitle>שיבוצים קרובים</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {upcomingSchedulesList.length > 0 ? (
-                <div className="space-y-3">
-                  {upcomingSchedulesList.map((schedule) => {
-                    const program = programs.find(p => p.id === schedule.program_id);
-                    const startDate = new Date(schedule.start_datetime);
-                    
-                    return (
-                      <div key={schedule.id} className="flex items-start justify-between p-3 bg-cyan-50 rounded-lg border border-cyan-200">
-                        <div className="flex-1">
-                          <div className="font-semibold text-slate-900">
-                            {program?.title || program?.course_topic || "תוכנית"}
-                          </div>
-                          <div className="text-sm text-slate-600 mt-1 flex items-center gap-2">
-                            <Calendar className="w-4 h-4" />
-                            {format(startDate, 'dd/MM/yyyy')} • {format(startDate, 'HH:mm')}
-                          </div>
-                          <div className="text-xs text-slate-500 mt-1">
-                            {(schedule.device_ids || []).length} משקפות משובצות
-                          </div>
-                        </div>
-                        <Link to={createPageUrl("SchedulerPage")}>
-                          <button className="text-cyan-600 hover:text-cyan-800 text-sm font-medium">
-                            פרטים
-                          </button>
-                        </Link>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-slate-500">
-                  אין שיבוצים קרובים
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-slate-500">
+                אין התרעות פעילות ✓
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
