@@ -31,6 +31,7 @@ import SyllabusWizard from './pages/SyllabusWizard';
 import UpdateAppStatus from './pages/UpdateAppStatus';
 import UpdateAppsFromPDF from './pages/UpdateAppsFromPDF';
 import UploadLogo from './pages/UploadLogo';
+import Dashboard from './pages/Dashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -68,6 +69,7 @@ export const PAGES = {
     "UpdateAppStatus": UpdateAppStatus,
     "UpdateAppsFromPDF": UpdateAppsFromPDF,
     "UploadLogo": UploadLogo,
+    "Dashboard": Dashboard,
 }
 
 export const pagesConfig = {

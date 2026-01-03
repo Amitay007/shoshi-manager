@@ -18,7 +18,7 @@ export default function Sidebar() {
   const location = useLocation();
   
   const menuItems = [
-    { id: "dashboard", label: "דאשבורד", icon: Home, page: "Home" },
+    { id: "dashboard", label: "דאשבורד", icon: Home, page: "Dashboard" },
     { id: "devices", label: "מכשירי VR", icon: Glasses, page: "GeneralInfo" },
     { id: "apps", label: "אפליקציות", icon: AppWindow, page: "GeneralApps" },
     { id: "syllabus", label: "סילבוסים", icon: BookOpen, page: "SyllabusHub" },
