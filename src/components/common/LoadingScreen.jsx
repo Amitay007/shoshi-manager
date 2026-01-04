@@ -6,20 +6,18 @@ export default function LoadingScreen({ onComplete }) {
   useEffect(() => {
     const interval = setInterval(() => {
       setProgress((prev) => {
-        const increment = Math.random() * 3;
+        const increment = Math.random() * 15 + 10; // Much faster progression
         const newProgress = prev + increment;
         
         if (newProgress >= 100) {
           clearInterval(interval);
-          setTimeout(() => {
-            if (onComplete) onComplete();
-          }, 300);
+          if (onComplete) onComplete();
           return 100;
         }
         
         return newProgress;
       });
-    }, 50);
+    }, 30); // Faster update rate
 
     return () => clearInterval(interval);
   }, [onComplete]);
