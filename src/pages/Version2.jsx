@@ -2,9 +2,13 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { GraduationCap, Users, AppWindow, Settings, TrendingUp, BookOpen, Calendar, School } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 export default function Version2() {
   const navigate = useNavigate();
+  const [secretOpen, setSecretOpen] = React.useState(false);
+  const [showHidden, setShowHidden] = React.useState(false);
 
   const menuCards = [
     { title: "תוכניות", icon: GraduationCap, page: "SyllabusHub", color: "from-purple-500 to-purple-600" },
@@ -55,13 +59,36 @@ export default function Version2() {
         {/* Bottom Button */}
         <div className="flex justify-center">
           <button
-            onClick={() => navigate(createPageUrl("Dashboard"))}
+            onClick={() => setSecretOpen(true)}
             className="bg-white bg-opacity-90 hover:bg-opacity-100 rounded-2xl px-12 py-6 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
           >
             <h3 className="text-2xl font-bold text-red-600">אל תלחץ כאן</h3>
           </button>
         </div>
       </div>
+
+      {/* Secret Dialog */}
+      <Dialog open={secretOpen} onOpenChange={setSecretOpen}>
+        <DialogContent dir="rtl">
+          <DialogHeader>
+            <DialogTitle>מזל שאתה לא נשיא ארצות הברית וזה לא הכפתור האדום</DialogTitle>
+          </DialogHeader>
+          <div className="text-slate-600">
+            לחץ המשך
+          </div>
+          <DialogFooter className="justify-end">
+            <Button
+              onClick={() => {
+                setSecretOpen(false);
+                setShowHidden(true);
+              }}
+              className="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-bold"
+            >
+              המשך
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
