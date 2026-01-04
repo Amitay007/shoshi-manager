@@ -714,7 +714,23 @@ export default function GeneralInfo() {
                         <div className="text-slate-400 mt-1"><Star size={18} /></div>
                         <div className="flex-1">
                           <p className="text-sm text-slate-500">דגם</p>
-                          <p className="font-medium">{selectedDevice.model || 'לא צוין'}</p>
+                          {isEditingGeneral ? (
+                            <Select
+                              value={editGeneralData.model || ""}
+                              onValueChange={(value) => setEditGeneralData({...editGeneralData, model: value})}
+                            >
+                              <SelectTrigger className="mt-1">
+                                <SelectValue placeholder="בחר דגם" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Meta Quest 2">Meta Quest 2</SelectItem>
+                                <SelectItem value="Meta Quest 3s">Meta Quest 3s</SelectItem>
+                                <SelectItem value="Meta Quest 3">Meta Quest 3</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <p className="font-medium">{selectedDevice.model || 'לא צוין'}</p>
+                          )}
                         </div>
                       </div>
                     </CardContent>
