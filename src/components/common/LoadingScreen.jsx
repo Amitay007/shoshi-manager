@@ -23,23 +23,27 @@ export default function LoadingScreen({ onComplete }) {
   }, [onComplete]);
 
   return (
-    <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
       <div className="w-80">
         <div className="mb-4">
-          <div className="text-white text-5xl font-bold tracking-[0.3em] mb-2 flex items-center" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
+          <div className="text-black text-5xl font-bold tracking-[0.3em] mb-2 flex items-center" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
             YOYA
-            <span className="inline-block w-4 h-12 bg-white ml-2 animate-pulse"></span>
+            <img 
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68b36aee270b4cf8a6a0a543/694da461e_Meta-Quest--Streamline-Sharp.png" 
+              alt="VR Headset" 
+              className="inline-block w-12 h-12 ml-2 animate-pulse object-contain"
+            />
           </div>
         </div>
         
-        <div className="w-full h-1 bg-gray-800 mb-3 relative">
+        <div className="w-full h-1 bg-gray-200 mb-3 relative">
           <div 
-            className="h-full bg-white transition-all duration-100 ease-linear"
+            className="h-full bg-gradient-to-r from-purple-500 to-cyan-500 transition-all duration-100 ease-linear"
             style={{ width: `${progress}%` }}
           ></div>
         </div>
         
-        <div className="text-white text-right text-xl font-bold" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
+        <div className="text-black text-right text-xl font-bold" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
           {Math.floor(progress)}%
         </div>
       </div>
