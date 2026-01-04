@@ -25,6 +25,7 @@ export default function Sidebar() {
     { id: "teachers", label: "מרכז ניהול", icon: Users, page: "CRMHub" },
     { id: "calculator", label: "מחשבון זמינות", icon: Calculator, page: "BinocularCalculator" },
     { id: "accounts", label: "חשבונות ומשתמשים", icon: KeyRound, page: "AccountsAndUsers" },
+    { id: "version2", label: "גרסה 2.0", icon: Home, page: "Version2" },
   ];
 
   const isActive = (page) => {
