@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { GraduationCap, Users, AppWindow, Settings, TrendingUp, BookOpen, Calendar, School } from "lucide-react";
+import { GraduationCap, Users, AppWindow, Settings, TrendingUp, BookOpen, Calendar, School, Layers, ListPlus, UploadCloud, RefreshCw, Download, Link2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
@@ -54,6 +54,95 @@ export default function Version2() {
               </button>
             );
           })}
+          
+          {/* Hidden Buttons - Revealed after dialog */}
+          {showHidden && (
+            <>
+              <button
+                onClick={() => navigate(createPageUrl("DataRepositories"))}
+                className="bg-white bg-opacity-90 hover:bg-opacity-100 rounded-2xl p-8 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
+              >
+                <div className="flex flex-col items-center justify-center gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center">
+                    <Layers className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-purple-800">מאגרי מידע</h3>
+                </div>
+              </button>
+
+              <button
+                onClick={() => navigate(createPageUrl("AddAppsFromList"))}
+                className="bg-white bg-opacity-90 hover:bg-opacity-100 rounded-2xl p-8 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
+              >
+                <div className="flex flex-col items-center justify-center gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
+                    <ListPlus className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-purple-800">הוספת אפליקציות</h3>
+                </div>
+              </button>
+
+              <button
+                onClick={() => navigate(createPageUrl("BulkDataLoader"))}
+                className="bg-white bg-opacity-90 hover:bg-opacity-100 rounded-2xl p-8 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
+              >
+                <div className="flex flex-col items-center justify-center gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center">
+                    <UploadCloud className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-purple-800">טעינת נתונים</h3>
+                </div>
+              </button>
+
+              <button
+                onClick={() => navigate(createPageUrl("UpdateAppsFromPDF"))}
+                className="bg-white bg-opacity-90 hover:bg-opacity-100 rounded-2xl p-8 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
+              >
+                <div className="flex flex-col items-center justify-center gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-amber-600 rounded-xl flex items-center justify-center">
+                    <RefreshCw className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-purple-800">עדכון אפליקציות</h3>
+                </div>
+              </button>
+
+              <button
+                onClick={() => navigate(createPageUrl("DataImport"))}
+                className="bg-white bg-opacity-90 hover:bg-opacity-100 rounded-2xl p-8 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
+              >
+                <div className="flex flex-col items-center justify-center gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
+                    <UploadCloud className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-purple-800">ייבוא נתונים</h3>
+                </div>
+              </button>
+
+              <button
+                onClick={() => navigate(createPageUrl("DataUpdater"))}
+                className="bg-white bg-opacity-90 hover:bg-opacity-100 rounded-2xl p-8 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
+              >
+                <div className="flex flex-col items-center justify-center gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-rose-600 rounded-xl flex items-center justify-center">
+                    <Link2 className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-purple-800">עדכון</h3>
+                </div>
+              </button>
+
+              <button
+                onClick={() => navigate(createPageUrl("UpdateAppStatus"))}
+                className="bg-white bg-opacity-90 hover:bg-opacity-100 rounded-2xl p-8 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
+              >
+                <div className="flex flex-col items-center justify-center gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-xl flex items-center justify-center">
+                    <RefreshCw className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-purple-800">עדכון סטטוס</h3>
+                </div>
+              </button>
+            </>
+          )}
         </div>
 
         {/* Bottom Button */}
