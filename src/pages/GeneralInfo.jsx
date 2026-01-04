@@ -861,7 +861,7 @@ export default function GeneralInfo() {
                                 onClick={() => {
                                   const baseUrl = createPageUrl("AppDetailsPage");
                                   const fullUrl = `${baseUrl}?name=${encodeURIComponent(app.name)}`;
-                                  window.open(fullUrl, '_blank');
+                                  window.location.href = fullUrl;
                                 }}
                                 className="px-3 py-2 text-sm rounded bg-cyan-100 text-cyan-800 border-2 border-cyan-300 hover:bg-cyan-200 hover:border-cyan-400 transition-colors inline-block font-medium cursor-pointer"
                               >
