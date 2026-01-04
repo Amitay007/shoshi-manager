@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { DeviceLinkedAccount } from "@/entities/DeviceLinkedAccount";
 import { VRDevice } from "@/entities/VRDevice";
@@ -399,12 +398,9 @@ export default function AccountsAndUsers() {
                                                             <a href={account.link_url} target="_blank" rel="noreferrer" className="ml-2 text-cyan-700 underline">קישור</a>
                                                         )}
                                                     </div>
-                                                    <div className="text-xs text-slate-500">
-                                                        {device ? `משקפת ${device.binocular_number} (${device.device_name || 'ללא שם'})` : '—'}
-                                                    </div>
                                                     {device?.primary_email && (
-                                                        <div className="text-xs text-slate-500">
-                                                            Gmail משויך: <span className="font-medium">{device.primary_email}</span>
+                                                        <div className="text-xs text-slate-500 mt-1">
+                                                            משקפת: <span className="font-bold text-cyan-700">#{device.binocular_number}</span> | Gmail: <span className="font-medium">{device.primary_email}</span>
                                                         </div>
                                                     )}
                                                 </div>
