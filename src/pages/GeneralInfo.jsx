@@ -547,6 +547,13 @@ export default function GeneralInfo() {
                       <div className="text-sm text-slate-600 mt-1">{statusText}</div>
                     </div>
 
+                    {/* Primary Email */}
+                    {device.primary_email && (
+                      <div className="text-center text-xs text-slate-700 mt-3 mb-2 font-medium">
+                        {device.primary_email}
+                      </div>
+                    )}
+
                     {/* Details */}
                     <div className="space-y-2 mt-4 text-xs text-slate-600">
                       <div className="flex items-center justify-between">
