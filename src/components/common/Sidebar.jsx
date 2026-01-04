@@ -11,7 +11,8 @@ import {
   Users, 
   CalendarDays,
   Calculator,
-  ChevronRight
+  ChevronRight,
+  KeyRound
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -26,6 +27,7 @@ export default function Sidebar() {
     { id: "teachers", label: "מרכז ניהול", icon: Users, page: "CRMHub" },
     { id: "schedule", label: "לוח שנה", icon: CalendarDays, page: "SchedulerPage" },
     { id: "calculator", label: "מחשבון זמינות", icon: Calculator, page: "BinocularCalculator" },
+    { id: "accounts", label: "חשבונות ומשתמשים", icon: KeyRound, page: "AccountsAndUsers" },
   ];
 
   const isActive = (page) => {
