@@ -25,7 +25,6 @@ const BackHomeButtons = () => (
 export default function AccountsAndUsers() {
     const [accounts, setAccounts] = useState([]);
     const [devices, setDevices] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [formData, setFormData] = useState({
@@ -61,7 +60,6 @@ export default function AccountsAndUsers() {
     }, []);
 
     const loadData = async () => {
-        setIsLoading(true);
         try {
             const [accountsList, devicesList] = await Promise.all([
                 with429Retry(() => DeviceLinkedAccount.list()),
@@ -73,7 +71,6 @@ export default function AccountsAndUsers() {
         } catch (error) {
             console.error("Error loading data:", error);
         }
-        setIsLoading(false);
     };
 
     const togglePasswordVisibility = (accountId) => {
@@ -253,10 +250,6 @@ export default function AccountsAndUsers() {
         }),
         [accounts, devices, filterType, filterNickname, filterNumber, searchTerm]
     );
-
-    if (isLoading) {
-        return <div className="p-8 text-center text-lg">טוען נתונים...</div>;
-    }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50 p-4 sm:p-6" dir="rtl">
