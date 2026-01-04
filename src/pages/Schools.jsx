@@ -16,7 +16,6 @@ export default function Schools() {
   const [schools, setSchools] = useState([]);
   const [instPrograms, setInstPrograms] = useState([]);
   const [programs, setPrograms] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
@@ -24,7 +23,6 @@ export default function Schools() {
   }, []);
 
   const loadData = async () => {
-    setIsLoading(true);
     try {
       const [allSchools, allInstPrograms, allPrograms] = await Promise.all([
         with429Retry(() => EducationInstitution.list()),
@@ -37,7 +35,6 @@ export default function Schools() {
     } catch (error) {
       console.error("Error loading schools:", error);
     }
-    setIsLoading(false);
   };
 
   const filteredSchools = useMemo(() => 
@@ -60,14 +57,6 @@ export default function Schools() {
     "חינוך מיוחד": "from-amber-100 to-orange-100 text-amber-800",
     "אחר": "from-slate-100 to-gray-100 text-slate-800"
   };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50 p-6" dir="rtl">
-        <div className="text-center py-12 text-lg">טוען בתי ספר...</div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50 p-4 sm:p-6" dir="rtl">
