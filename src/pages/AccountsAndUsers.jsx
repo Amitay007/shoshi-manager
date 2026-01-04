@@ -12,6 +12,7 @@ import { ArrowLeft, Plus, Users, Mail, Key, Search, Eye, EyeOff, Copy, Check } f
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { with429Retry } from "@/components/utils/retry";
+import { useLoading } from "@/components/common/LoadingContext";
 
 // Helper component for the Back Home button, extracted for clarity and reusability
 const BackHomeButtons = () => (
@@ -28,14 +29,14 @@ export default function AccountsAndUsers() {
     const [showForm, setShowForm] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [formData, setFormData] = useState({
-        binocular_number: "", // was device_id; now free text numbers only
+        binocular_number: "",
         account_type: "",
         email: "",
         username: "",
         password: "",
         link_url: ""
     });
-    const [deviceNumberError, setDeviceNumberError] = useState(""); // NEW: inline error
+    const [deviceNumberError, setDeviceNumberError] = useState("");
 
     const [filterType, setFilterType] = useState("ALL");
     const [filterNickname, setFilterNickname] = useState("");
@@ -45,7 +46,7 @@ export default function AccountsAndUsers() {
     const [showEditDialog, setShowEditDialog] = useState(false);
     const [editData, setEditData] = useState({
         id: "",
-        device_id: "", // Keep this for display purposes, but not editable
+        device_id: "",
         account_type: "",
         email: "",
         username: "",
@@ -54,12 +55,14 @@ export default function AccountsAndUsers() {
     });
     const [showPasswords, setShowPasswords] = useState({});
     const [copiedPasswords, setCopiedPasswords] = useState({});
+    const { showLoader, hideLoader } = useLoading();
 
     useEffect(() => {
         loadData();
     }, []);
 
     const loadData = async () => {
+        showLoader();
         try {
             const [accountsList, devicesList] = await Promise.all([
                 with429Retry(() => DeviceLinkedAccount.list()),
@@ -70,6 +73,8 @@ export default function AccountsAndUsers() {
             setDevices(devicesList.sort((a, b) => a.binocular_number - b.binocular_number));
         } catch (error) {
             console.error("Error loading data:", error);
+        } finally {
+            hideLoader();
         }
     };
 

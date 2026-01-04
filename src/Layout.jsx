@@ -1,33 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import Sidebar from "@/components/common/Sidebar";
 import LoadingScreen from "@/components/common/LoadingScreen";
 import { LoadingProvider, useLoading } from "@/components/common/LoadingContext";
 
 function LayoutContent({ children, currentPageName }) {
-  const [pageLoading, setPageLoading] = useState(true);
-  const { isLoading: globalLoading } = useLoading();
-
-  // Show loading screen on every page change
-  useEffect(() => {
-    setPageLoading(true);
-    const timer = setTimeout(() => setPageLoading(false), 100);
-    return () => clearTimeout(timer);
-  }, [currentPageName]);
-
-  const isLoading = pageLoading || globalLoading;
-
-  const handleLoadingComplete = () => {
-    setPageLoading(false);
-  };
+  const { isLoading } = useLoading();
 
   // Pages that should NOT show the sidebar
   const pagesWithoutSidebar = [];
   const showSidebar = !pagesWithoutSidebar.includes(currentPageName);
-
-  if (isLoading) {
-    return <LoadingScreen onComplete={handleLoadingComplete} />;
-  }
 
   return (
     <div dir="rtl" className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 text-slate-900">
@@ -55,6 +37,13 @@ function LayoutContent({ children, currentPageName }) {
       </div>
       
       <Toaster />
+
+      {/* Global Loading Overlay */}
+      {isLoading && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9999 }}>
+          <LoadingScreen />
+        </div>
+      )}
     </div>
   );
 }

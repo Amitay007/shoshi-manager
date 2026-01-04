@@ -11,18 +11,21 @@ import { createPageUrl } from "@/utils";
 import { Building2, Plus, Search, MapPin, Phone, Mail, GraduationCap } from "lucide-react";
 import BackHomeButtons from "@/components/common/BackHomeButtons";
 import { with429Retry } from "@/components/utils/retry";
+import { useLoading } from "@/components/common/LoadingContext";
 
 export default function Schools() {
   const [schools, setSchools] = useState([]);
   const [instPrograms, setInstPrograms] = useState([]);
   const [programs, setPrograms] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const { showLoader, hideLoader } = useLoading();
 
   useEffect(() => {
     loadData();
   }, []);
 
   const loadData = async () => {
+    showLoader();
     try {
       const [allSchools, allInstPrograms, allPrograms] = await Promise.all([
         with429Retry(() => EducationInstitution.list()),
@@ -34,6 +37,8 @@ export default function Schools() {
       setPrograms(allPrograms || []);
     } catch (error) {
       console.error("Error loading schools:", error);
+    } finally {
+      hideLoader();
     }
   };
 

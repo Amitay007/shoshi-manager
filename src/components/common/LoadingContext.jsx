@@ -3,18 +3,18 @@ import React, { createContext, useContext, useState } from "react";
 const LoadingContext = createContext();
 
 export function LoadingProvider({ children }) {
-  const [loadingCount, setLoadingCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const startLoading = () => {
-    setLoadingCount(prev => prev + 1);
+  const showLoader = () => {
+    setIsLoading(true);
   };
 
-  const stopLoading = () => {
-    setLoadingCount(prev => Math.max(0, prev - 1));
+  const hideLoader = () => {
+    setIsLoading(false);
   };
 
   return (
-    <LoadingContext.Provider value={{ isLoading: loadingCount > 0, startLoading, stopLoading }}>
+    <LoadingContext.Provider value={{ isLoading, showLoader, hideLoader }}>
       {children}
     </LoadingContext.Provider>
   );
