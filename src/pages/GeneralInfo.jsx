@@ -71,16 +71,12 @@ export default function GeneralInfo() {
   const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const devicesList = await with429Retry(() => VRDevice.list());
-      await sleep(2000);
-      
-      const allDeviceAccounts = await with429Retry(() => DeviceLinkedAccount.list());
-      await sleep(2000);
-      
-      const allDeviceApps = await with429Retry(() => DeviceApp.list());
-      await sleep(2000);
-      
-      const allApps = await with429Retry(() => VRApp.list());
+      const [devicesList, allDeviceAccounts, allDeviceApps, allApps] = await Promise.all([
+        with429Retry(() => VRDevice.list()),
+        with429Retry(() => DeviceLinkedAccount.list()),
+        with429Retry(() => DeviceApp.list()),
+        with429Retry(() => VRApp.list())
+      ]);
 
       const appCountByDeviceId = {};
       (allDeviceApps || []).forEach(rel => {
@@ -862,7 +858,11 @@ export default function GeneralInfo() {
                           {deviceApps.map((app) => (
                             <div key={app.id} className="relative group">
                               <div
-                                onClick={() => window.open(createPageUrl(`AppDetailsPage?name=${encodeURIComponent(app.name)}`), '_blank')}
+                                onClick={() => {
+                                  const baseUrl = createPageUrl("AppDetailsPage");
+                                  const fullUrl = `${baseUrl}?name=${encodeURIComponent(app.name)}`;
+                                  window.open(fullUrl, '_blank');
+                                }}
                                 className="px-3 py-2 text-sm rounded bg-cyan-100 text-cyan-800 border-2 border-cyan-300 hover:bg-cyan-200 hover:border-cyan-400 transition-colors inline-block font-medium cursor-pointer"
                               >
                                 {app.name}
