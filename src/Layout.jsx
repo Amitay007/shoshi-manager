@@ -2,17 +2,23 @@ import React, { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import Sidebar from "@/components/common/Sidebar";
 import LoadingScreen from "@/components/common/LoadingScreen";
+import { LoadingProvider, useLoading } from "@/components/common/LoadingContext";
 
-export default function Layout({ children, currentPageName }) {
-  const [isLoading, setIsLoading] = useState(true);
+function LayoutContent({ children, currentPageName }) {
+  const [pageLoading, setPageLoading] = useState(true);
+  const { isLoading: globalLoading } = useLoading();
 
   // Show loading screen on every page change
   useEffect(() => {
-    setIsLoading(true);
+    setPageLoading(true);
+    const timer = setTimeout(() => setPageLoading(false), 100);
+    return () => clearTimeout(timer);
   }, [currentPageName]);
 
+  const isLoading = pageLoading || globalLoading;
+
   const handleLoadingComplete = () => {
-    setIsLoading(false);
+    setPageLoading(false);
   };
 
   // Pages that should NOT show the sidebar
@@ -50,5 +56,13 @@ export default function Layout({ children, currentPageName }) {
       
       <Toaster />
     </div>
+  );
+}
+
+export default function Layout({ children, currentPageName }) {
+  return (
+    <LoadingProvider>
+      <LayoutContent children={children} currentPageName={currentPageName} />
+    </LoadingProvider>
   );
 }
