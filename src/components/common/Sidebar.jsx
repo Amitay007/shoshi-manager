@@ -19,7 +19,7 @@ export default function Sidebar() {
   const location = useLocation();
   
   const menuItems = [
-    { id: "dashboard", label: "דאשבורד", icon: Home, page: "Dashboard" },
+    { id: "dashboard", label: "דאשבורד", icon: Home, page: "Home" },
     { id: "devices", label: "מכשירי VR", icon: Glasses, page: "GeneralInfo" },
     { id: "apps", label: "אפליקציות", icon: AppWindow, page: "GeneralApps" },
     { id: "syllabus", label: "סילבוסים", icon: BookOpen, page: "SyllabusHub" },
@@ -28,6 +28,7 @@ export default function Sidebar() {
     { id: "schedule", label: "לוח שנה", icon: CalendarDays, page: "SchedulerPage" },
     { id: "calculator", label: "מחשבון זמינות", icon: Calculator, page: "BinocularCalculator" },
     { id: "accounts", label: "חשבונות ומשתמשים", icon: KeyRound, page: "AccountsAndUsers" },
+    { id: "legacy", label: "Legacy", icon: Home, page: "Legacy" },
   ];
 
   const isActive = (page) => {
