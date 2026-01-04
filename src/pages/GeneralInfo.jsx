@@ -552,6 +552,9 @@ export default function GeneralInfo() {
 
                     {/* Details */}
                     <div className="space-y-2 mt-4 text-xs text-slate-600">
+                      <div className="text-center mb-2 text-slate-700 font-medium">
+                        {device.model || device.headset_type || 'Meta Quest 3'}
+                      </div>
                       <div className="flex items-center justify-between">
                         <span>S/N:</span>
                         <span className="font-mono text-slate-900">{device.serial_number || 'N/A'}</span>
@@ -559,9 +562,6 @@ export default function GeneralInfo() {
                       <div className="flex items-center justify-between">
                         <span>MAC:</span>
                         <span className="font-mono text-slate-900 text-[10px]">AA:BB:CC:DD:EE:{String(device.binocular_number).padStart(2, '0')}</span>
-                      </div>
-                      <div className="text-center mt-3 text-slate-700 font-medium">
-                        {device.model || device.headset_type || 'Meta Quest 3'}
                       </div>
                       {device.primary_email && (
                         <div className="flex items-center justify-center gap-1 mt-2">
