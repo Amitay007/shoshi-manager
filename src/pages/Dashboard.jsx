@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { VRDevice } from "@/entities/VRDevice";
 import { VRApp } from "@/entities/VRApp";
 import { DeviceApp } from "@/entities/DeviceApp";
-import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { Glasses, AppWindow, AlertTriangle, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
