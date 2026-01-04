@@ -58,25 +58,24 @@ export default function AccountsAndUsers() {
     const { showLoader, hideLoader } = useLoading();
 
     useEffect(() => {
-        loadData();
+        const init = async () => {
+            showLoader();
+            try {
+                const [accountsList, devicesList] = await Promise.all([
+                    with429Retry(() => DeviceLinkedAccount.list()),
+                    with429Retry(() => VRDevice.list())
+                ]);
+                
+                setAccounts(accountsList);
+                setDevices(devicesList.sort((a, b) => a.binocular_number - b.binocular_number));
+            } catch (error) {
+                console.error("Error loading data:", error);
+            } finally {
+                hideLoader();
+            }
+        };
+        init();
     }, []);
-
-    const loadData = async () => {
-        showLoader();
-        try {
-            const [accountsList, devicesList] = await Promise.all([
-                with429Retry(() => DeviceLinkedAccount.list()),
-                with429Retry(() => VRDevice.list())
-            ]);
-            
-            setAccounts(accountsList);
-            setDevices(devicesList.sort((a, b) => a.binocular_number - b.binocular_number));
-        } catch (error) {
-            console.error("Error loading data:", error);
-        } finally {
-            hideLoader();
-        }
-    };
 
     const togglePasswordVisibility = (accountId) => {
         setShowPasswords(prev => ({

@@ -21,26 +21,25 @@ export default function Schools() {
   const { showLoader, hideLoader } = useLoading();
 
   useEffect(() => {
-    loadData();
+    const init = async () => {
+      showLoader();
+      try {
+        const [allSchools, allInstPrograms, allPrograms] = await Promise.all([
+          with429Retry(() => EducationInstitution.list()),
+          with429Retry(() => InstitutionProgram.list()),
+          with429Retry(() => Syllabus.list())
+        ]);
+        setSchools(allSchools || []);
+        setInstPrograms(allInstPrograms || []);
+        setPrograms(allPrograms || []);
+      } catch (error) {
+        console.error("Error loading schools:", error);
+      } finally {
+        hideLoader();
+      }
+    };
+    init();
   }, []);
-
-  const loadData = async () => {
-    showLoader();
-    try {
-      const [allSchools, allInstPrograms, allPrograms] = await Promise.all([
-        with429Retry(() => EducationInstitution.list()),
-        with429Retry(() => InstitutionProgram.list()),
-        with429Retry(() => Syllabus.list())
-      ]);
-      setSchools(allSchools || []);
-      setInstPrograms(allInstPrograms || []);
-      setPrograms(allPrograms || []);
-    } catch (error) {
-      console.error("Error loading schools:", error);
-    } finally {
-      hideLoader();
-    }
-  };
 
   const filteredSchools = useMemo(() => 
     schools.filter(school => {
