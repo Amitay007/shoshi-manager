@@ -6,6 +6,7 @@ import { LoadingProvider, useLoading } from "@/components/common/LoadingContext"
 
 function LayoutContent({ children, currentPageName }) {
   const { isLoading } = useLoading();
+  const [sidebarOpen, setSidebarOpen] = React.useState(true);
 
   // Pages that should NOT show the sidebar
   const pagesWithoutSidebar = [];
@@ -46,10 +47,10 @@ function LayoutContent({ children, currentPageName }) {
             font-family: 'Assistant', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
           }
         `}</style>
-        
-        {showSidebar && <Sidebar />}
-        
-        <div className={showSidebar ? "mr-64" : ""}>
+
+        {showSidebar && <Sidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />}
+
+        <div className={showSidebar && sidebarOpen ? "mr-64 transition-all duration-300" : "mr-0 transition-all duration-300"}>
           {children}
         </div>
         
