@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { installationData } from "@/components/InstallationData";
-import { ArrowLeft, Plus, Users, Mail, Key, Search } from "lucide-react";
+import { ArrowLeft, Plus, Users, Mail, Key, Search, Eye, EyeOff, Copy, Check } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { with429Retry } from "@/components/utils/retry";
@@ -53,6 +53,8 @@ export default function AccountsAndUsers() {
         password: "",
         link_url: ""
     });
+    const [showPasswords, setShowPasswords] = useState({});
+    const [copiedPasswords, setCopiedPasswords] = useState({});
 
     useEffect(() => {
         loadData();
@@ -72,6 +74,51 @@ export default function AccountsAndUsers() {
             console.error("Error loading data:", error);
         }
         setIsLoading(false);
+    };
+
+    const togglePasswordVisibility = (accountId) => {
+        setShowPasswords(prev => ({
+            ...prev,
+            [accountId]: !prev[accountId]
+        }));
+    };
+
+    const copyPassword = (accountId, password) => {
+        if (password) {
+            navigator.clipboard.writeText(password);
+            setCopiedPasswords(prev => ({ ...prev, [accountId]: true }));
+            setTimeout(() => {
+                setCopiedPasswords(prev => ({ ...prev, [accountId]: false }));
+            }, 2000);
+        }
+    };
+
+    const getAccountIcon = (accountType) => {
+        const iconClass = "w-6 h-6 font-bold text-white";
+        switch (accountType) {
+            case 'GMAIL':
+                return <span className={iconClass}>G</span>;
+            case 'Remio':
+                return <span className={iconClass}>R</span>;
+            case 'META':
+                return <span className={iconClass}>M</span>;
+            case 'Facebook':
+                return <span className={iconClass}>F</span>;
+            case 'Steam':
+                return <span className={iconClass}>S</span>;
+            case 'App Lab':
+                return <span className={iconClass}>A</span>;
+            case 'Mondly':
+                return <span className={iconClass}>M</span>;
+            case 'Immerse':
+                return <span className={iconClass}>I</span>;
+            case 'Microsoft':
+                return <span className={iconClass}>M</span>;
+            case 'SideQuest':
+                return <span className={iconClass}>S</span>;
+            default:
+                return <span className={iconClass}>•</span>;
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -385,12 +432,11 @@ export default function AccountsAndUsers() {
                                     const device = devices.find(d => d.id === account.device_id);
                                     return (
                                         <div key={account.id} className="flex items-center justify-between p-4 border border-slate-200 rounded-lg bg-white hover:bg-slate-50 transition-colors">
-                                            <div className="flex items-center gap-4">
-                                                <div className="bg-cyan-100 p-2 rounded-lg">
-                                                    {account.account_type === 'GMAIL' && <Mail className="w-5 h-5 text-cyan-600" />}
-                                                    {account.account_type !== 'GMAIL' && <Key className="w-5 h-5 text-cyan-600" />}
+                                            <div className="flex items-center gap-4 flex-1">
+                                                <div className="bg-gradient-to-br from-purple-600 to-pink-600 w-12 h-12 rounded-lg flex items-center justify-center shadow-md">
+                                                    {getAccountIcon(account.account_type)}
                                                 </div>
-                                                <div>
+                                                <div className="flex-1">
                                                     <div className="font-semibold">{account.account_type}</div>
                                                     <div className="text-sm text-slate-600">
                                                         {account.email || account.username}
@@ -401,6 +447,28 @@ export default function AccountsAndUsers() {
                                                     {device?.primary_email && (
                                                         <div className="text-xs text-slate-500 mt-1">
                                                             משקפת: <span className="font-bold text-cyan-700">#{device.binocular_number}</span> | Gmail: <span className="font-medium">{device.primary_email}</span>
+                                                        </div>
+                                                    )}
+                                                    {account.password && (
+                                                        <div className="flex items-center gap-2 mt-2">
+                                                            <span className="text-xs text-slate-500">סיסמה:</span>
+                                                            <div className="flex items-center gap-1 bg-slate-100 px-2 py-1 rounded">
+                                                                <span className="text-sm font-mono">
+                                                                    {showPasswords[account.id] ? account.password : '••••••••'}
+                                                                </span>
+                                                                <button
+                                                                    onClick={() => togglePasswordVisibility(account.id)}
+                                                                    className="text-slate-500 hover:text-slate-700 p-1"
+                                                                >
+                                                                    {showPasswords[account.id] ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => copyPassword(account.id, account.password)}
+                                                                    className="text-slate-500 hover:text-slate-700 p-1"
+                                                                >
+                                                                    {copiedPasswords[account.id] ? <Check className="w-3 h-3 text-green-600" /> : <Copy className="w-3 h-3" />}
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                     )}
                                                 </div>
