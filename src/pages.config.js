@@ -1,5 +1,4 @@
 import AccountsAndUsers from './pages/AccountsAndUsers';
-import ActiveSchedulesSummary from './pages/ActiveSchedulesSummary';
 import AddAppPage from './pages/AddAppPage';
 import AddAppToDevice from './pages/AddAppToDevice';
 import AddAppsFromList from './pages/AddAppsFromList';
@@ -22,7 +21,6 @@ import GeneralInfo from './pages/GeneralInfo';
 import ProgramView from './pages/ProgramView';
 import Programs from './pages/Programs';
 import ResearchPage from './pages/ResearchPage';
-import SchedulerPage from './pages/SchedulerPage';
 import SchoolDetails from './pages/SchoolDetails';
 import Schools from './pages/Schools';
 import SyllabusHub from './pages/SyllabusHub';
@@ -37,7 +35,6 @@ import __Layout from './Layout.jsx';
 
 export const PAGES = {
     "AccountsAndUsers": AccountsAndUsers,
-    "ActiveSchedulesSummary": ActiveSchedulesSummary,
     "AddAppPage": AddAppPage,
     "AddAppToDevice": AddAppToDevice,
     "AddAppsFromList": AddAppsFromList,
@@ -60,7 +57,6 @@ export const PAGES = {
     "ProgramView": ProgramView,
     "Programs": Programs,
     "ResearchPage": ResearchPage,
-    "SchedulerPage": SchedulerPage,
     "SchoolDetails": SchoolDetails,
     "Schools": Schools,
     "SyllabusHub": SyllabusHub,

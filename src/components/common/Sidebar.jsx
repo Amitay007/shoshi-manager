@@ -6,10 +6,8 @@ import {
   Glasses, 
   AppWindow, 
   BookOpen, 
-  Calendar, 
   School, 
   Users, 
-  CalendarDays,
   Calculator,
   ChevronRight,
   KeyRound
@@ -25,7 +23,6 @@ export default function Sidebar() {
     { id: "syllabus", label: "סילבוסים", icon: BookOpen, page: "SyllabusHub" },
     { id: "schools", label: "בתי ספר", icon: School, page: "Schools" },
     { id: "teachers", label: "מרכז ניהול", icon: Users, page: "CRMHub" },
-    { id: "schedule", label: "לוח שנה", icon: CalendarDays, page: "SchedulerPage" },
     { id: "calculator", label: "מחשבון זמינות", icon: Calculator, page: "BinocularCalculator" },
     { id: "accounts", label: "חשבונות ומשתמשים", icon: KeyRound, page: "AccountsAndUsers" },
   ];

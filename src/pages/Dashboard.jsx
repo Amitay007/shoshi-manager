@@ -1,20 +1,17 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { VRDevice } from "@/entities/VRDevice";
-import { ScheduleEntry } from "@/entities/ScheduleEntry";
 import { Syllabus } from "@/entities/Syllabus";
 import { VRApp } from "@/entities/VRApp";
 import { EducationInstitution } from "@/entities/EducationInstitution";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { Glasses, Calendar, BookOpen, School, AlertTriangle } from "lucide-react";
+import { Glasses, BookOpen, School, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { format, isAfter, isBefore, addDays, startOfWeek, endOfWeek } from "date-fns";
-import { he } from "date-fns/locale";
+import { format } from "date-fns";
 
 export default function Dashboard() {
   const [devices, setDevices] = useState([]);
-  const [schedules, setSchedules] = useState([]);
   const [programs, setPrograms] = useState([]);
   const [schools, setSchools] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -22,15 +19,13 @@ export default function Dashboard() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [devicesData, schedulesData, programsData, schoolsData] = await Promise.all([
+        const [devicesData, programsData, schoolsData] = await Promise.all([
           VRDevice.list(),
-          ScheduleEntry.list(),
           Syllabus.list(),
           EducationInstitution.list()
         ]);
 
         setDevices(devicesData || []);
-        setSchedules(schedulesData || []);
         setPrograms(programsData || []);
         setSchools(schoolsData || []);
       } catch (error) {
@@ -46,15 +41,11 @@ export default function Dashboard() {
   // Statistics - Memoized for performance
   const stats = useMemo(() => {
     const activeDevices = devices.filter(d => !d.is_disabled && d.status !== "בתיקון").length;
-    const upcomingSchedules = schedules.filter(s => {
-      const start = new Date(s.start_datetime);
-      return isAfter(start, new Date()) && isBefore(start, addDays(new Date(), 7));
-    }).length;
     const totalPrograms = programs.length;
     const issuesCount = devices.filter(d => d.is_disabled || d.status === "מושבת" || d.status === "בתיקון").length;
     
-    return { activeDevices, upcomingSchedules, totalPrograms, issuesCount };
-  }, [devices, schedules, programs]);
+    return { activeDevices, totalPrograms, issuesCount };
+  }, [devices, programs]);
 
   // Device status breakdown - Memoized
   const deviceStatusData = useMemo(() => [
@@ -75,41 +66,12 @@ export default function Dashboard() {
     }
   ], [devices]);
 
-  // Weekly activity - Memoized
-  const weeklyActivityData = useMemo(() => {
-    const weekStart = startOfWeek(new Date(), { locale: he });
-    const daysOfWeek = ["א'", "ב'", "ג'", "ד'", "ה'", "ו'", "ש'"];
-    return daysOfWeek.map((day, index) => {
-      const dayDate = addDays(weekStart, index);
-      const daySchedules = schedules.filter(s => {
-        const scheduleDate = new Date(s.start_datetime);
-        return format(scheduleDate, 'yyyy-MM-dd') === format(dayDate, 'yyyy-MM-dd');
-      });
-      return {
-        name: day,
-        value: daySchedules.length
-      };
-    });
-  }, [schedules]);
-
   // Alerts - Memoized
   const alerts = useMemo(() => 
     devices
       .filter(d => d.is_disabled || d.status === "בתיקון" || d.status === "מושבת")
       .slice(0, 5),
     [devices]
-  );
-
-  // Upcoming schedules - Memoized
-  const upcomingSchedulesList = useMemo(() => 
-    schedules
-      .filter(s => {
-        const start = new Date(s.start_datetime);
-        return isAfter(start, new Date());
-      })
-      .sort((a, b) => new Date(a.start_datetime) - new Date(b.start_datetime))
-      .slice(0, 5),
-    [schedules]
   );
 
   if (isLoading) {
@@ -130,7 +92,7 @@ export default function Dashboard() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <Link to={createPageUrl("GeneralInfo")}>
             <Card className="hover:shadow-lg transition-shadow cursor-pointer border-r-4 border-r-green-500">
               <CardContent className="p-6">
@@ -138,7 +100,7 @@ export default function Dashboard() {
                   <div>
                     <p className="text-sm text-slate-600 mb-1">משקפות פעילות</p>
                     <p className="text-4xl font-bold text-slate-900">{stats.activeDevices}</p>
-                    <p className="text-xs text-slate-500 mt-1">סה"כ כובל טווח</p>
+                    <p className="text-xs text-slate-500 mt-1">סה"כ משקפות פעילות</p>
                   </div>
                   <div className="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center">
                     <Glasses className="w-8 h-8 text-green-600" />
@@ -148,31 +110,14 @@ export default function Dashboard() {
             </Card>
           </Link>
 
-          <Link to={createPageUrl("SchedulerPage")}>
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer border-r-4 border-r-cyan-500">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-slate-600 mb-1">שיעורים הבא</p>
-                    <p className="text-4xl font-bold text-slate-900">{stats.upcomingSchedules}</p>
-                    <p className="text-xs text-slate-500 mt-1">סטטוס סה"כ בוקרותואחת</p>
-                  </div>
-                  <div className="w-14 h-14 bg-cyan-100 rounded-xl flex items-center justify-center">
-                    <Calendar className="w-8 h-8 text-cyan-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-
-          <Link to={createPageUrl("Programs")}>
+          <Link to={createPageUrl("SyllabusHub")}>
             <Card className="hover:shadow-lg transition-shadow cursor-pointer border-r-4 border-r-purple-500">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-slate-600 mb-1">מד ספר</p>
+                    <p className="text-sm text-slate-600 mb-1">סילבוסים</p>
                     <p className="text-4xl font-bold text-slate-900">{stats.totalPrograms}</p>
-                    <p className="text-xs text-slate-500 mt-1">היה אחת מילולה</p>
+                    <p className="text-xs text-slate-500 mt-1">תוכניות לימוד</p>
                   </div>
                   <div className="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center">
                     <BookOpen className="w-8 h-8 text-purple-600" />
@@ -187,9 +132,9 @@ export default function Dashboard() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-slate-600 mb-1">מסביב חקרקום</p>
+                    <p className="text-sm text-slate-600 mb-1">התראות</p>
                     <p className="text-4xl font-bold text-slate-900">{stats.issuesCount}</p>
-                    <p className="text-xs text-slate-500 mt-1">חיצוית חקר</p>
+                    <p className="text-xs text-slate-500 mt-1">מכשירים בעייתיים</p>
                   </div>
                   <div className="w-14 h-14 bg-red-100 rounded-xl flex items-center justify-center">
                     <AlertTriangle className="w-8 h-8 text-red-600" />
@@ -201,7 +146,7 @@ export default function Dashboard() {
         </div>
 
         {/* Charts Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 gap-6 mb-8">
           {/* Device Status Pie Chart */}
           <Card>
             <CardHeader>
@@ -238,27 +183,10 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
-
-          {/* Weekly Activity Bar Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle>פעילות שבועית</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={weeklyActivityData}>
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="value" fill="#06b6d4" radius={[8, 8, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
         </div>
 
         {/* Bottom Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6">
           {/* Alerts */}
           <Card>
             <CardHeader>
@@ -292,49 +220,6 @@ export default function Dashboard() {
               ) : (
                 <div className="text-center py-8 text-slate-500">
                   אין התרעות פעילות
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Upcoming Schedules */}
-          <Card>
-            <CardHeader>
-              <CardTitle>שיבוצים קרובים</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {upcomingSchedulesList.length > 0 ? (
-                <div className="space-y-3">
-                  {upcomingSchedulesList.map((schedule) => {
-                    const program = programs.find(p => p.id === schedule.program_id);
-                    const startDate = new Date(schedule.start_datetime);
-                    
-                    return (
-                      <div key={schedule.id} className="flex items-start justify-between p-3 bg-cyan-50 rounded-lg border border-cyan-200">
-                        <div className="flex-1">
-                          <div className="font-semibold text-slate-900">
-                            {program?.title || program?.course_topic || "תוכנית"}
-                          </div>
-                          <div className="text-sm text-slate-600 mt-1 flex items-center gap-2">
-                            <Calendar className="w-4 h-4" />
-                            {format(startDate, 'dd/MM/yyyy')} • {format(startDate, 'HH:mm')}
-                          </div>
-                          <div className="text-xs text-slate-500 mt-1">
-                            {(schedule.device_ids || []).length} משקפות משובצות
-                          </div>
-                        </div>
-                        <Link to={createPageUrl("SchedulerPage")}>
-                          <button className="text-cyan-600 hover:text-cyan-800 text-sm font-medium">
-                            פרטים
-                          </button>
-                        </Link>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-slate-500">
-                  אין שיבוצים קרובים
                 </div>
               )}
             </CardContent>
