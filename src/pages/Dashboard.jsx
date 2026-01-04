@@ -5,7 +5,7 @@ import { Syllabus } from "@/entities/Syllabus";
 import { VRApp } from "@/entities/VRApp";
 import { EducationInstitution } from "@/entities/EducationInstitution";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { Glasses, BookOpen, School, AlertTriangle } from "lucide-react";
+import { Glasses, BookOpen, School, AlertTriangle, AppWindow } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { format } from "date-fns";
@@ -14,20 +14,23 @@ export default function Dashboard() {
   const [devices, setDevices] = useState([]);
   const [programs, setPrograms] = useState([]);
   const [schools, setSchools] = useState([]);
+  const [apps, setApps] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [devicesData, programsData, schoolsData] = await Promise.all([
+        const [devicesData, programsData, schoolsData, appsData] = await Promise.all([
           VRDevice.list(),
           Syllabus.list(),
-          EducationInstitution.list()
+          EducationInstitution.list(),
+          VRApp.list()
         ]);
 
         setDevices(devicesData || []);
         setPrograms(programsData || []);
         setSchools(schoolsData || []);
+        setApps(appsData || []);
       } catch (error) {
         console.error("Error loading dashboard data:", error);
       } finally {
@@ -43,9 +46,10 @@ export default function Dashboard() {
     const activeDevices = devices.filter(d => !d.is_disabled && d.status !== "בתיקון").length;
     const totalPrograms = programs.length;
     const issuesCount = devices.filter(d => d.is_disabled || d.status === "מושבת" || d.status === "בתיקון").length;
+    const totalApps = apps.length;
     
-    return { activeDevices, totalPrograms, issuesCount };
-  }, [devices, programs]);
+    return { activeDevices, totalPrograms, issuesCount, totalApps };
+  }, [devices, programs, apps]);
 
   // Device status breakdown - Memoized
   const deviceStatusData = useMemo(() => [
@@ -92,7 +96,7 @@ export default function Dashboard() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Link to={createPageUrl("GeneralInfo")}>
             <Card className="hover:shadow-lg transition-shadow cursor-pointer border-r-4 border-r-green-500">
               <CardContent className="p-6">
@@ -121,6 +125,23 @@ export default function Dashboard() {
                   </div>
                   <div className="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center">
                     <BookOpen className="w-8 h-8 text-purple-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link to={createPageUrl("GeneralApps")}>
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer border-r-4 border-r-cyan-500">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-slate-600 mb-1">אפליקציות</p>
+                    <p className="text-4xl font-bold text-slate-900">{stats.totalApps}</p>
+                    <p className="text-xs text-slate-500 mt-1">סה"כ אפליקציות במערכת</p>
+                  </div>
+                  <div className="w-14 h-14 bg-cyan-100 rounded-xl flex items-center justify-center">
+                    <AppWindow className="w-8 h-8 text-cyan-600" />
                   </div>
                 </div>
               </CardContent>
