@@ -5,17 +5,8 @@ import LoadingScreen from "@/components/common/LoadingScreen";
 
 export default function Layout({ children, currentPageName }) {
   const [isLoading, setIsLoading] = useState(true);
-  
-  useEffect(() => {
-    // Show loading screen only on first load
-    const hasLoaded = sessionStorage.getItem('hasLoaded');
-    if (hasLoaded) {
-      setIsLoading(false);
-    }
-  }, []);
 
   const handleLoadingComplete = () => {
-    sessionStorage.setItem('hasLoaded', 'true');
     setIsLoading(false);
   };
 
