@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { DeviceLinkedAccount } from "@/entities/DeviceLinkedAccount";
 import { VRDevice } from "@/entities/VRDevice";
 import { DeviceApp } from "@/entities/DeviceApp";
@@ -228,8 +228,8 @@ export default function AccountsAndUsers() {
         }
     };
 
-    const filteredAccounts = accounts
-        .filter(account => {
+    const filteredAccounts = useMemo(() => 
+        accounts.filter(account => {
             // Type filter (ALL/GMAIL/Remio)
             if (filterType !== "ALL" && account.account_type !== filterType) return false;
 
@@ -250,7 +250,9 @@ export default function AccountsAndUsers() {
                 account.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 deviceNameText.includes(searchTerm)
             );
-        });
+        }),
+        [accounts, devices, filterType, filterNickname, filterNumber, searchTerm]
+    );
 
     if (isLoading) {
         return <div className="p-8 text-center text-lg">טוען נתונים...</div>;

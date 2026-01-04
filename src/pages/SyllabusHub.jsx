@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Syllabus } from "@/entities/Syllabus";
 import { EducationInstitution } from "@/entities/EducationInstitution";
 import { Teacher } from "@/entities/Teacher";
@@ -48,27 +48,30 @@ export default function SyllabusHub() {
     setLoading(false);
   };
 
-  const filteredSyllabi = syllabi.filter(s => {
-    const matchesSearch = !searchTerm || 
-      (s.title || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (s.course_topic || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (s.subject || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (s.teacher_name || "").toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = filterStatus === "all" || s.status === filterStatus;
-    const matchesSchool = filterSchool === "all" || s.school_id === filterSchool;
-    const matchesTeacher = filterTeacher === "all" || s.teacher_name === filterTeacher;
-    const matchesActivityType = filterActivityType === "all" || s.activity_type === filterActivityType;
-    
-    return matchesSearch && matchesStatus && matchesSchool && matchesTeacher && matchesActivityType;
-  });
+  const filteredSyllabi = useMemo(() => 
+    syllabi.filter(s => {
+      const matchesSearch = !searchTerm || 
+        (s.title || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (s.course_topic || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (s.subject || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (s.teacher_name || "").toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesStatus = filterStatus === "all" || s.status === filterStatus;
+      const matchesSchool = filterSchool === "all" || s.school_id === filterSchool;
+      const matchesTeacher = filterTeacher === "all" || s.teacher_name === filterTeacher;
+      const matchesActivityType = filterActivityType === "all" || s.activity_type === filterActivityType;
+      
+      return matchesSearch && matchesStatus && matchesSchool && matchesTeacher && matchesActivityType;
+    }),
+    [syllabi, searchTerm, filterStatus, filterSchool, filterTeacher, filterActivityType]
+  );
 
-  const stats = {
+  const stats = useMemo(() => ({
     total: syllabi.length,
     draft: syllabi.filter(s => s.status === "draft").length,
     final: syllabi.filter(s => s.status === "final").length,
     active: syllabi.filter(s => s.active !== false).length
-  };
+  }), [syllabi]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50 p-4 sm:p-6" dir="rtl">

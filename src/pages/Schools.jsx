@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { EducationInstitution } from "@/entities/EducationInstitution";
 import { InstitutionProgram } from "@/entities/InstitutionProgram";
 import { Syllabus } from "@/entities/Syllabus";
@@ -41,15 +40,18 @@ export default function Schools() {
     setIsLoading(false);
   };
 
-  const filteredSchools = schools.filter(school => {
-    const term = searchTerm.toLowerCase().trim();
-    if (!term) return true;
-    return (
-      (school.name || "").toLowerCase().includes(term) ||
-      (school.city || "").toLowerCase().includes(term) ||
-      (school.type || "").toLowerCase().includes(term)
-    );
-  });
+  const filteredSchools = useMemo(() => 
+    schools.filter(school => {
+      const term = searchTerm.toLowerCase().trim();
+      if (!term) return true;
+      return (
+        (school.name || "").toLowerCase().includes(term) ||
+        (school.city || "").toLowerCase().includes(term) ||
+        (school.type || "").toLowerCase().includes(term)
+      );
+    }),
+    [schools, searchTerm]
+  );
 
   const typeColors = {
     "יסודי": "from-blue-100 to-cyan-100 text-blue-800",

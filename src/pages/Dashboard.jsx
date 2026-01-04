@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { VRDevice } from "@/entities/VRDevice";
 import { ScheduleEntry } from "@/entities/ScheduleEntry";
@@ -43,17 +43,21 @@ export default function Dashboard() {
     loadData();
   }, []);
 
-  // Statistics
-  const activeDevices = devices.filter(d => !d.is_disabled && d.status !== "בתיקון").length;
-  const upcomingSchedules = schedules.filter(s => {
-    const start = new Date(s.start_datetime);
-    return isAfter(start, new Date()) && isBefore(start, addDays(new Date(), 7));
-  }).length;
-  const totalPrograms = programs.length;
-  const issuesCount = devices.filter(d => d.is_disabled || d.status === "מושבת" || d.status === "בתיקון").length;
+  // Statistics - Memoized for performance
+  const stats = useMemo(() => {
+    const activeDevices = devices.filter(d => !d.is_disabled && d.status !== "בתיקון").length;
+    const upcomingSchedules = schedules.filter(s => {
+      const start = new Date(s.start_datetime);
+      return isAfter(start, new Date()) && isBefore(start, addDays(new Date(), 7));
+    }).length;
+    const totalPrograms = programs.length;
+    const issuesCount = devices.filter(d => d.is_disabled || d.status === "מושבת" || d.status === "בתיקון").length;
+    
+    return { activeDevices, upcomingSchedules, totalPrograms, issuesCount };
+  }, [devices, schedules, programs]);
 
-  // Device status breakdown
-  const deviceStatusData = [
+  // Device status breakdown - Memoized
+  const deviceStatusData = useMemo(() => [
     {
       name: "פעיל",
       value: devices.filter(d => !d.is_disabled && d.status !== "בתיקון" && d.status !== "בתחזוקה").length,
@@ -69,37 +73,44 @@ export default function Dashboard() {
       value: devices.filter(d => d.is_disabled || d.status === "מושבת").length,
       color: "#ef4444"
     }
-  ];
+  ], [devices]);
 
-  // Weekly activity (schedules by day)
-  const weekStart = startOfWeek(new Date(), { locale: he });
-  const weekEnd = endOfWeek(new Date(), { locale: he });
-  const daysOfWeek = ["א'", "ב'", "ג'", "ד'", "ה'", "ו'", "ש'"];
-  const weeklyActivityData = daysOfWeek.map((day, index) => {
-    const dayDate = addDays(weekStart, index);
-    const daySchedules = schedules.filter(s => {
-      const scheduleDate = new Date(s.start_datetime);
-      return format(scheduleDate, 'yyyy-MM-dd') === format(dayDate, 'yyyy-MM-dd');
+  // Weekly activity - Memoized
+  const weeklyActivityData = useMemo(() => {
+    const weekStart = startOfWeek(new Date(), { locale: he });
+    const daysOfWeek = ["א'", "ב'", "ג'", "ד'", "ה'", "ו'", "ש'"];
+    return daysOfWeek.map((day, index) => {
+      const dayDate = addDays(weekStart, index);
+      const daySchedules = schedules.filter(s => {
+        const scheduleDate = new Date(s.start_datetime);
+        return format(scheduleDate, 'yyyy-MM-dd') === format(dayDate, 'yyyy-MM-dd');
+      });
+      return {
+        name: day,
+        value: daySchedules.length
+      };
     });
-    return {
-      name: day,
-      value: daySchedules.length
-    };
-  });
+  }, [schedules]);
 
-  // Alerts (devices with issues)
-  const alerts = devices
-    .filter(d => d.is_disabled || d.status === "בתיקון" || d.status === "מושבת")
-    .slice(0, 5);
+  // Alerts - Memoized
+  const alerts = useMemo(() => 
+    devices
+      .filter(d => d.is_disabled || d.status === "בתיקון" || d.status === "מושבת")
+      .slice(0, 5),
+    [devices]
+  );
 
-  // Upcoming schedules
-  const upcomingSchedulesList = schedules
-    .filter(s => {
-      const start = new Date(s.start_datetime);
-      return isAfter(start, new Date());
-    })
-    .sort((a, b) => new Date(a.start_datetime) - new Date(b.start_datetime))
-    .slice(0, 5);
+  // Upcoming schedules - Memoized
+  const upcomingSchedulesList = useMemo(() => 
+    schedules
+      .filter(s => {
+        const start = new Date(s.start_datetime);
+        return isAfter(start, new Date());
+      })
+      .sort((a, b) => new Date(a.start_datetime) - new Date(b.start_datetime))
+      .slice(0, 5),
+    [schedules]
+  );
 
   if (isLoading) {
     return (
@@ -126,7 +137,7 @@ export default function Dashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-slate-600 mb-1">משקפות פעילות</p>
-                    <p className="text-4xl font-bold text-slate-900">{activeDevices}</p>
+                    <p className="text-4xl font-bold text-slate-900">{stats.activeDevices}</p>
                     <p className="text-xs text-slate-500 mt-1">סה"כ כובל טווח</p>
                   </div>
                   <div className="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center">
@@ -143,7 +154,7 @@ export default function Dashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-slate-600 mb-1">שיעורים הבא</p>
-                    <p className="text-4xl font-bold text-slate-900">{upcomingSchedules}</p>
+                    <p className="text-4xl font-bold text-slate-900">{stats.upcomingSchedules}</p>
                     <p className="text-xs text-slate-500 mt-1">סטטוס סה"כ בוקרותואחת</p>
                   </div>
                   <div className="w-14 h-14 bg-cyan-100 rounded-xl flex items-center justify-center">
@@ -160,7 +171,7 @@ export default function Dashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-slate-600 mb-1">מד ספר</p>
-                    <p className="text-4xl font-bold text-slate-900">{totalPrograms}</p>
+                    <p className="text-4xl font-bold text-slate-900">{stats.totalPrograms}</p>
                     <p className="text-xs text-slate-500 mt-1">היה אחת מילולה</p>
                   </div>
                   <div className="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center">
@@ -177,7 +188,7 @@ export default function Dashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-slate-600 mb-1">מסביב חקרקום</p>
-                    <p className="text-4xl font-bold text-slate-900">{issuesCount}</p>
+                    <p className="text-4xl font-bold text-slate-900">{stats.issuesCount}</p>
                     <p className="text-xs text-slate-500 mt-1">חיצוית חקר</p>
                   </div>
                   <div className="w-14 h-14 bg-red-100 rounded-xl flex items-center justify-center">
