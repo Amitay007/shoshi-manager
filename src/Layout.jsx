@@ -6,6 +6,11 @@ import LoadingScreen from "@/components/common/LoadingScreen";
 export default function Layout({ children, currentPageName }) {
   const [isLoading, setIsLoading] = useState(true);
 
+  // Show loading screen on every page change
+  useEffect(() => {
+    setIsLoading(true);
+  }, [currentPageName]);
+
   const handleLoadingComplete = () => {
     setIsLoading(false);
   };
