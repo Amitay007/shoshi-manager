@@ -4,7 +4,7 @@ import Sidebar from "@/components/common/Sidebar";
 
 export default function Layout({ children, currentPageName }) {
   // Pages that should NOT show the sidebar
-  const pagesWithoutSidebar = ["Home"];
+  const pagesWithoutSidebar = [];
   const showSidebar = !pagesWithoutSidebar.includes(currentPageName);
 
   return (
