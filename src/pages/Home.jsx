@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Orbit, AppWindow, Users, Layers, ListPlus, UploadCloud, GraduationCap, Building2, RefreshCw, Calendar, BookOpen, TrendingUp, Link2, Download } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -8,6 +8,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { VRApp } from "@/entities/VRApp";
 
 export default function Home() {
+  const navigate = useNavigate();
+
+  // Redirect to Dashboard immediately
+  React.useEffect(() => {
+    navigate(createPageUrl('Dashboard'), { replace: true });
+  }, [navigate]);
+
   const [secretOpen, setSecretOpen] = React.useState(false);
   const [showHidden, setShowHidden] = React.useState(false);
   const [exportOpen, setExportOpen] = React.useState(false);
