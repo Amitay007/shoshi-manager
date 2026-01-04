@@ -232,9 +232,7 @@ export default function Home() {
           בתי ספר
         </NavButton>
 
-        <NavButton to={createPageUrl(`SchedulerPage`)} icon={<Calendar className="w-8 h-8" />}>
-          לוח זמנים
-        </NavButton>
+
 
         <NavButton to={createPageUrl(`SyllabusHub`)} icon={<BookOpen className="w-8 h-8" />}>
           מרכז סילבוסים

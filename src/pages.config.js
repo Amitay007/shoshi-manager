@@ -18,6 +18,7 @@ import DeviceMenu from './pages/DeviceMenu';
 import EditHeadset from './pages/EditHeadset';
 import GeneralApps from './pages/GeneralApps';
 import GeneralInfo from './pages/GeneralInfo';
+import Home from './pages/Home';
 import ProgramView from './pages/ProgramView';
 import Programs from './pages/Programs';
 import ResearchPage from './pages/ResearchPage';
@@ -29,7 +30,6 @@ import SyllabusWizard from './pages/SyllabusWizard';
 import UpdateAppStatus from './pages/UpdateAppStatus';
 import UpdateAppsFromPDF from './pages/UpdateAppsFromPDF';
 import UploadLogo from './pages/UploadLogo';
-import Home from './pages/Home';
 import __Layout from './Layout.jsx';
 
 
@@ -54,6 +54,7 @@ export const PAGES = {
     "EditHeadset": EditHeadset,
     "GeneralApps": GeneralApps,
     "GeneralInfo": GeneralInfo,
+    "Home": Home,
     "ProgramView": ProgramView,
     "Programs": Programs,
     "ResearchPage": ResearchPage,
@@ -65,7 +66,6 @@ export const PAGES = {
     "UpdateAppStatus": UpdateAppStatus,
     "UpdateAppsFromPDF": UpdateAppsFromPDF,
     "UploadLogo": UploadLogo,
-    "Home": Home,
 }
 
 export const pagesConfig = {

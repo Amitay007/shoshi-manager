@@ -1,11 +1,31 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import Sidebar from "@/components/common/Sidebar";
+import LoadingScreen from "@/components/common/LoadingScreen";
 
 export default function Layout({ children, currentPageName }) {
+  const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    // Show loading screen only on first load
+    const hasLoaded = sessionStorage.getItem('hasLoaded');
+    if (hasLoaded) {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const handleLoadingComplete = () => {
+    sessionStorage.setItem('hasLoaded', 'true');
+    setIsLoading(false);
+  };
+
   // Pages that should NOT show the sidebar
   const pagesWithoutSidebar = [];
   const showSidebar = !pagesWithoutSidebar.includes(currentPageName);
+
+  if (isLoading) {
+    return <LoadingScreen onComplete={handleLoadingComplete} />;
+  }
 
   return (
     <div dir="rtl" className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 text-slate-900">
