@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { 
-  Home, AppWindow, BookOpen, School, Users, Calculator, ChevronRight, KeyRound, Stamp
+  Home, Code, BookOpen, School, Users, Calculator, ChevronRight, KeyRound, Stamp
 } from "lucide-react";
 import VRIcon from "@/components/icons/VRIcon";
 
