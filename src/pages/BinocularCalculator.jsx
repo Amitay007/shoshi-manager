@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from "react";
 import { Syllabus } from "@/entities/Syllabus";
 import { VRApp } from "@/entities/VRApp";
@@ -271,15 +270,15 @@ export default function BinocularCalculator() {
             </div>
             <div>
               <h1 className="text-4xl font-black text-gray-900">מחשבון משקפות</h1>
-              <p className="text-gray-600 font-medium mt-1">השוואת משקפות בין תוכניות</p>
+              <p className="text-gray-600 font-medium mt-1">בדיקת זמינות בין תוכניות</p>
             </div>
           </div>
-          <BackHomeButtons backTo="Programs" />
+          <BackHomeButtons backTo="Programs" className="hidden lg:block" />
         </div>
 
         {/* Legend */}
         <div className="bg-gradient-to-r from-purple-50 via-cyan-50 to-green-50 rounded-2xl p-6 mb-8 shadow-md border-2 border-purple-200">
-          <div className="flex items-center justify-center gap-8 flex-wrap">
+          <div className="flex flex-row justify-start gap-8 overflow-x-auto pb-2 px-2 no-scrollbar">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-700 rounded-xl shadow-md"></div>
               <span className="text-sm font-bold text-gray-800">תוכנית 1 - סגול</span>
@@ -327,7 +326,7 @@ export default function BinocularCalculator() {
                   <SelectTrigger className="w-full h-12 text-base font-semibold border-2 border-gray-300 rounded-xl hover:border-purple-400 transition-colors">
                     <SelectValue placeholder="בחר תוכנית..." />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent dir="rtl">
                     {programs
                       .filter(p => 
                         p.id === prog.id || 

@@ -8,20 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { installationData } from "@/components/InstallationData";
-import { ArrowLeft, Plus, Users, Mail, Key, Search, Eye, EyeOff, Copy, Check } from "lucide-react";
+import { ArrowLeft, Plus, Users, Mail, KeyRound, Search, Eye, EyeOff, Copy, Check } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { with429Retry } from "@/components/utils/retry";
 import { useLoading } from "@/components/common/LoadingContext";
-
-// Helper component for the Back Home button, extracted for clarity and reusability
-const BackHomeButtons = () => (
-    <Link to={createPageUrl('Home')}>
-        <Button variant="outline" className="gap-2">
-            תפריט ראשי <ArrowLeft className="w-4 h-4" />
-        </Button>
-    </Link>
-);
+import BackHomeButtons from "@/components/common/BackHomeButtons";
 
 export default function AccountsAndUsers() {
     const [accounts, setAccounts] = useState([]);
@@ -262,14 +254,14 @@ export default function AccountsAndUsers() {
                 <div className="flex justify-between items-center mb-6">
                     <div className="flex items-center gap-3">
                         <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
-                            <Users className="w-7 h-7 text-white"/>
+                            <KeyRound className="w-7 h-7 text-white"/>
                         </div>
                         <div>
-                            <h1 className="text-3xl font-bold text-cyan-900">חשבונות ומשתמשים</h1>
-                            <p className="text-slate-500 text-sm">ניהול חשבונות למשקפות VR</p>
+                            <h1 className="text-3xl font-bold text-cyan-900">חשבונות</h1>
+                            <p className="text-slate-500 text-sm">ניהול חשבונות משתמשים למשקפות VR</p>
                         </div>
                     </div>
-                    <BackHomeButtons />
+                    <BackHomeButtons className="hidden lg:block" />
                 </div>
 
                 {/* Management Card */}

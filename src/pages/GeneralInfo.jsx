@@ -334,7 +334,7 @@ export default function GeneralInfo() {
             placeholder={`הזן ${label.toLowerCase()}`}
           />
         ) : (
-          <p className="font-medium">{value || 'לא צוין'}</p>
+          <p className="font-medium text-center truncate w-full">{value || 'לא צוין'}</p>
         )}
       </div>
     </div>
