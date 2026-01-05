@@ -10,7 +10,6 @@ export default function Sidebar() {
   const location = useLocation();
   
   const menuItems = [
-    { id: "version2", label: "שושי 2.0 - היסטוריה", icon: Layers, page: "Version2" },
     { id: "dashboard", label: "שושי 2.1", icon: Home, page: "Dashboard" },
     { id: "devices", label: "מכשירי VR", icon: VRIcon, page: "GeneralInfo" },
     { id: "silshuch", label: "סלישוך", icon: Stamp, page: "SilshuchCreator" },
@@ -20,6 +19,7 @@ export default function Sidebar() {
     { id: "teachers", label: "ניהול", icon: Users, page: "CRMHub" },
     { id: "calculator", label: "מחשבון", icon: Calculator, page: "BinocularCalculator" },
     { id: "accounts", label: "חשבונות", icon: KeyRound, page: "AccountsAndUsers" },
+    { id: "version2", label: "שושי 2.0 - היסטוריה", icon: Layers, page: "Version2" },
   ];
 
   const isActive = (page) => {
