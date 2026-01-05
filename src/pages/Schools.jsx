@@ -66,24 +66,26 @@ export default function Schools() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50 p-4 sm:p-6" dir="rtl">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center gap-3">
+        <div className="mb-6">
+          <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
               <Building2 className="w-7 h-7 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-cyan-900">בתי ספר</h1>
-              <p className="text-slate-500 text-sm">ניהול מוסדות חינוך</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-cyan-900">בתי ספר</h1>
+              <p className="text-slate-500 text-xs sm:text-sm">ניהול מוסדות חינוך</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Link to={createPageUrl("SchoolDetails?new=true")}>
-              <Button className="bg-green-600 hover:bg-green-700 gap-2">
+            <Link to={createPageUrl("SchoolDetails?new=true")} className="flex-1 sm:flex-none">
+              <Button className="bg-green-600 hover:bg-green-700 gap-2 w-full sm:w-auto">
                 <Plus className="w-4 h-4" />
                 הוספת מוסד
               </Button>
             </Link>
-            <BackHomeButtons />
+            <div className="hidden lg:block">
+              <BackHomeButtons />
+            </div>
           </div>
         </div>
 

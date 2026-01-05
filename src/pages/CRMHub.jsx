@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { EducationInstitution } from "@/entities/EducationInstitution";
 import { Teacher } from "@/entities/Teacher";
@@ -248,17 +247,19 @@ export default function CRMHub() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50 p-4 sm:p-6" dir="rtl">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
+          <div className="flex items-center gap-3 w-full lg:w-auto">
             <div className="w-12 h-12 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
               <TrendingUp className="w-7 h-7 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-indigo-900">מרכז ניהול CRM</h1>
-              <p className="text-slate-500 text-sm">ניהול קשרי לקוחות - בתי ספר, מורים, אנשי קשר ויומן פעילות</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-indigo-900">מרכז ניהול CRM</h1>
+              <p className="text-slate-500 text-xs sm:text-sm">ניהול קשרי לקוחות - בתי ספר, מורים, אנשי קשר ויומן פעילות</p>
             </div>
           </div>
-          <BackHomeButtons />
+          <div className="hidden lg:block">
+            <BackHomeButtons />
+          </div>
         </div>
 
         {/* Statistics Cards */}

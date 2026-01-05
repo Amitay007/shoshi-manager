@@ -365,17 +365,22 @@ export default function GeneralInfo() {
     <div className="min-h-screen bg-white p-6" dir="rtl">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex justify-between items-start mb-6">
-          <div>
-            <h1 className="text-4xl font-bold text-slate-900 mb-2">מלאי מכשירים</h1>
-            <p className="text-slate-500 text-lg">ניהול חכם של משקפות VR</p>
+        <div className="mb-6">
+          <div className="mb-4">
+            <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-2">מלאי מכשירים</h1>
+            <p className="text-slate-500 text-base sm:text-lg">ניהול חכם של משקפות VR</p>
           </div>
-          <Link to={createPageUrl("AddNewHeadset")}>
-            <Button className="bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white gap-2 px-6 py-6 text-lg rounded-xl shadow-lg">
-              <Plus className="w-5 h-5" />
-              הוסף מכשיר
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link to={createPageUrl("AddNewHeadset")} className="flex-1 sm:flex-none">
+              <Button className="bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white gap-2 px-4 sm:px-6 py-4 sm:py-6 text-base sm:text-lg rounded-xl shadow-lg w-full sm:w-auto">
+                <Plus className="w-5 h-5" />
+                הוסף מכשיר
+              </Button>
+            </Link>
+            <div className="hidden lg:block">
+              <BackHomeButtons />
+            </div>
+          </div>
         </div>
 
         {/* Search and Filters */}
@@ -552,24 +557,26 @@ export default function GeneralInfo() {
 
                     {/* Details */}
                     <div className="space-y-2 mt-4 text-xs text-slate-600">
-                      <div className="text-center mb-2 text-slate-700 font-medium">
-                        {device.model || device.headset_type || 'Meta Quest 3'}
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span>S/N:</span>
-                        <span className="font-mono text-slate-900">{device.serial_number || 'N/A'}</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span>MAC:</span>
-                        <span className="font-mono text-slate-900 text-[10px]">AA:BB:CC:DD:EE:{String(device.binocular_number).padStart(2, '0')}</span>
-                      </div>
-                      {device.primary_email && (
-                        <div className="flex items-center justify-center gap-1 mt-2">
-                          <svg className="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
-                          </svg>
-                        </div>
-                      )}
+                     <div className="text-center mb-2 text-slate-700 font-medium">
+                       {device.model || device.headset_type || 'Meta Quest 3'}
+                     </div>
+                     <div className="grid grid-cols-1 gap-2">
+                       <div className="flex flex-col items-center">
+                         <span className="text-slate-500 text-[10px]">S/N</span>
+                         <span className="font-mono text-slate-900 text-xs">{device.serial_number || 'N/A'}</span>
+                       </div>
+                       <div className="flex flex-col items-center">
+                         <span className="text-slate-500 text-[10px]">MAC</span>
+                         <span className="font-mono text-slate-900 text-[10px]">AA:BB:CC:DD:EE:{String(device.binocular_number).padStart(2, '0')}</span>
+                       </div>
+                     </div>
+                     {device.primary_email && (
+                       <div className="flex items-center justify-center gap-1 mt-2">
+                         <svg className="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
+                         </svg>
+                       </div>
+                     )}
                     </div>
                   </div>
                 </div>
