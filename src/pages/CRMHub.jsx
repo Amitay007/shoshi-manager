@@ -536,6 +536,7 @@ export default function CRMHub() {
                       </div>
                     </CardContent>
                   </Card>
+                  </motion.div>
                 );
               })}
             </motion.div>
@@ -632,9 +633,10 @@ export default function CRMHub() {
                       </div>
                     </CardContent>
                   </Card>
+                  </motion.div>
                 );
               })}
-            </div>
+            </motion.div>
 
             {filteredTeachers.length === 0 && (
               <motion.div
@@ -761,9 +763,10 @@ export default function CRMHub() {
                       </div>
                     </CardContent>
                   </Card>
+                  </motion.div>
                 );
               })}
-            </div>
+            </motion.div>
 
             {filteredContacts.length === 0 && (
               <motion.div
@@ -869,6 +872,7 @@ export default function CRMHub() {
                       </div>
                     </CardContent>
                   </Card>
+                  </motion.div>
                 );
               })}
             </div>
@@ -892,10 +896,8 @@ export default function CRMHub() {
       </div>
 
       {/* Contact Dialog */}
-      <AnimatePresence>
-        {showContactDialog && (
-          <Dialog open={showContactDialog} onOpenChange={(open) => { if (!open) resetContactForm(); setShowContactDialog(open); }}>
-            <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto" dir="rtl">
+      <Dialog open={showContactDialog} onOpenChange={(open) => { if (!open) resetContactForm(); setShowContactDialog(open); }}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto" dir="rtl">
           <DialogHeader>
             <DialogTitle>{editingContact ? "עריכת איש קשר" : "איש קשר חדש"}</DialogTitle>
           </DialogHeader>
@@ -988,10 +990,8 @@ export default function CRMHub() {
       </Dialog>
 
       {/* Activity Dialog */}
-      <AnimatePresence>
-        {showActivityDialog && (
-          <Dialog open={showActivityDialog} onOpenChange={(open) => { if (!open) resetActivityForm(); setShowActivityDialog(open); }}>
-            <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto" dir="rtl">
+      <Dialog open={showActivityDialog} onOpenChange={(open) => { if (!open) resetActivityForm(); setShowActivityDialog(open); }}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto" dir="rtl">
           <DialogHeader>
             <DialogTitle>הוספת פעילות ליומן</DialogTitle>
           </DialogHeader>
@@ -1128,10 +1128,8 @@ export default function CRMHub() {
             <Button variant="outline" onClick={() => { setShowActivityDialog(false); resetActivityForm(); }}>ביטול</Button>
             <Button onClick={handleSaveActivity} className="bg-rose-600 hover:bg-rose-700">שמור ביומן</Button>
           </DialogFooter>
-          </DialogContent>
-          </Dialog>
-          )}
-          </AnimatePresence>
-          </div>
-          );
-          }
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
