@@ -52,8 +52,8 @@ function LayoutContent({ children, currentPageName }) {
         
         {showSidebar && <Sidebar />}
         
-        {/* תוכן ראשי עם מרווח דינמי */}
-        <div className="transition-all duration-300" style={{ marginRight: showSidebar ? '256px' : '0' }}>
+        {/* תוכן ראשי עם מרווח דינמי - ללא padding-bottom */}
+        <div className={`transition-all duration-300 ${showSidebar ? "mr-20 lg:mr-64" : ""}`}>
           {children}
         </div>
         
