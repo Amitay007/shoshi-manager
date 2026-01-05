@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { 
-  Home, Glasses, AppWindow, BookOpen, School, Users, Calculator, ChevronRight, KeyRound
+  Home, View, AppWindow, BookOpen, School, Users, Calculator, ChevronRight, KeyRound
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -10,7 +10,7 @@ export default function Sidebar() {
   
   const menuItems = [
     { id: "dashboard", label: "דאשבורד", icon: Home, page: "Dashboard" },
-    { id: "devices", label: "מכשירי VR", icon: Glasses, page: "GeneralInfo" },
+    { id: "devices", label: "מכשירי VR", icon: View, page: "GeneralInfo" },
     { id: "apps", label: "אפליקציות", icon: AppWindow, page: "GeneralApps" },
     { id: "syllabus", label: "סילבוסים", icon: BookOpen, page: "SyllabusHub" },
     { id: "schools", label: "בתי ספר", icon: School, page: "Schools" },
