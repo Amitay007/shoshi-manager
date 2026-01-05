@@ -34,6 +34,7 @@ export default function CRMHub() {
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState("schools");
 
   // Contact dialog
   const [showContactDialog, setShowContactDialog] = useState(false);
@@ -264,7 +265,10 @@ export default function CRMHub() {
 
         {/* Statistics Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3 mb-6">
-          <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-0 shadow-lg">
+          <Card 
+            className="bg-gradient-to-br from-blue-50 to-cyan-50 border-0 shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
+            onClick={() => setActiveTab("schools")}
+          >
             <CardContent className="p-3">
               <div className="flex flex-col items-center">
                 <Building2 className="w-8 h-8 text-blue-600 mb-1" />
@@ -274,7 +278,10 @@ export default function CRMHub() {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-cyan-50 to-teal-50 border-0 shadow-lg">
+          <Card 
+            className="bg-gradient-to-br from-cyan-50 to-teal-50 border-0 shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
+            onClick={() => setActiveTab("teachers")}
+          >
             <CardContent className="p-3">
               <div className="flex flex-col items-center">
                 <Users className="w-8 h-8 text-cyan-600 mb-1" />
@@ -314,7 +321,10 @@ export default function CRMHub() {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-indigo-50 to-purple-50 border-0 shadow-lg">
+          <Card 
+            className="bg-gradient-to-br from-indigo-50 to-purple-50 border-0 shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
+            onClick={() => setActiveTab("contacts")}
+          >
             <CardContent className="p-3">
               <div className="flex flex-col items-center">
                 <UserCircle className="w-8 h-8 text-indigo-600 mb-1" />
@@ -324,7 +334,10 @@ export default function CRMHub() {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-rose-50 to-pink-50 border-0 shadow-lg">
+          <Card 
+            className="bg-gradient-to-br from-rose-50 to-pink-50 border-0 shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
+            onClick={() => setActiveTab("activities")}
+          >
             <CardContent className="p-3">
               <div className="flex flex-col items-center">
                 <ClipboardList className="w-8 h-8 text-rose-600 mb-1" />
@@ -348,7 +361,7 @@ export default function CRMHub() {
         </Card>
 
         {/* Tabs */}
-        <Tabs defaultValue="schools" dir="rtl">
+        <Tabs value={activeTab} onValueChange={setActiveTab} dir="rtl">
           <TabsList className="grid w-full grid-cols-4 mb-6">
             <TabsTrigger value="schools" className="gap-2">
               <Building2 className="w-4 h-4" />
