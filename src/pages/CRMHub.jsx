@@ -364,7 +364,7 @@ export default function CRMHub() {
             </TabsTrigger>
             <TabsTrigger value="activities" className="gap-2">
               <ClipboardList className="w-4 h-4" />
-              יומן פעילות
+              יומן קשרי לקוחות
             </TabsTrigger>
           </TabsList>
 
