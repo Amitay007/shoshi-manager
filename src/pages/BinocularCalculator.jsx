@@ -279,26 +279,11 @@ export default function BinocularCalculator() {
         {/* Legend */}
         <div className="bg-gradient-to-r from-purple-50 via-cyan-50 to-green-50 rounded-2xl p-6 mb-8 shadow-md border-2 border-purple-200">
           <div className="flex flex-row justify-start gap-8 overflow-x-auto pb-2 px-2 no-scrollbar">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-700 rounded-xl shadow-md"></div>
-              <span className="text-sm font-bold text-gray-800">תוכנית 1 - סגול</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-xl shadow-md"></div>
-              <span className="text-sm font-bold text-gray-800">תוכנית 2 - כחול תורכיז</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-700 rounded-xl shadow-md"></div>
-              <span className="text-sm font-bold text-gray-800">תוכנית 3 - ירוק</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-red-700 rounded-xl shadow-md"></div>
-              <span className="text-sm font-bold text-gray-800">משקפת חופפת - אדום</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gray-400 rounded-xl border-2 border-gray-500"></div>
-              <span className="text-sm font-bold text-gray-800">משקפת מושבתת - אפור</span>
-            </div>
+            <span className="text-sm font-bold text-purple-700">תוכנית 1 - סגול</span>
+            <span className="text-sm font-bold text-cyan-600">תוכנית 2 - כחול תורכיז</span>
+            <span className="text-sm font-bold text-green-700">תוכנית 3 - ירוק</span>
+            <span className="text-sm font-bold text-red-700">משקפת חופפת - אדום</span>
+            <span className="text-sm font-bold text-gray-600">משקפת מושבתת - אפור</span>
           </div>
         </div>
 
