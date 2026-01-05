@@ -16,10 +16,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createPageUrl } from "@/utils";
 import { 
-  Building2, Users, BookOpen, Glasses, TrendingUp, 
+  Building2, Users, BookOpen, TrendingUp, 
   Phone, Mail, MapPin, Calendar, Plus,
   UserCircle, ClipboardList, Edit, Trash2, MessageCircle
 } from "lucide-react";
+import VRIcon from "@/components/icons/VRIcon";
 import BackHomeButtons from "@/components/common/BackHomeButtons";
 import { with429Retry } from "@/components/utils/retry";
 import { format } from "date-fns";
@@ -311,11 +312,11 @@ export default function CRMHub() {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-orange-50 to-amber-50 border-0 shadow-lg">
+          <Card className="bg-gradient-to-br from-purple-50 to-cyan-50 border-0 shadow-lg">
             <CardContent className="p-3">
               <div className="flex flex-col items-center">
-                <Glasses className="w-8 h-8 text-orange-600 mb-1" />
-                <p className="text-2xl font-bold text-orange-900">{stats.totalDevices}</p>
+                <VRIcon className="w-8 h-8 text-purple-600 mb-1" />
+                <p className="text-2xl font-bold text-purple-900">{stats.totalDevices}</p>
                 <p className="text-xs text-slate-600">משקפות</p>
               </div>
             </CardContent>
