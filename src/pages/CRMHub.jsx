@@ -18,7 +18,7 @@ import { createPageUrl } from "@/utils";
 import { 
   Building2, Users, BookOpen, TrendingUp, 
   Phone, Mail, MapPin, Calendar, Plus,
-  UserCircle, ClipboardList, Edit, Trash2, MessageCircle
+  UserCircle, ClipboardList, Edit, Trash2, MessageCircle, Wallet
 } from "lucide-react";
 import VRIcon from "@/components/icons/VRIcon";
 import BackHomeButtons from "@/components/common/BackHomeButtons";
@@ -265,7 +265,7 @@ export default function CRMHub() {
         </div>
 
         {/* Statistics Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-8 gap-3 mb-6">
           <Card 
             className="bg-gradient-to-br from-blue-50 to-cyan-50 border-0 shadow-lg cursor-pointer hover:shadow-xl hover:scale-105 active:scale-95 transition-all"
             onClick={() => setActiveTab("schools")}
@@ -331,6 +331,19 @@ export default function CRMHub() {
                 <UserCircle className="w-8 h-8 text-indigo-600 mb-1" />
                 <p className="text-2xl font-bold text-indigo-900">{stats.totalContacts}</p>
                 <p className="text-xs text-slate-600">אנשי קשר</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card 
+            className="bg-gradient-to-br from-purple-50 to-indigo-50 border-0 shadow-lg cursor-pointer hover:shadow-xl hover:scale-105 active:scale-95 transition-all"
+            onClick={() => window.location.href = createPageUrl("CashFlow")}
+          >
+            <CardContent className="p-3">
+              <div className="flex flex-col items-center">
+                <Wallet className="w-8 h-8 text-purple-600 mb-1" />
+                <p className="text-2xl font-bold text-purple-900">₪</p>
+                <p className="text-xs text-slate-600">תזרים</p>
               </div>
             </CardContent>
           </Card>
