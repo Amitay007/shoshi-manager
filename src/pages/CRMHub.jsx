@@ -329,7 +329,7 @@ export default function CRMHub() {
               <div className="flex flex-col items-center">
                 <ClipboardList className="w-8 h-8 text-rose-600 mb-1" />
                 <p className="text-2xl font-bold text-rose-900">{stats.totalActivities}</p>
-                <p className="text-xs text-slate-600">פעילויות</p>
+                <p className="text-xs text-slate-600">יומן קשרי לקוחות</p>
               </div>
             </CardContent>
           </Card>
