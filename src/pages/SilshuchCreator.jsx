@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { VRDevice } from "@/entities/VRDevice";
+import { Silshuch } from "@/entities/Silshuch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,6 +39,7 @@ export default function SilshuchCreator() {
   const [showSummary, setShowSummary] = useState(false);
   
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   // Load headsets
   useEffect(() => {
@@ -162,6 +164,61 @@ export default function SilshuchCreator() {
         variant: "destructive"
       });
     }
+  };
+
+  // Save silshuch
+  const saveSilshuch = async () => {
+    if (!assignmentName.trim()) {
+      toast({
+        title: "שגיאה",
+        description: "נא להזין שם לשיבוץ",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const silshuchData = {
+        assignmentName,
+        details,
+        mode,
+        status: "active"
+      };
+
+      if (mode === "static") {
+        silshuchData.selectedHeadsets = Array.from(selectedStaticHeadsets);
+      } else {
+        silshuchData.numberOfSessions = numberOfSessions;
+        silshuchData.sessions = selectedDynamicHeadsets.map((sessionSet, idx) => ({
+          sessionNumber: idx + 1,
+          headsets: Array.from(sessionSet)
+        }));
+      }
+
+      await with429Retry(() => Silshuch.create(silshuchData));
+      
+      toast({
+        title: "נשמר בהצלחה!",
+        description: "השיבוץ נשמר במערכת",
+      });
+
+      // Reset form
+      setAssignmentName("");
+      setDetails("");
+      setSelectedStaticHeadsets(new Set());
+      setSelectedDynamicHeadsets([new Set(), new Set(), new Set()]);
+      setShowSummary(false);
+      setSummaryText("");
+    } catch (error) {
+      console.error("Error saving silshuch:", error);
+      toast({
+        title: "שגיאה בשמירה",
+        description: "לא ניתן לשמור את השיבוץ",
+        variant: "destructive"
+      });
+    }
+    setSaving(false);
   };
 
   // Get headset display
@@ -364,6 +421,26 @@ export default function SilshuchCreator() {
             ))}
           </div>
         )}
+
+        {/* Action Buttons */}
+        <Card className="mb-6 border-2 border-green-200">
+          <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50">
+            <CardTitle className="flex items-center gap-2">
+              <Save className="w-5 h-5 text-green-600" />
+              פעולות
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4 space-y-3">
+            <Button
+              onClick={saveSilshuch}
+              disabled={saving}
+              className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white gap-2 h-12 text-base"
+            >
+              <Save className="w-5 h-5" />
+              {saving ? "שומר..." : "שמור שיבוץ"}
+            </Button>
+          </CardContent>
+        </Card>
 
         {/* Generate Summary Section */}
         <Card className="mb-6 border-2 border-purple-200">
