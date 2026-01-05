@@ -227,6 +227,31 @@ export default function SilshuchCreator() {
         description: "השיבוץ נשמר במערכת",
       });
 
+      // Try to create Google Calendar event if dates are present
+      if (hasDates && calendarEnabled) {
+        setCreatingCalendarEvent(true);
+        try {
+          const result = await base44.functions.invoke('createCalendarEvent', { silshuchData });
+          
+          if (result.success) {
+            toast({
+              title: "אירוע נוצר ביומן! 📅",
+              description: `${result.eventsCreated} אירועים נוספו ל-Google Calendar`,
+            });
+          } else if (result.error?.includes('not authorized')) {
+            toast({
+              title: "יש לאשר גישה ל-Google Calendar",
+              description: "אנא אשר את הגישה בהגדרות",
+              variant: "destructive"
+            });
+          }
+        } catch (calError) {
+          console.error("Calendar error:", calError);
+          // Don't fail the whole operation if calendar fails
+        }
+        setCreatingCalendarEvent(false);
+      }
+
       // Reset form and return to list
       setAssignmentName("");
       setDetails("");
@@ -556,6 +581,36 @@ export default function SilshuchCreator() {
                 </Button>
               </div>
             </div>
+
+            {/* Google Calendar Integration Toggle */}
+            {hasDates && (
+              <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border-2 border-blue-200">
+                <div className="flex-1">
+                  <label className="text-sm font-medium text-blue-900 block">סנכרון עם Google Calendar 📅</label>
+                  <p className="text-xs text-blue-700 mt-1">יצירת אירוע אוטומטית ביומן</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={!calendarEnabled ? "default" : "outline"}
+                    onClick={() => setCalendarEnabled(false)}
+                    className={!calendarEnabled ? "bg-slate-600" : ""}
+                  >
+                    לא
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={calendarEnabled ? "default" : "outline"}
+                    onClick={() => setCalendarEnabled(true)}
+                    className={calendarEnabled ? "bg-blue-600" : ""}
+                  >
+                    כן
+                  </Button>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -708,11 +763,11 @@ export default function SilshuchCreator() {
             <CardContent className="pt-4 space-y-3">
               <Button
                 onClick={saveSilshuch}
-                disabled={saving}
+                disabled={saving || creatingCalendarEvent}
                 className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white gap-2 h-12 text-base"
               >
                 <Save className="w-5 h-5" />
-                {saving ? "שומר..." : "שמור שיבוץ"}
+                {saving ? "שומר..." : creatingCalendarEvent ? "יוצר אירוע ביומן..." : "שמור שיבוץ"}
               </Button>
             </CardContent>
           </Card>
@@ -759,11 +814,11 @@ export default function SilshuchCreator() {
           <div className="flex gap-2">
             <Button
               onClick={saveSilshuch}
-              disabled={saving}
+              disabled={saving || creatingCalendarEvent}
               className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white gap-2 h-12"
             >
               <Save className="w-5 h-5" />
-              {saving ? "שומר..." : "שמור"}
+              {saving ? "שומר..." : creatingCalendarEvent ? "יוצר אירוע..." : "שמור"}
             </Button>
             <Button
               onClick={generateSummary}
