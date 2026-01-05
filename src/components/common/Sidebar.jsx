@@ -6,9 +6,15 @@ import {
 } from "lucide-react";
 import VRIcon from "@/components/icons/VRIcon";
 
-export default function Sidebar() {
+export default function Sidebar({ onExpandChange }) {
   const location = useLocation();
   const [isExpanded, setIsExpanded] = useState(true);
+
+  React.useEffect(() => {
+    if (onExpandChange) {
+      onExpandChange(isExpanded);
+    }
+  }, [isExpanded, onExpandChange]);
   
   const menuItems = [
     { id: "dashboard", label: "שושי 2.1", icon: Home, page: "Dashboard" },
@@ -31,14 +37,6 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* כפתור כיווץ/הרחבה */}
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="fixed top-4 left-4 z-50 bg-gradient-to-r from-purple-600 to-cyan-600 text-white p-2 rounded-lg shadow-lg hover:shadow-xl transition-all"
-      >
-        {isExpanded ? <ChevronLeft className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
-      </button>
-
       {/* --- SIDEBAR (כל הגדלים) --- */}
       <div 
         className={`flex h-screen bg-gradient-to-b from-slate-800 to-slate-900 flex-col fixed right-0 top-0 shadow-2xl z-40 transition-all duration-300 ${
@@ -46,6 +44,13 @@ export default function Sidebar() {
         }`} 
         dir="rtl"
       >
+        {/* כפתור כיווץ/הרחבה - בצד שמאל של הסיידבר */}
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="absolute top-1/2 -translate-y-1/2 -left-4 z-50 bg-gradient-to-r from-purple-600 to-cyan-600 text-white p-2 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110"
+        >
+          {isExpanded ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+        </button>
         {/* Logo */}
         <div className="p-6 border-b border-slate-700">
           {isExpanded ? (
