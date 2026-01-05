@@ -266,7 +266,7 @@ export default function CRMHub() {
         {/* Statistics Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3 mb-6">
           <Card 
-            className="bg-gradient-to-br from-blue-50 to-cyan-50 border-0 shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
+            className="bg-gradient-to-br from-blue-50 to-cyan-50 border-0 shadow-lg cursor-pointer hover:shadow-xl transition-shadow lg:cursor-default lg:pointer-events-none"
             onClick={() => setActiveTab("schools")}
           >
             <CardContent className="p-3">
@@ -279,7 +279,7 @@ export default function CRMHub() {
           </Card>
 
           <Card 
-            className="bg-gradient-to-br from-cyan-50 to-teal-50 border-0 shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
+            className="bg-gradient-to-br from-cyan-50 to-teal-50 border-0 shadow-lg cursor-pointer hover:shadow-xl transition-shadow lg:cursor-default lg:pointer-events-none"
             onClick={() => setActiveTab("teachers")}
           >
             <CardContent className="p-3">
@@ -322,7 +322,7 @@ export default function CRMHub() {
           </Card>
 
           <Card 
-            className="bg-gradient-to-br from-indigo-50 to-purple-50 border-0 shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
+            className="bg-gradient-to-br from-indigo-50 to-purple-50 border-0 shadow-lg cursor-pointer hover:shadow-xl transition-shadow lg:cursor-default lg:pointer-events-none"
             onClick={() => setActiveTab("contacts")}
           >
             <CardContent className="p-3">
@@ -335,7 +335,7 @@ export default function CRMHub() {
           </Card>
 
           <Card 
-            className="bg-gradient-to-br from-rose-50 to-pink-50 border-0 shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
+            className="bg-gradient-to-br from-rose-50 to-pink-50 border-0 shadow-lg cursor-pointer hover:shadow-xl transition-shadow lg:cursor-default lg:pointer-events-none"
             onClick={() => setActiveTab("activities")}
           >
             <CardContent className="p-3">
