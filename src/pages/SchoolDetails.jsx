@@ -1,4 +1,3 @@
-
 import React from "react";
 import { EducationInstitution } from "@/entities/EducationInstitution";
 import { InstitutionProgram } from "@/entities/InstitutionProgram";
@@ -297,8 +296,7 @@ export default function SchoolDetails() {
         {!isNew && schoolId && (
           <Card className="shadow-md">
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>תוכניות משויכות למוסד</CardTitle>
+              <div className="flex items-center justify-between mb-4">
                 <div className="flex gap-2">
                   <Button 
                     onClick={() => setShowAddProgramDialog(true)}
@@ -311,11 +309,12 @@ export default function SchoolDetails() {
                   <Link to={createPageUrl(`SyllabusWizard?school=${schoolId}`)}>
                     <Button className="bg-green-600 hover:bg-green-700 gap-2" size="sm">
                       <Plus className="w-4 h-4" />
-                      צור תוכנית חדשה
+                      צור תוכנית
                     </Button>
                   </Link>
                 </div>
               </div>
+              <CardTitle>תוכניות משוייכות</CardTitle>
             </CardHeader>
             <CardContent>
               {programs.length === 0 ? (

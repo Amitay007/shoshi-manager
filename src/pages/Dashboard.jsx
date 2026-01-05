@@ -91,7 +91,7 @@ export default function Dashboard() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-slate-900">דאשבורד</h1>
+          <h1 className="text-4xl font-bold text-slate-900">שושי 2.1</h1>
           <p className="text-slate-500 mt-2">סקירה כללית של מערכת ניהול ה-VR</p>
         </div>
 
