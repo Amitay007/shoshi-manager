@@ -278,12 +278,16 @@ export default function BinocularCalculator() {
 
         {/* Legend */}
         <div className="bg-gradient-to-r from-purple-50 via-cyan-50 to-green-50 rounded-2xl p-6 mb-8 shadow-md border-2 border-purple-200">
-          <div className="flex flex-row justify-start gap-8 overflow-x-auto pb-2 px-2 no-scrollbar">
-            <span className="text-sm font-bold text-purple-700">תוכנית 1 - סגול</span>
-            <span className="text-sm font-bold text-cyan-600">תוכנית 2 - כחול תורכיז</span>
-            <span className="text-sm font-bold text-green-700">תוכנית 3 - ירוק</span>
-            <span className="text-sm font-bold text-red-700">משקפת חופפת - אדום</span>
-            <span className="text-sm font-bold text-gray-600">משקפת מושבתת - אפור</span>
+          <div className="space-y-3">
+            <div className="flex flex-row justify-start gap-8 overflow-x-auto pb-2 px-2 no-scrollbar">
+              <span className="text-sm font-bold text-purple-700">תוכנית 1 - סגול</span>
+              <span className="text-sm font-bold text-cyan-600">תוכנית 2 - כחול תורכיז</span>
+              <span className="text-sm font-bold text-green-700">תוכנית 3 - ירוק</span>
+            </div>
+            <div className="flex flex-row justify-start gap-8 overflow-x-auto pb-2 px-2 no-scrollbar">
+              <span className="text-sm font-bold text-red-700">משקפת חופפת - אדום</span>
+              <span className="text-sm font-bold text-gray-600">משקפת מושבתת - אפור</span>
+            </div>
           </div>
         </div>
 

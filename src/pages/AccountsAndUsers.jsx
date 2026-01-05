@@ -420,51 +420,48 @@ export default function AccountsAndUsers() {
                         {filteredAccounts.length > 0 ? (
                             <div className="space-y-3">
                                 {filteredAccounts.map(account => {
-                                    const device = devices.find(d => d.id === account.device_id);
-                                    return (
-                                        <div key={account.id} className="flex items-center justify-between p-4 border border-slate-200 rounded-lg bg-white hover:bg-slate-50 transition-colors">
-                                            <div className="flex items-center gap-4 flex-1">
-                                                <div className="bg-gradient-to-br from-purple-600 to-pink-600 w-12 h-12 rounded-lg flex items-center justify-center shadow-md">
-                                                    {getAccountIcon(account.account_type)}
-                                                </div>
-                                                <div className="flex-1">
-                                                    <div className="font-semibold">{account.account_type}</div>
-                                                    <div className="text-sm text-slate-600">
-                                                        {account.email || account.username}
-                                                        {account.link_url && (
-                                                            <a href={account.link_url} target="_blank" rel="noreferrer" className="ml-2 text-cyan-700 underline">קישור</a>
-                                                        )}
-                                                    </div>
-                                                    {device?.primary_email && (
-                                                        <div className="text-xs text-slate-500 mt-1">
-                                                            משקפת: <span className="font-bold text-cyan-700">#{device.binocular_number}</span> | Gmail: <span className="font-medium">{device.primary_email}</span>
-                                                        </div>
-                                                    )}
-                                                    {account.password && (
-                                                        <div className="flex items-center gap-2 mt-2">
-                                                            <span className="text-xs text-slate-500">סיסמה:</span>
-                                                            <div className="flex items-center gap-1 bg-slate-100 px-2 py-1 rounded">
-                                                                <span className="text-sm font-mono">
-                                                                    {showPasswords[account.id] ? account.password : '••••••••'}
-                                                                </span>
-                                                                <button
-                                                                    onClick={() => togglePasswordVisibility(account.id)}
-                                                                    className="text-slate-500 hover:text-slate-700 p-1"
-                                                                >
-                                                                    {showPasswords[account.id] ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => copyPassword(account.id, account.password)}
-                                                                    className="text-slate-500 hover:text-slate-700 p-1"
-                                                                >
-                                                                    {copiedPasswords[account.id] ? <Check className="w-3 h-3 text-green-600" /> : <Copy className="w-3 h-3" />}
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                </div>
+                                const device = devices.find(d => d.id === account.device_id);
+                                return (
+                                    <div key={account.id} className="flex items-start gap-4 p-6 border border-slate-200 rounded-lg bg-white hover:bg-slate-50 transition-colors">
+                                        <div className="bg-gradient-to-br from-purple-600 to-pink-600 w-12 h-12 rounded-lg flex items-center justify-center shadow-md shrink-0">
+                                            {getAccountIcon(account.account_type)}
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="font-semibold">{account.account_type}</div>
+                                            <div className="text-sm text-slate-600">
+                                                {account.email || account.username}
+                                                {account.link_url && (
+                                                    <a href={account.link_url} target="_blank" rel="noreferrer" className="ml-2 text-cyan-700 underline">קישור</a>
+                                                )}
                                             </div>
-                                            <div className="flex gap-2">
+                                            {device?.primary_email && (
+                                                <div className="text-xs text-slate-500 mt-1">
+                                                    משקפת: <span className="font-bold text-cyan-700">#{device.binocular_number}</span> | Gmail: <span className="font-medium">{device.primary_email}</span>
+                                                </div>
+                                            )}
+                                            {account.password && (
+                                                <div className="flex items-center gap-2 mt-2">
+                                                    <span className="text-xs text-slate-500">סיסמה:</span>
+                                                    <div className="flex items-center gap-1 bg-slate-100 px-2 py-1 rounded">
+                                                        <span className="text-sm font-mono">
+                                                            {showPasswords[account.id] ? account.password : '••••••••'}
+                                                        </span>
+                                                        <button
+                                                            onClick={() => togglePasswordVisibility(account.id)}
+                                                            className="text-slate-500 hover:text-slate-700 p-1"
+                                                        >
+                                                            {showPasswords[account.id] ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                                                        </button>
+                                                        <button
+                                                            onClick={() => copyPassword(account.id, account.password)}
+                                                            className="text-slate-500 hover:text-slate-700 p-1"
+                                                        >
+                                                            {copiedPasswords[account.id] ? <Check className="w-3 h-3 text-green-600" /> : <Copy className="w-3 h-3" />}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            <div className="flex gap-2 mt-3">
                                                 <Button variant="outline" size="sm" onClick={() => openEdit(account)}>
                                                     עריכה
                                                 </Button>
@@ -473,7 +470,8 @@ export default function AccountsAndUsers() {
                                                 </Button>
                                             </div>
                                         </div>
-                                    );
+                                    </div>
+                                );
                                 })}
                             </div>
                         ) : (
