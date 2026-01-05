@@ -16,6 +16,7 @@ import { createPageUrl } from "@/utils";
 import BackHomeButtons from "@/components/common/BackHomeButtons";
 import { with429Retry } from "@/components/utils/retry";
 import { motion, AnimatePresence } from "framer-motion";
+import { base44 } from "@/api/base44Client";
 
 export default function SilshuchCreator() {
   const { toast } = useToast();
@@ -50,6 +51,10 @@ export default function SilshuchCreator() {
   const [viewMode, setViewMode] = useState("list"); // "list" or "form"
   const [allSilshuchim, setAllSilshuchim] = useState([]);
   const [editingSilshuch, setEditingSilshuch] = useState(null);
+  
+  // Calendar integration state
+  const [calendarEnabled, setCalendarEnabled] = useState(false);
+  const [creatingCalendarEvent, setCreatingCalendarEvent] = useState(false);
 
   // Load headsets and silshuchim
   useEffect(() => {
