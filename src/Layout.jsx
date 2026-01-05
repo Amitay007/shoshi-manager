@@ -15,41 +15,28 @@ function LayoutContent({ children, currentPageName }) {
     <>
       {isLoading && (
         <div style={{
-          position: 'fixed', 
-          top: 0, 
-          left: 0, 
-          width: '100vw', 
-          height: '100vh',
-          backgroundColor: '#1e1e2f', 
-          zIndex: 9999,
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center'
+          position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+          backgroundColor: '#1e1e2f', zIndex: 9999,
+          display: 'flex', justifyContent: 'center', alignItems: 'center'
         }}>
           <YoyaLoader />
         </div>
       )}
+      
       <div dir="rtl" className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 text-slate-900">
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap');
-          
-          :root {
-            --yoya-purple-dark: #4a2c6f;
-            --yoya-purple: #6b46c1;
-            --yoya-purple-light: #9f7aea;
-            --yoya-cyan: #00d4ff;
-            --yoya-cyan-light: #7dd3fc;
-            --yoya-pink: #ec4899;
-          }
-          
-          body { 
-            font-family: 'Assistant', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-          }
+          :root { --yoya-purple: #6b46c1; --yoya-cyan: #00d4ff; }
+          body { font-family: 'Assistant', sans-serif; }
+          /* Hide scrollbar for mobile nav */
+          .no-scrollbar::-webkit-scrollbar { display: none; }
+          .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         `}</style>
         
         {showSidebar && <Sidebar />}
         
-        <div className={showSidebar ? "mr-64" : ""}>
+        {/* FIX: Margin only on Desktop (lg), Padding Bottom on Mobile for nav */}
+        <div className={`transition-all duration-300 ${showSidebar ? "lg:mr-64 pb-24 lg:pb-0" : ""}`}>
           {children}
         </div>
         
