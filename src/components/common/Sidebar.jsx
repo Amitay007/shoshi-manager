@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { 
-  Home, Code, BookOpen, School, Users, Calculator, ChevronRight, KeyRound, Stamp
+  Home, Code, BookOpen, School, Users, Calculator, ChevronRight, KeyRound, Stamp, Layers
 } from "lucide-react";
 import VRIcon from "@/components/icons/VRIcon";
 
@@ -11,6 +11,7 @@ export default function Sidebar() {
   
   const menuItems = [
     { id: "dashboard", label: "שושי 2.1", icon: Home, page: "Dashboard" },
+    { id: "version2", label: "שושי 2.0", icon: Layers, page: "Version2" },
     { id: "devices", label: "מכשירי VR", icon: VRIcon, page: "GeneralInfo" },
     { id: "silshuch", label: "סלישוך", icon: Stamp, page: "SilshuchCreator" },
     { id: "apps", label: "אפליקציות", icon: Code, page: "GeneralApps" },
