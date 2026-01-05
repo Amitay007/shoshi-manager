@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
-import { Plus, Copy, Save, Repeat, Glasses, Calendar, FileText, Search, CheckCircle } from "lucide-react";
+import { Plus, Copy, Save, Repeat, Glasses, Calendar, FileText, Search, CheckCircle, Stamp } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import BackHomeButtons from "@/components/common/BackHomeButtons";
@@ -290,7 +290,7 @@ export default function SilshuchCreator() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-xl flex items-center justify-center shadow-lg">
-                <Calendar className="text-white" size={28} />
+                <Stamp className="text-white" size={28} />
               </div>
               <div>
                 <h1 className="text-2xl sm:text-3xl font-bold text-purple-900">ניהול שיבוצים</h1>
@@ -325,7 +325,7 @@ export default function SilshuchCreator() {
             {allSilshuchim.length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center">
-                  <Calendar className="w-16 h-16 mx-auto mb-4 text-slate-300" />
+                  <Stamp className="w-16 h-16 mx-auto mb-4 text-slate-300" />
                   <h3 className="text-xl font-semibold text-slate-700 mb-2">אין שיבוצים</h3>
                   <p className="text-slate-500 mb-4">צור שיבוץ חדש כדי להתחיל</p>
                   <Button
