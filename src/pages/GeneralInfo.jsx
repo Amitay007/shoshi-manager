@@ -368,11 +368,7 @@ export default function GeneralInfo() {
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-              <img 
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68b36aee270b4cf8a6a0a543/c6a8e2593_istockphoto-2167363578-612x612.jpg" 
-                alt="VR Headset"
-                className="w-7 h-7 object-contain brightness-0 invert"
-              />
+              <View className="w-7 h-7 text-white" />
             </div>
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-cyan-900">מכשירי VR</h1>

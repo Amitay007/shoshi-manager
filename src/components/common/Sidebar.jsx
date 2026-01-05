@@ -50,15 +50,7 @@ export default function Sidebar() {
               const active = isActive(item.page);
               return (
                 <Link key={item.id} to={createPageUrl(item.page)} className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${active ? 'bg-gradient-to-r from-purple-600 to-cyan-600 text-white shadow-lg' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
-                  {item.id === "devices" ? (
-                    <img 
-                      src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68b36aee270b4cf8a6a0a543/c6a8e2593_istockphoto-2167363578-612x612.jpg" 
-                      alt="VR"
-                      className="w-5 h-5 object-contain brightness-0 invert"
-                    />
-                  ) : (
-                    <Icon className="w-5 h-5" />
-                  )}
+                  <Icon className="w-5 h-5" />
                   <span className="font-medium text-sm">{item.label}</span>
                   {active && <ChevronRight className="w-4 h-4 mr-auto" />}
                 </Link>
@@ -81,15 +73,7 @@ export default function Sidebar() {
             return (
               <Link key={item.id} to={createPageUrl(item.page)} className={`flex flex-col items-center justify-center min-w-[70px] p-2 rounded-lg transition-all ${active ? 'text-cyan-400' : 'text-slate-400'}`}>
                 <div className={`p-2 rounded-full ${active ? 'bg-slate-800' : ''}`}>
-                  {item.id === "devices" ? (
-                    <img 
-                      src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68b36aee270b4cf8a6a0a543/c6a8e2593_istockphoto-2167363578-612x612.jpg" 
-                      alt="VR"
-                      className={`w-6 h-6 object-contain ${active ? 'brightness-0 invert' : 'brightness-0 invert opacity-60'}`}
-                    />
-                  ) : (
-                    <Icon className="w-6 h-6" />
-                  )}
+                  <Icon className="w-6 h-6" />
                 </div>
                 <span className="text-[10px] mt-1 font-medium whitespace-nowrap">{item.label}</span>
               </Link>
