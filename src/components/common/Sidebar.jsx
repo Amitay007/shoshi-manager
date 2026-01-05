@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { 
-  Home, AppWindow, BookOpen, School, Users, Calculator, ChevronRight, KeyRound
+  Home, AppWindow, BookOpen, School, Users, Calculator, ChevronRight, KeyRound, Grid3x3
 } from "lucide-react";
 import VRIcon from "@/components/icons/VRIcon";
 
@@ -17,6 +17,7 @@ export default function Sidebar() {
     { id: "schools", label: "בתי ספר", icon: School, page: "Schools" },
     { id: "teachers", label: "ניהול", icon: Users, page: "CRMHub" },
     { id: "calculator", label: "מחשבון", icon: Calculator, page: "BinocularCalculator" },
+    { id: "silshuch", label: "סלישוך", icon: Grid3x3, page: "SilshuchCreator" },
     { id: "accounts", label: "חשבונות", icon: KeyRound, page: "AccountsAndUsers" },
   ];
 
