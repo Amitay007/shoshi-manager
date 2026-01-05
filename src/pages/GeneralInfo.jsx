@@ -4,7 +4,7 @@ import { DeviceLinkedAccount } from "@/entities/DeviceLinkedAccount";
 import { VRApp } from "@/entities/VRApp";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, ArrowUp, ArrowDown, Hash, Calendar, Mail, Users, AppWindow, Orbit, Grid, List, LayoutGrid, X, Edit, Save, Clock, MapPin, Star, AlertCircle, CheckCircle } from "lucide-react";
+import { Plus, ArrowUp, ArrowDown, Hash, Calendar, Mail, Users, AppWindow, Orbit, Grid, List, LayoutGrid, X, Edit, Save, Clock, MapPin, Star, AlertCircle, CheckCircle, Glasses } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Input } from "@/components/ui/input";
