@@ -919,67 +919,7 @@ export default function GeneralInfo() {
                     </CardContent>
                   </Card>
 
-                  <Card>
-                    <CardHeader>
-                      <div className="flex justify-between items-center">
-                        <CardTitle className="flex items-center gap-3">
-                          <Calendar className="w-6 h-6" />
-                          שיבוצים קרובים
-                        </CardTitle>
-                        <Link to={createPageUrl(`SchedulerPage`)}>
-                          <Button variant="outline" size="sm">
-                            לוח זמנים מלא
-                          </Button>
-                        </Link>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      {upcomingSchedules.length > 0 ? (
-                        <div className="space-y-3">
-                          {upcomingSchedules.map(schedule => {
-                            const program = programs.find(p => p.id === schedule.program_id);
-                            const startDate = new Date(schedule.start_datetime);
-                            const endDate = new Date(schedule.end_datetime);
 
-                            return (
-                              <div key={schedule.id} className="p-3 border border-slate-200 rounded-lg hover:border-cyan-400 transition-colors">
-                                <div className="flex justify-between items-start mb-2">
-                                  <div className="font-semibold text-slate-800">
-                                    {program?.title || program?.course_topic || "תוכנית"}
-                                  </div>
-                                  <Badge className={
-                                    schedule.status === "מתוכנן" ? "bg-blue-100 text-blue-800" :
-                                    schedule.status === "פעיל" ? "bg-green-100 text-green-800" :
-                                    "bg-slate-100 text-slate-600"
-                                  }>
-                                    {schedule.status}
-                                  </Badge>
-                                </div>
-                                <div className="text-sm text-slate-600 space-y-1">
-                                  <div className="flex items-center gap-2">
-                                    <Calendar className="w-4 h-4" />
-                                    {format(startDate, 'dd/MM/yyyy')}
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <Clock className="w-4 h-4" />
-                                    {format(startDate, 'HH:mm')} - {format(endDate, 'HH:mm')}
-                                  </div>
-                                  {schedule.location && (
-                                    <div className="flex items-center gap-2">
-                                      <MapPin className="w-4 h-4" />
-                                      {schedule.location}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      ) : (
-                        <div className="text-sm text-slate-500 text-center py-4">אין שיבוצים קרובים</div>
-                      )}
-                    </CardContent>
-                  </Card>
                 </div>
               </div>
             </>

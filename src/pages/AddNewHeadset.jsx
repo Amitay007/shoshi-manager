@@ -1,4 +1,3 @@
-
 import React, { useEffect, useMemo, useState } from "react";
 import { VRDevice } from "@/entities/VRDevice";
 import { VRApp } from "@/entities/VRApp";
@@ -187,23 +186,16 @@ export default function AddNewHeadset() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div>
-                <Input
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  placeholder="מזהה משקפת (מספרי)"
-                  value={form.binocular_number}
-                  onChange={handleNumericChange}
-                />
-                {errors.id && <p className="text-red-600 text-sm mt-1">{errors.id}</p>}
-              </div>
+            <div>
               <Input
-                placeholder="מספר סידורי (אופציונלי)"
-                value={form.serial_number}
-                onChange={(e) => setForm((p) => ({ ...p, serial_number: e.target.value }))}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                placeholder="מזהה משקפת (מספרי)"
+                value={form.binocular_number}
+                onChange={handleNumericChange}
               />
+              {errors.id && <p className="text-red-600 text-sm mt-1">{errors.id}</p>}
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">

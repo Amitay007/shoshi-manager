@@ -262,8 +262,29 @@ export default function BinocularCalculator() {
       `}</style>
 
       <div className="max-w-[1800px] mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        {/* Mobile Header */}
+        <div className="lg:hidden mb-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+              <Calculator className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">מחשבון משקפות</h1>
+              <p className="text-gray-600 text-xs mt-1">בדיקת זמינות בין תוכניות</p>
+            </div>
+          </div>
+          <div className="flex gap-2 mb-4">
+            <Link to={createPageUrl("SilshuchCreator")} className="flex-1">
+              <Button variant="outline" className="w-full">סילשוך</Button>
+            </Link>
+            <Link to={createPageUrl("CRMHub")} className="flex-1">
+              <Button variant="outline" className="w-full">יחסי אנוש</Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* Desktop Header */}
+        <div className="hidden lg:flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-gradient-to-br from-pink-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-xl">
               <Calculator className="w-9 h-9 text-white" />
@@ -273,11 +294,30 @@ export default function BinocularCalculator() {
               <p className="text-gray-600 font-medium mt-1">בדיקת זמינות בין תוכניות</p>
             </div>
           </div>
-          <BackHomeButtons backTo="Programs" className="hidden lg:block" />
+          <BackHomeButtons backTo="Programs" />
         </div>
 
-        {/* Legend */}
-        <div className="bg-gradient-to-r from-purple-50 via-cyan-50 to-green-50 rounded-2xl p-6 mb-8 shadow-md border-2 border-purple-200">
+        {/* Mobile Legend */}
+        <div className="lg:hidden bg-gradient-to-r from-purple-50 via-cyan-50 to-green-50 rounded-xl p-4 mb-6 shadow-md border border-purple-200">
+          <div className="flex items-center justify-center gap-2 mb-3">
+            <div className="h-0.5 w-8 bg-purple-600"></div>
+            <span className="text-xs font-bold text-purple-700">1</span>
+            <div className="h-0.5 w-8 bg-purple-600"></div>
+            <div className="h-0.5 w-8 bg-cyan-500"></div>
+            <span className="text-xs font-bold text-cyan-600">2</span>
+            <div className="h-0.5 w-8 bg-cyan-500"></div>
+            <div className="h-0.5 w-8 bg-green-600"></div>
+            <span className="text-xs font-bold text-green-700">3</span>
+            <div className="h-0.5 w-8 bg-green-600"></div>
+          </div>
+          <div className="space-y-1 text-center">
+            <div className="text-xs font-bold text-red-700">חופפת - אדום</div>
+            <div className="text-xs font-bold text-gray-600">מושבתת - אפור</div>
+          </div>
+        </div>
+
+        {/* Desktop Legend */}
+        <div className="hidden lg:block bg-gradient-to-r from-purple-50 via-cyan-50 to-green-50 rounded-2xl p-6 mb-8 shadow-md border-2 border-purple-200">
           <div className="space-y-3">
             <div className="flex flex-row justify-start gap-8 overflow-x-auto pb-2 px-2 no-scrollbar">
               <span className="text-sm font-bold text-purple-700">תוכנית 1 - סגול</span>
@@ -315,27 +355,36 @@ export default function BinocularCalculator() {
                   <SelectTrigger className="w-full h-12 text-base font-semibold border-2 border-gray-300 rounded-xl hover:border-purple-400 transition-colors">
                     <SelectValue placeholder="בחר תוכנית..." />
                   </SelectTrigger>
-                  <SelectContent dir="rtl" align="end">
+                  <SelectContent dir="rtl" align="end" className="lg:max-h-80">
                     {programs
                       .filter(p => 
                         p.id === prog.id || 
                         (!selectedPrograms.some((sp, i) => i !== idx && sp.id === p.id))
                       )
-                      .map(program => (
-                        <SelectItem key={program.id} value={program.id} className="font-medium text-right">
-                          {program.title || program.course_topic || program.subject || "תוכנית ללא שם"}
-                        </SelectItem>
-                      ))}
+                      .map(program => {
+                        const title = program.title || program.course_topic || program.subject || "תוכנית ללא שם";
+                        return (
+                          <SelectItem 
+                            key={program.id} 
+                            value={program.id} 
+                            className="font-medium text-right lg:whitespace-normal lg:h-auto lg:py-3"
+                          >
+                            <div className="lg:max-w-md lg:leading-relaxed">
+                              {title}
+                            </div>
+                          </SelectItem>
+                        );
+                      })}
                   </SelectContent>
                 </Select>
 
                 {prog.id && (
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between bg-white/70 backdrop-blur-sm p-4 rounded-xl border-2 border-gray-200">
-                      <div className="font-bold text-gray-900 text-base truncate flex-1 pr-2">
+                    <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between bg-white/70 backdrop-blur-sm p-4 rounded-xl border-2 border-gray-200 gap-3">
+                      <div className="font-bold text-gray-900 text-sm lg:text-base flex-1 leading-relaxed">
                         {prog.title}
                       </div>
-                      <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold px-4 py-1.5 rounded-full shadow-md">
+                      <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold px-4 py-1.5 rounded-full shadow-md whitespace-nowrap">
                         {prog.devices.length} משקפות
                       </Badge>
                     </div>

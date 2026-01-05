@@ -286,7 +286,43 @@ export default function SilshuchCreator() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 p-6" dir="rtl">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="mb-6">
+        <div className="mb-6 lg:hidden">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-xl flex items-center justify-center shadow-lg">
+              <Stamp className="text-white" size={28} />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-purple-900">ניהול שיבוצים</h1>
+              <p className="text-slate-600 text-xs">יוצר שיבוץ משקפות</p>
+            </div>
+          </div>
+          <div className="flex items-center justify-between gap-2 mb-4">
+            {viewMode === "list" && (
+              <>
+                <Button
+                  onClick={createNewSilshuch}
+                  className="flex-1 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 gap-2"
+                >
+                  <Plus className="w-5 h-5" />
+                  צור שיבוץ
+                </Button>
+                <BackHomeButtons backLabel="לעמוד הקודם" showHomeButton={false} />
+              </>
+            )}
+            {viewMode === "form" && (
+              <Button
+                onClick={() => setViewMode("list")}
+                variant="outline"
+                className="gap-2 w-full"
+              >
+                חזור לרשימה
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Desktop Header */}
+        <div className="mb-6 hidden lg:block">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-xl flex items-center justify-center shadow-lg">
               <Stamp className="text-white" size={28} />
@@ -348,7 +384,7 @@ export default function SilshuchCreator() {
                         ? "bg-gradient-to-r from-purple-50 to-purple-100" 
                         : "bg-gradient-to-r from-cyan-50 to-cyan-100"
                     }`}>
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between mb-2">
                         <CardTitle className="text-lg">{silshuch.assignmentName}</CardTitle>
                         <Badge className={
                           silshuch.mode === "static"
@@ -358,6 +394,11 @@ export default function SilshuchCreator() {
                           {silshuch.mode === "static" ? "סטטי" : "דינמי"}
                         </Badge>
                       </div>
+                      {silshuch.created_date && (
+                        <p className="text-xs text-slate-500">
+                          נוצר: {format(new Date(silshuch.created_date), 'dd/MM/yyyy HH:mm')}
+                        </p>
+                      )}
                     </CardHeader>
                     <CardContent className="pt-4">
                       {silshuch.details && (
@@ -371,14 +412,6 @@ export default function SilshuchCreator() {
                             : `${silshuch.numberOfSessions} מפגשים`
                           }
                         </div>
-                        <Badge variant="outline" className={
-                          silshuch.status === "active" ? "border-green-500 text-green-700" :
-                          silshuch.status === "completed" ? "border-blue-500 text-blue-700" :
-                          "border-slate-500 text-slate-700"
-                        }>
-                          {silshuch.status === "active" ? "פעיל" :
-                           silshuch.status === "completed" ? "הושלם" : "בוטל"}
-                        </Badge>
                       </div>
                     </CardContent>
                   </Card>
