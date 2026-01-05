@@ -556,7 +556,7 @@ export default function GeneralInfo() {
 
                     {/* Primary Email */}
                     {device.primary_email && (
-                      <div className="text-center text-xs text-slate-700 mt-3 mb-2 font-medium truncate px-2">
+                      <div className="text-center text-xs text-slate-700 mt-3 mb-2 font-medium px-2 break-words">
                         {device.primary_email}
                       </div>
                     )}
