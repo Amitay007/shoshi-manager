@@ -366,9 +366,14 @@ export default function GeneralInfo() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6">
-          <div className="mb-4">
-            <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-2">מלאי מכשירים</h1>
-            <p className="text-slate-500 text-base sm:text-lg">ניהול חכם של משקפות VR</p>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+              <Glasses className="w-7 h-7 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-cyan-900">מכשירי VR</h1>
+              <p className="text-slate-500 text-xs sm:text-sm">ניהול חכם של משקפות VR</p>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <Link to={createPageUrl("AddNewHeadset")} className="flex-1 sm:flex-none">
