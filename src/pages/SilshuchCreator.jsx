@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
-import { Plus, Copy, Save, Repeat, Glasses, Calendar, FileText, Search, CheckCircle, Stamp, MessageSquare } from "lucide-react";
+import { Plus, Copy, Save, Repeat, Glasses, Calendar, FileText, Search, CheckCircle, Stamp, MessageSquare, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -319,6 +319,33 @@ export default function SilshuchCreator() {
     setViewMode("form");
   };
 
+  // Delete silshuch (without touching Google Calendar events)
+  const deleteSilshuch = async (silshuch, e) => {
+    e.stopPropagation(); // Prevent card click
+    
+    if (!confirm(`האם למחוק את השיבוץ "${silshuch.assignmentName}"? פעולה זו לא תמחק אירועים שנוצרו ב-Google Calendar.`)) {
+      return;
+    }
+
+    try {
+      await with429Retry(() => Silshuch.delete(silshuch.id));
+      
+      toast({
+        title: "נמחק בהצלחה",
+        description: "השיבוץ נמחק מהמערכת",
+      });
+
+      await loadData();
+    } catch (error) {
+      console.error("Error deleting silshuch:", error);
+      toast({
+        title: "שגיאה במחיקה",
+        description: "לא ניתן למחוק את השיבוץ",
+        variant: "destructive"
+      });
+    }
+  };
+
   // Get headset display
   const getHeadsetDisplay = (deviceId) => {
     const device = allHeadsets.find(d => d.id === deviceId);
@@ -436,9 +463,17 @@ export default function SilshuchCreator() {
                     transition={{ duration: 0.2 }}
                   >
                     <Card
-                      className="hover:shadow-lg transition-shadow cursor-pointer"
+                      className="hover:shadow-lg transition-shadow cursor-pointer relative"
                       onClick={() => viewSilshuch(silshuch)}
                     >
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="absolute top-2 left-2 z-10 text-red-600 hover:text-red-700 hover:bg-red-50"
+                      onClick={(e) => deleteSilshuch(silshuch, e)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                     <CardHeader className={`${
                       silshuch.mode === "static" 
                         ? "bg-gradient-to-r from-purple-50 to-purple-100" 
