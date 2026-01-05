@@ -25,13 +25,30 @@ function LayoutContent({ children, currentPageName }) {
       
       <div dir="rtl" className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 text-slate-900">
         <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap');
-          :root { --yoya-purple: #6b46c1; --yoya-cyan: #00d4ff; }
-          body { font-family: 'Assistant', sans-serif; }
-          /* Hide scrollbar for mobile nav */
-          .no-scrollbar::-webkit-scrollbar { display: none; }
-          .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        `}</style>
+            @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap');
+            :root { 
+              --yoya-purple: #6b46c1; 
+              --yoya-cyan: #00d4ff;
+              --yoya-dark: #2d1b69;
+              --yoya-light: #e8def8;
+            }
+            body { 
+              font-family: 'Assistant', sans-serif;
+            }
+            /* Hide scrollbar for mobile nav */
+            .no-scrollbar::-webkit-scrollbar { display: none; }
+            .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+            /* Smooth transitions for all interactive elements */
+            button, a, .card, [role="button"] {
+              transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            /* Subtle hover effects */
+            button:hover, a:hover {
+              transform: translateY(-1px);
+            }
+          `}</style>
         
         {showSidebar && <Sidebar />}
         

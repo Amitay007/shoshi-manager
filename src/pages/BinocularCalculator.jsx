@@ -12,6 +12,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import BackHomeButtons from "@/components/common/BackHomeButtons";
 import { with429Retry } from "@/components/utils/retry";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function BinocularCalculator() {
   const [programs, setPrograms] = useState([]);
@@ -204,13 +205,19 @@ export default function BinocularCalculator() {
           const isDisabled = device?.is_disabled || false;
           
           return (
-            <Link 
+            <motion.div
               key={num}
-              to={createPageUrl(`DeviceInfo?id=${num}`)}
-              className="block"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              whileHover={{ scale: 1.1, rotate: 3 }}
+              transition={{ duration: 0.2 }}
             >
-              <div
-                className={`aspect-square rounded-2xl border-3 transition-all flex flex-col items-center justify-center font-bold cursor-pointer shadow-md hover:shadow-xl hover:scale-105 ${
+              <Link 
+                to={createPageUrl(`DeviceInfo?id=${num}`)}
+                className="block"
+              >
+                <div
+                  className={`aspect-square rounded-2xl border-3 transition-all flex flex-col items-center justify-center font-bold cursor-pointer shadow-md hover:shadow-xl ${
                   isDisabled
                     ? 'bg-gray-400 border-gray-500 text-gray-700' // Updated color for disabled
                     : isOverlapping
@@ -225,10 +232,11 @@ export default function BinocularCalculator() {
                       : `משקפת ${num} - פנויה`
                 }
               >
-                <Glasses className="w-5 h-5 mb-1" />
-                <span className="text-sm font-extrabold">{num}</span>
-              </div>
-            </Link>
+                  <Glasses className="w-5 h-5 mb-1" />
+                  <span className="text-sm font-extrabold">{num}</span>
+                </div>
+              </Link>
+            </motion.div>
           );
         })}
       </div>

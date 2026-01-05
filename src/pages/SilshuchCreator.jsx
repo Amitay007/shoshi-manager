@@ -15,6 +15,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import BackHomeButtons from "@/components/common/BackHomeButtons";
 import { with429Retry } from "@/components/utils/retry";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function SilshuchCreator() {
   const { toast } = useToast();
@@ -397,11 +398,17 @@ export default function SilshuchCreator() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {allSilshuchim.map(silshuch => (
-                  <Card
+                  <motion.div
                     key={silshuch.id}
-                    className="hover:shadow-lg transition-shadow cursor-pointer"
-                    onClick={() => viewSilshuch(silshuch)}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    whileHover={{ scale: 1.02, y: -4 }}
+                    transition={{ duration: 0.2 }}
                   >
+                    <Card
+                      className="hover:shadow-lg transition-shadow cursor-pointer"
+                      onClick={() => viewSilshuch(silshuch)}
+                    >
                     <CardHeader className={`${
                       silshuch.mode === "static" 
                         ? "bg-gradient-to-r from-purple-50 to-purple-100" 
@@ -438,6 +445,7 @@ export default function SilshuchCreator() {
                       </div>
                     </CardContent>
                   </Card>
+                  </motion.div>
                 ))}
               </div>
             )}
