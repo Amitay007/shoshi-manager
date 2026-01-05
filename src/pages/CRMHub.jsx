@@ -267,177 +267,113 @@ export default function CRMHub() {
 
         {/* Statistics Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-8 gap-3 mb-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0 }}
+          <Card 
+            className="bg-gradient-to-br from-blue-50 to-cyan-50 border-0 shadow-lg cursor-pointer hover:shadow-xl hover:scale-105 active:scale-95 transition-all"
+            onClick={() => setActiveTab("schools")}
           >
-            <Card 
-              className="bg-gradient-to-br from-blue-50 to-cyan-50 border-0 shadow-lg cursor-pointer hover:shadow-xl transition-all duration-300"
-              onClick={() => setActiveTab("schools")}
-              whileHover={{ scale: 1.05, y: -5 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <CardContent className="p-3">
-                <div className="flex flex-col items-center">
-                  <Building2 className="w-8 h-8 text-blue-600 mb-1" />
-                  <p className="text-2xl font-bold text-blue-900">{stats.totalSchools}</p>
-                  <p className="text-xs text-slate-600">בתי ספר</p>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+            <CardContent className="p-3">
+              <div className="flex flex-col items-center">
+                <Building2 className="w-8 h-8 text-blue-600 mb-1" />
+                <p className="text-2xl font-bold text-blue-900">{stats.totalSchools}</p>
+                <p className="text-xs text-slate-600">בתי ספר</p>
+              </div>
+            </CardContent>
+          </Card>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.05 }}
+          <Card 
+            className="bg-gradient-to-br from-cyan-50 to-teal-50 border-0 shadow-lg cursor-pointer hover:shadow-xl hover:scale-105 active:scale-95 transition-all"
+            onClick={() => setActiveTab("teachers")}
           >
-            <Card 
-              className="bg-gradient-to-br from-cyan-50 to-teal-50 border-0 shadow-lg cursor-pointer hover:shadow-xl transition-all duration-300"
-              onClick={() => setActiveTab("teachers")}
-              whileHover={{ scale: 1.05, y: -5 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <CardContent className="p-3">
-                <div className="flex flex-col items-center">
-                  <Users className="w-8 h-8 text-cyan-600 mb-1" />
-                  <p className="text-2xl font-bold text-cyan-900">{stats.totalTeachers}</p>
-                  <p className="text-xs text-slate-600">מורים</p>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+            <CardContent className="p-3">
+              <div className="flex flex-col items-center">
+                <Users className="w-8 h-8 text-cyan-600 mb-1" />
+                <p className="text-2xl font-bold text-cyan-900">{stats.totalTeachers}</p>
+                <p className="text-xs text-slate-600">מורים</p>
+              </div>
+            </CardContent>
+          </Card>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.1 }}
-          >
-            <Card className="bg-gradient-to-br from-gray-50 to-slate-100 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-              <CardContent className="p-3">
-                <div className="flex flex-col items-center">
-                  <BookOpen className="w-8 h-8 text-gray-400 mb-1" />
-                  <p className="text-2xl font-bold text-gray-600">{stats.totalPrograms}</p>
-                  <p className="text-xs text-slate-500">סילבוסים</p>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+          <Card className="bg-gradient-to-br from-gray-50 to-slate-100 border-0 shadow-lg">
+            <CardContent className="p-3">
+              <div className="flex flex-col items-center">
+                <BookOpen className="w-8 h-8 text-gray-400 mb-1" />
+                <p className="text-2xl font-bold text-gray-600">{stats.totalPrograms}</p>
+                <p className="text-xs text-slate-500">סילבוסים</p>
+              </div>
+            </CardContent>
+          </Card>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.15 }}
-          >
-            <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-              <CardContent className="p-3">
-                <div className="flex flex-col items-center">
-                  <Calendar className="w-8 h-8 text-green-600 mb-1" />
-                  <p className="text-2xl font-bold text-green-900">{stats.activePrograms}</p>
-                  <p className="text-xs text-slate-600">תוכניות פעילות</p>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+          <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-0 shadow-lg">
+            <CardContent className="p-3">
+              <div className="flex flex-col items-center">
+                <Calendar className="w-8 h-8 text-green-600 mb-1" />
+                <p className="text-2xl font-bold text-green-900">{stats.activePrograms}</p>
+                <p className="text-xs text-slate-600">תוכניות פעילות</p>
+              </div>
+            </CardContent>
+          </Card>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.2 }}
-          >
-            <Card className="bg-gradient-to-br from-purple-50 to-cyan-50 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-              <CardContent className="p-3">
-                <div className="flex flex-col items-center">
-                  <VRIcon className="w-8 h-8 text-purple-600 mb-1" />
-                  <p className="text-2xl font-bold text-purple-900">{stats.totalDevices}</p>
-                  <p className="text-xs text-slate-600">משקפות</p>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+          <Card className="bg-gradient-to-br from-purple-50 to-cyan-50 border-0 shadow-lg">
+            <CardContent className="p-3">
+              <div className="flex flex-col items-center">
+                <VRIcon className="w-8 h-8 text-purple-600 mb-1" />
+                <p className="text-2xl font-bold text-purple-900">{stats.totalDevices}</p>
+                <p className="text-xs text-slate-600">משקפות</p>
+              </div>
+            </CardContent>
+          </Card>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.25 }}
+          <Card 
+            className="bg-gradient-to-br from-indigo-50 to-purple-50 border-0 shadow-lg cursor-pointer hover:shadow-xl hover:scale-105 active:scale-95 transition-all"
+            onClick={() => setActiveTab("contacts")}
           >
-            <Card 
-              className="bg-gradient-to-br from-indigo-50 to-purple-50 border-0 shadow-lg cursor-pointer hover:shadow-xl transition-all duration-300"
-              onClick={() => setActiveTab("contacts")}
-              whileHover={{ scale: 1.05, y: -5 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <CardContent className="p-3">
-                <div className="flex flex-col items-center">
-                  <UserCircle className="w-8 h-8 text-indigo-600 mb-1" />
-                  <p className="text-2xl font-bold text-indigo-900">{stats.totalContacts}</p>
-                  <p className="text-xs text-slate-600">אנשי קשר</p>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+            <CardContent className="p-3">
+              <div className="flex flex-col items-center">
+                <UserCircle className="w-8 h-8 text-indigo-600 mb-1" />
+                <p className="text-2xl font-bold text-indigo-900">{stats.totalContacts}</p>
+                <p className="text-xs text-slate-600">אנשי קשר</p>
+              </div>
+            </CardContent>
+          </Card>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.3 }}
+          <Card 
+            className="bg-gradient-to-br from-purple-50 to-indigo-50 border-0 shadow-lg cursor-pointer hover:shadow-xl hover:scale-105 active:scale-95 transition-all"
+            onClick={() => window.location.href = createPageUrl("CashFlow")}
           >
-            <Card 
-              className="bg-gradient-to-br from-purple-50 to-indigo-50 border-0 shadow-lg cursor-pointer hover:shadow-xl transition-all duration-300"
-              onClick={() => window.location.href = createPageUrl("CashFlow")}
-              whileHover={{ scale: 1.05, y: -5 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <CardContent className="p-3">
-                <div className="flex flex-col items-center">
-                  <Wallet className="w-8 h-8 text-purple-600 mb-1" />
-                  <p className="text-2xl font-bold text-purple-900">₪</p>
-                  <p className="text-xs text-slate-600">תזרים</p>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+            <CardContent className="p-3">
+              <div className="flex flex-col items-center">
+                <Wallet className="w-8 h-8 text-purple-600 mb-1" />
+                <p className="text-2xl font-bold text-purple-900">₪</p>
+                <p className="text-xs text-slate-600">תזרים</p>
+              </div>
+            </CardContent>
+          </Card>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.35 }}
+          <Card 
+            className="bg-gradient-to-br from-rose-50 to-pink-50 border-0 shadow-lg cursor-pointer hover:shadow-xl hover:scale-105 active:scale-95 transition-all"
+            onClick={() => setActiveTab("activities")}
           >
-            <Card 
-              className="bg-gradient-to-br from-rose-50 to-pink-50 border-0 shadow-lg cursor-pointer hover:shadow-xl transition-all duration-300"
-              onClick={() => setActiveTab("activities")}
-              whileHover={{ scale: 1.05, y: -5 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <CardContent className="p-3">
-                <div className="flex flex-col items-center">
-                  <ClipboardList className="w-8 h-8 text-rose-600 mb-1" />
-                  <p className="text-2xl font-bold text-rose-900">{stats.totalActivities}</p>
-                  <p className="text-xs text-slate-600">יומן קשרי לקוחות</p>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+            <CardContent className="p-3">
+              <div className="flex flex-col items-center">
+                <ClipboardList className="w-8 h-8 text-rose-600 mb-1" />
+                <p className="text-2xl font-bold text-rose-900">{stats.totalActivities}</p>
+                <p className="text-xs text-slate-600">יומן קשרי לקוחות</p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Search Bar */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.4 }}
-        >
-          <Card className="mb-6 shadow-lg border-0 hover:shadow-xl transition-shadow duration-300">
-            <CardContent className="p-4">
-              <Input
-                placeholder="חיפוש בתי ספר, מורים, אנשי קשר..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="text-right transition-all duration-200 focus:ring-2 focus:ring-indigo-400"
-              />
-            </CardContent>
-          </Card>
-        </motion.div>
+        <Card className="mb-6 shadow-lg border-0">
+          <CardContent className="p-4">
+            <Input
+              placeholder="חיפוש בתי ספר, מורים, אנשי קשר..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="text-right"
+            />
+          </CardContent>
+        </Card>
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} dir="rtl">
@@ -462,13 +398,8 @@ export default function CRMHub() {
 
           {/* Schools Tab */}
           <TabsContent value="schools">
-            <motion.div 
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
-            >
-              {filteredSchools.map((school, index) => {
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredSchools.map(school => {
                 const stats = getSchoolStats(school.id);
                 
                 return (
@@ -476,8 +407,8 @@ export default function CRMHub() {
                     key={school.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.05 }}
-                    whileHover={{ y: -5 }}
+                    whileHover={{ scale: 1.02, y: -4 }}
+                    transition={{ duration: 0.2 }}
                   >
                     <Card 
                       className="bg-white hover:shadow-xl transition-all duration-300 border-0 cursor-pointer"
@@ -539,33 +470,22 @@ export default function CRMHub() {
                   </motion.div>
                 );
               })}
-            </motion.div>
+            </div>
 
             {filteredSchools.length === 0 && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Card className="shadow-lg border-0">
-                  <CardContent className="text-center py-12">
-                    <Building2 className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                    <p className="text-slate-500 text-lg">לא נמצאו בתי ספר</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
+              <Card className="shadow-lg border-0">
+                <CardContent className="text-center py-12">
+                  <Building2 className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+                  <p className="text-slate-500 text-lg">לא נמצאו בתי ספר</p>
+                </CardContent>
+              </Card>
             )}
-            </TabsContent>
+          </TabsContent>
 
           {/* Teachers Tab */}
           <TabsContent value="teachers">
-            <motion.div 
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
-            >
-              {filteredTeachers.map((teacher, index) => {
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredTeachers.map(teacher => {
                 const school = schools.find(s => s.id === teacher.institution_id);
                 const stats = getTeacherStats(teacher.name);
                 
@@ -574,8 +494,8 @@ export default function CRMHub() {
                     key={teacher.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.05 }}
-                    whileHover={{ y: -5 }}
+                    whileHover={{ scale: 1.02, y: -4 }}
+                    transition={{ duration: 0.2 }}
                   >
                     <Card 
                       className="bg-white hover:shadow-xl transition-all duration-300 border-0"
@@ -636,60 +556,39 @@ export default function CRMHub() {
                   </motion.div>
                 );
               })}
-            </motion.div>
+            </div>
 
             {filteredTeachers.length === 0 && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Card className="shadow-lg border-0">
-                  <CardContent className="text-center py-12">
-                    <Users className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                    <p className="text-slate-500 text-lg">לא נמצאו מורים</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
+              <Card className="shadow-lg border-0">
+                <CardContent className="text-center py-12">
+                  <Users className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+                  <p className="text-slate-500 text-lg">לא נמצאו מורים</p>
+                </CardContent>
+              </Card>
             )}
-            </TabsContent>
+          </TabsContent>
 
           {/* Contacts Tab */}
           <TabsContent value="contacts">
-            <motion.div 
-              className="mb-4 flex justify-end"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Button 
-                onClick={() => { resetContactForm(); setShowContactDialog(true); }} 
-                className="gap-2 bg-indigo-600 hover:bg-indigo-700 transition-all duration-300 hover:shadow-lg"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
+            <div className="mb-4 flex justify-end">
+              <Button onClick={() => { resetContactForm(); setShowContactDialog(true); }} className="gap-2 bg-indigo-600 hover:bg-indigo-700">
                 <Plus className="w-4 h-4" />
                 איש קשר חדש
               </Button>
-            </motion.div>
+            </div>
 
-            <motion.div 
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
-            >
-              {filteredContacts.map((contact, index) => {
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredContacts.map(contact => {
                 const school = schools.find(s => s.id === contact.institution_id);
                 const contactActivities = activities.filter(a => a.contact_id === contact.id);
-
+                
                 return (
                   <motion.div
                     key={contact.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.05 }}
-                    whileHover={{ y: -5 }}
+                    whileHover={{ scale: 1.02, y: -4 }}
+                    transition={{ duration: 0.2 }}
                   >
                     <Card className="bg-white hover:shadow-xl transition-all duration-300 border-0">
                     <div className="h-1.5 bg-gradient-to-r from-indigo-600 to-purple-600"></div>
@@ -766,56 +665,40 @@ export default function CRMHub() {
                   </motion.div>
                 );
               })}
-            </motion.div>
+            </div>
 
             {filteredContacts.length === 0 && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Card className="shadow-lg border-0">
-                  <CardContent className="text-center py-12">
-                    <UserCircle className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                    <p className="text-slate-500 text-lg">לא נמצאו אנשי קשר</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
+              <Card className="shadow-lg border-0">
+                <CardContent className="text-center py-12">
+                  <UserCircle className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+                  <p className="text-slate-500 text-lg">לא נמצאו אנשי קשר</p>
+                </CardContent>
+              </Card>
             )}
-            </TabsContent>
+          </TabsContent>
 
           {/* Activities Tab */}
           <TabsContent value="activities">
-            <motion.div 
-              className="mb-4 flex justify-end"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Button 
-                onClick={() => { resetActivityForm(); setShowActivityDialog(true); }} 
-                className="gap-2 bg-rose-600 hover:bg-rose-700 transition-all duration-300 hover:shadow-lg"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
+            <div className="mb-4 flex justify-end">
+              <Button onClick={() => { resetActivityForm(); setShowActivityDialog(true); }} className="gap-2 bg-rose-600 hover:bg-rose-700">
                 <Plus className="w-4 h-4" />
                 יומן קשרי לקוחות
               </Button>
-            </motion.div>
+            </div>
 
             <div className="space-y-3">
-              {recentActivities.map((activity, index) => {
+              {recentActivities.map(activity => {
                 const contact = contacts.find(c => c.id === activity.contact_id);
                 const school = schools.find(s => s.id === activity.institution_id);
-
+                
                 return (
                   <motion.div
                     key={activity.id}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                    transition={{ duration: 0.2 }}
                   >
-                    <Card className="bg-white hover:shadow-md transition-all border-0 hover:border-rose-200 hover:border">
+                    <Card className="bg-white hover:shadow-md transition-all border-0">
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">
                         <div className="w-10 h-10 bg-rose-100 rounded-full flex items-center justify-center shrink-0">
@@ -878,20 +761,14 @@ export default function CRMHub() {
             </div>
 
             {recentActivities.length === 0 && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Card className="shadow-lg border-0">
-                  <CardContent className="text-center py-12">
-                    <ClipboardList className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                    <p className="text-slate-500 text-lg">אין פעילויות ביומן</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
+              <Card className="shadow-lg border-0">
+                <CardContent className="text-center py-12">
+                  <ClipboardList className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+                  <p className="text-slate-500 text-lg">אין פעילויות ביומן</p>
+                </CardContent>
+              </Card>
             )}
-            </TabsContent>
+          </TabsContent>
         </Tabs>
       </div>
 
