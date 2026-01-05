@@ -77,24 +77,26 @@ export default function SyllabusHub() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50 p-4 sm:p-6" dir="rtl">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center gap-3">
+        <div className="mb-6">
+          <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
               <BookOpen className="w-7 h-7 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-purple-900">מרכז סילבוסים</h1>
-              <p className="text-slate-500 text-sm">ניהול וריכוז כל הסילבוסים במערכת</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-purple-900">מרכז סילבוסים</h1>
+              <p className="text-slate-500 text-xs sm:text-sm">ניהול וריכוז כל הסילבוסים במערכת</p>
             </div>
           </div>
-          <div className="flex gap-2">
-            <Link to={createPageUrl("SyllabusWizard")}>
-              <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg gap-2">
+          <div className="flex items-center gap-2">
+            <Link to={createPageUrl("SyllabusWizard")} className="flex-1 sm:flex-none">
+              <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg gap-2 w-full sm:w-auto">
                 <Plus className="w-4 h-4" />
                 סילבוס חדש
               </Button>
             </Link>
-            <BackHomeButtons />
+            <div className="hidden lg:block">
+              <BackHomeButtons />
+            </div>
           </div>
         </div>
 
