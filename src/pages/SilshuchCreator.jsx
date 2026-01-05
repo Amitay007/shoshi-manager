@@ -392,8 +392,7 @@ export default function SilshuchCreator() {
 
         {/* Form View */}
         {viewMode === "form" && (
-          <div>
-
+          <>
         {/* Mode Toggle */}
         <Card className="mb-6">
           <CardHeader>
@@ -617,10 +616,9 @@ export default function SilshuchCreator() {
             )}
           </CardContent>
         </Card>
-      </div>
 
-      {/* Headset Selection Modal */}
-      <Dialog open={isHeadsetModalOpen} onOpenChange={setIsHeadsetModalOpen}>
+        {/* Headset Selection Modal */}
+        <Dialog open={isHeadsetModalOpen} onOpenChange={setIsHeadsetModalOpen}>
         <DialogContent className="max-w-3xl max-h-[80vh] overflow-hidden" dir="rtl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -679,7 +677,7 @@ export default function SilshuchCreator() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-          </div>
+          </>
         )}
       </div>
     </div>
