@@ -253,7 +253,7 @@ export default function CRMHub() {
               <TrendingUp className="w-7 h-7 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-indigo-900">מרכז ניהול CRM</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-indigo-900">מרכז ניהול</h1>
               <p className="text-slate-500 text-xs sm:text-sm">ניהול קשרי לקוחות - בתי ספר, מורים, אנשי קשר ויומן פעילות</p>
             </div>
           </div>
@@ -299,7 +299,7 @@ export default function CRMHub() {
               <div className="flex flex-col items-center">
                 <Calendar className="w-8 h-8 text-green-600 mb-1" />
                 <p className="text-2xl font-bold text-green-900">{stats.activePrograms}</p>
-                <p className="text-xs text-slate-600">פעילות</p>
+                <p className="text-xs text-slate-600">תוכניות פעילות</p>
               </div>
             </CardContent>
           </Card>
@@ -632,7 +632,7 @@ export default function CRMHub() {
             <div className="mb-4 flex justify-end">
               <Button onClick={() => { resetActivityForm(); setShowActivityDialog(true); }} className="gap-2 bg-rose-600 hover:bg-rose-700">
                 <Plus className="w-4 h-4" />
-                פעילות חדשה
+                יומן קשרי לקוחות
               </Button>
             </div>
 
