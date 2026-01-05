@@ -315,14 +315,14 @@ export default function BinocularCalculator() {
                   <SelectTrigger className="w-full h-12 text-base font-semibold border-2 border-gray-300 rounded-xl hover:border-purple-400 transition-colors">
                     <SelectValue placeholder="בחר תוכנית..." />
                   </SelectTrigger>
-                  <SelectContent dir="rtl">
+                  <SelectContent dir="rtl" align="end">
                     {programs
                       .filter(p => 
                         p.id === prog.id || 
                         (!selectedPrograms.some((sp, i) => i !== idx && sp.id === p.id))
                       )
                       .map(program => (
-                        <SelectItem key={program.id} value={program.id} className="font-medium">
+                        <SelectItem key={program.id} value={program.id} className="font-medium text-right">
                           {program.title || program.course_topic || program.subject || "תוכנית ללא שם"}
                         </SelectItem>
                       ))}
