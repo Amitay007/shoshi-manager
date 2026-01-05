@@ -52,8 +52,8 @@ function LayoutContent({ children, currentPageName }) {
         
         {showSidebar && <Sidebar />}
         
-        {/* FIX: Margin only on Desktop (lg), Padding Bottom on Mobile for nav */}
-        <div className={`transition-all duration-300 ${showSidebar ? "lg:mr-64 pb-24 lg:pb-0" : ""}`}>
+        {/* תוכן ראשי עם מרווח דינמי */}
+        <div className="transition-all duration-300" style={{ marginRight: showSidebar ? '256px' : '0' }}>
           {children}
         </div>
         
