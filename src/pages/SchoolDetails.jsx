@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Building2, Save, ArrowRight, Plus, Trash2, Eye, Calendar } from "lucide-react";
+import { Building2, Save, ArrowRight, Plus, Trash2, Eye, Calendar, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { createPageUrl } from "@/utils";
 import { Link, useNavigate } from "react-router-dom";
 import { with429Retry } from "@/components/utils/retry";
@@ -43,6 +44,7 @@ export default function SchoolDetails() {
     end_date: "",
     status: "פעילה"
   });
+  const [showWebOnlyAlert, setShowWebOnlyAlert] = React.useState(false);
 
   const loadPrograms = React.useCallback(async (instId) => {
     try {
@@ -181,14 +183,12 @@ export default function SchoolDetails() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50 p-4 sm:p-6" dir="rtl">
       <div className="max-w-5xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-cyan-900 flex items-center gap-3">
-              <Building2 className="w-8 h-8" />
-              {isNew ? "הוספת מוסד חינוך חדש" : `עריכת מוסד: ${school.name}`}
-            </h1>
-          </div>
-          <div className="flex items-center gap-2">
+        <div className="text-center space-y-4">
+          <h1 className="text-4xl font-bold text-cyan-900 flex items-center justify-center gap-3">
+            <Building2 className="w-10 h-10" />
+            {isNew ? "הוספת מוסד חינוך חדש" : school.name}
+          </h1>
+          <div className="flex items-center justify-center gap-2">
             <Button onClick={handleSave} disabled={saving} className="bg-green-600 hover:bg-green-700 gap-2">
               <Save className="w-4 h-4" />
               {saving ? "שומר..." : "שמור"}
@@ -306,12 +306,15 @@ export default function SchoolDetails() {
                     <Plus className="w-4 h-4" />
                     הוסף תוכנית קיימת
                   </Button>
-                  <Link to={createPageUrl(`SyllabusWizard?school=${schoolId}`)}>
-                    <Button className="bg-green-600 hover:bg-green-700 gap-2" size="sm">
-                      <Plus className="w-4 h-4" />
-                      צור תוכנית
-                    </Button>
-                  </Link>
+                  <Button 
+                    onClick={() => setShowWebOnlyAlert(true)}
+                    className="bg-gray-400 hover:bg-gray-500 gap-2 cursor-not-allowed" 
+                    size="sm"
+                    disabled
+                  >
+                    <Plus className="w-4 h-4" />
+                    צור תוכנית
+                  </Button>
                 </div>
               </div>
               <CardTitle>תוכניות משוייכות</CardTitle>
@@ -386,6 +389,33 @@ export default function SchoolDetails() {
           </Card>
         )}
       </div>
+
+      {/* Web Only Alert Dialog */}
+      <Dialog open={showWebOnlyAlert} onOpenChange={setShowWebOnlyAlert}>
+        <DialogContent dir="rtl" className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-amber-700">
+              <AlertCircle className="w-6 h-6" />
+              הודעה
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Alert className="bg-amber-50 border-amber-200">
+              <AlertDescription className="text-center text-base font-medium text-slate-700">
+                פעיל בגרסת WEB בלבד
+              </AlertDescription>
+            </Alert>
+          </div>
+          <DialogFooter>
+            <Button 
+              onClick={() => setShowWebOnlyAlert(false)}
+              className="bg-cyan-600 hover:bg-cyan-700 w-full"
+            >
+              המשך
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Add Program Dialog */}
       <Dialog open={showAddProgramDialog} onOpenChange={setShowAddProgramDialog}>
