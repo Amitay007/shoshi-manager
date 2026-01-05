@@ -9,7 +9,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
-import { Plus, Copy, Save, Repeat, Glasses, Calendar, FileText, Search, CheckCircle, Stamp } from "lucide-react";
+import { Plus, Copy, Save, Repeat, Glasses, Calendar, FileText, Search, CheckCircle, Stamp, MessageSquare } from "lucide-react";
+import { format } from "date-fns";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import BackHomeButtons from "@/components/common/BackHomeButtons";
@@ -23,6 +24,9 @@ export default function SilshuchCreator() {
   const [assignmentName, setAssignmentName] = useState("");
   const [details, setDetails] = useState("");
   const [numberOfSessions, setNumberOfSessions] = useState(3);
+  const [hasDates, setHasDates] = useState(false);
+  const [executionDate, setExecutionDate] = useState(null);
+  const [sessionDates, setSessionDates] = useState([]);
   
   // Headset selection state
   const [allHeadsets, setAllHeadsets] = useState([]);
@@ -83,9 +87,13 @@ export default function SilshuchCreator() {
         // Add new empty sets
         const newSets = Array(numberOfSessions - currentLength).fill(null).map(() => new Set());
         setSelectedDynamicHeadsets([...selectedDynamicHeadsets, ...newSets]);
+        // Add new empty dates
+        const newDates = Array(numberOfSessions - currentLength).fill(null);
+        setSessionDates([...sessionDates, ...newDates]);
       } else if (numberOfSessions < currentLength) {
         // Remove extra sets
         setSelectedDynamicHeadsets(selectedDynamicHeadsets.slice(0, numberOfSessions));
+        setSessionDates(sessionDates.slice(0, numberOfSessions));
       }
     }
   }, [numberOfSessions, mode]);
@@ -193,16 +201,21 @@ export default function SilshuchCreator() {
         assignmentName,
         details,
         mode,
-        status: "active"
+        status: "active",
+        hasDates
       };
 
       if (mode === "static") {
         silshuchData.selectedHeadsets = Array.from(selectedStaticHeadsets);
+        if (hasDates && executionDate) {
+          silshuchData.executionDate = executionDate;
+        }
       } else {
         silshuchData.numberOfSessions = numberOfSessions;
         silshuchData.sessions = selectedDynamicHeadsets.map((sessionSet, idx) => ({
           sessionNumber: idx + 1,
-          headsets: Array.from(sessionSet)
+          headsets: Array.from(sessionSet),
+          sessionDate: hasDates && sessionDates[idx] ? sessionDates[idx] : undefined
         }));
       }
 
@@ -218,6 +231,9 @@ export default function SilshuchCreator() {
       setDetails("");
       setSelectedStaticHeadsets(new Set());
       setSelectedDynamicHeadsets([new Set(), new Set(), new Set()]);
+      setHasDates(false);
+      setExecutionDate(null);
+      setSessionDates([]);
       setShowSummary(false);
       setSummaryText("");
       setViewMode("list");
@@ -242,6 +258,9 @@ export default function SilshuchCreator() {
     setNumberOfSessions(3);
     setSelectedStaticHeadsets(new Set());
     setSelectedDynamicHeadsets([new Set(), new Set(), new Set()]);
+    setHasDates(false);
+    setExecutionDate(null);
+    setSessionDates([]);
     setShowSummary(false);
     setSummaryText("");
     setViewMode("form");
@@ -253,13 +272,17 @@ export default function SilshuchCreator() {
     setAssignmentName(silshuch.assignmentName);
     setDetails(silshuch.details || "");
     setMode(silshuch.mode);
+    setHasDates(silshuch.hasDates || false);
+    setExecutionDate(silshuch.executionDate || null);
     
     if (silshuch.mode === "static") {
       setSelectedStaticHeadsets(new Set(silshuch.selectedHeadsets || []));
     } else {
       setNumberOfSessions(silshuch.numberOfSessions || 3);
       const sessions = (silshuch.sessions || []).map(s => new Set(s.headsets || []));
+      const dates = (silshuch.sessions || []).map(s => s.sessionDate || null);
       setSelectedDynamicHeadsets(sessions);
+      setSessionDates(dates);
     }
     
     setViewMode("form");
@@ -500,6 +523,31 @@ export default function SilshuchCreator() {
                 />
               </div>
             )}
+            
+            {/* Toggle for dates */}
+            <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-lg border-2 border-slate-200">
+              <label className="text-sm font-medium text-slate-700 flex-1">האם יש תאריכים לשיבוץ?</label>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={!hasDates ? "default" : "outline"}
+                  onClick={() => setHasDates(false)}
+                  className={!hasDates ? "bg-slate-700" : ""}
+                >
+                  אין תאריך
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={hasDates ? "default" : "outline"}
+                  onClick={() => setHasDates(true)}
+                  className={hasDates ? "bg-purple-600" : ""}
+                >
+                  יש תאריכים
+                </Button>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -519,6 +567,17 @@ export default function SilshuchCreator() {
               </div>
             </CardHeader>
             <CardContent>
+              {hasDates && (
+                <div className="mb-4">
+                  <label className="text-sm font-medium text-slate-700 mb-2 block">תאריך ביצוע</label>
+                  <Input
+                    type="date"
+                    value={executionDate || ""}
+                    onChange={(e) => setExecutionDate(e.target.value)}
+                    className="max-w-xs"
+                  />
+                </div>
+              )}
               {selectedStaticHeadsets.size > 0 ? (
                 <div className="space-y-4">
                   <div className="flex flex-wrap gap-2">
@@ -552,7 +611,7 @@ export default function SilshuchCreator() {
             {selectedDynamicHeadsets.map((sessionSet, idx) => (
               <Card key={idx} className="border-2 border-cyan-200">
                 <CardHeader className="bg-gradient-to-r from-cyan-50 to-blue-50">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between mb-2">
                     <CardTitle className="flex items-center gap-2">
                       <Calendar className="w-5 h-5 text-cyan-600" />
                       מפגש {idx + 1}
@@ -566,19 +625,57 @@ export default function SilshuchCreator() {
                       הוסף משקפות
                     </Button>
                   </div>
+                  {hasDates && (
+                    <div>
+                      <label className="text-xs text-slate-600 mb-1 block">תאריך מפגש</label>
+                      <Input
+                        type="date"
+                        value={sessionDates[idx] || ""}
+                        onChange={(e) => {
+                          const newDates = [...sessionDates];
+                          newDates[idx] = e.target.value;
+                          setSessionDates(newDates);
+                        }}
+                        className="max-w-xs text-sm"
+                      />
+                    </div>
+                  )}
                 </CardHeader>
                 <CardContent className="pt-4">
                   {sessionSet.size > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {Array.from(sessionSet).map(deviceId => (
-                        <Badge
-                          key={deviceId}
-                          className="bg-gradient-to-r from-cyan-500 to-cyan-600 text-white text-sm px-3 py-1"
-                        >
-                          <Glasses className="w-3 h-3 mr-1" />
-                          {getHeadsetDisplay(deviceId)}
-                        </Badge>
-                      ))}
+                    <div className="space-y-3">
+                      <div className="flex flex-wrap gap-2">
+                        {Array.from(sessionSet).map(deviceId => (
+                          <Badge
+                            key={deviceId}
+                            className="bg-gradient-to-r from-cyan-500 to-cyan-600 text-white text-sm px-3 py-1"
+                          >
+                            <Glasses className="w-3 h-3 mr-1" />
+                            {getHeadsetDisplay(deviceId)}
+                          </Badge>
+                        ))}
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="w-full gap-2 text-green-600 border-green-600 hover:bg-green-50"
+                        onClick={() => {
+                          const session = idx + 1;
+                          const headsetNumbers = Array.from(sessionSet)
+                            .map(id => getHeadsetDisplay(id))
+                            .sort((a, b) => a - b)
+                            .join(", ");
+                          const whatsappText = `📅 *מפגש ${session}*\n👓 משקפות: ${headsetNumbers}${sessionDates[idx] ? `\n📆 תאריך: ${format(new Date(sessionDates[idx]), 'dd/MM/yyyy')}` : ''}`;
+                          const url = `https://wa.me/?text=${encodeURIComponent(whatsappText)}`;
+                          window.open(url, '_blank');
+                        }}
+                      >
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                        </svg>
+                        WhatsApp למפגש
+                      </Button>
                     </div>
                   ) : (
                     <div className="text-center py-4 text-slate-400 text-sm">
@@ -591,45 +688,87 @@ export default function SilshuchCreator() {
           </div>
         )}
 
-        {/* Action Buttons */}
-        <Card className="mb-6 border-2 border-green-200">
-          <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50">
-            <CardTitle className="flex items-center gap-2">
-              <Save className="w-5 h-5 text-green-600" />
-              פעולות
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-4 space-y-3">
+        {/* Action Buttons - Desktop */}
+        <div className="hidden lg:block mb-6">
+          <Card className="border-2 border-green-200">
+            <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50">
+              <CardTitle className="flex items-center gap-2">
+                <Save className="w-5 h-5 text-green-600" />
+                פעולות
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4 space-y-3">
+              <Button
+                onClick={saveSilshuch}
+                disabled={saving}
+                className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white gap-2 h-12 text-base"
+              >
+                <Save className="w-5 h-5" />
+                {saving ? "שומר..." : "שמור שיבוץ"}
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="mt-6 border-2 border-purple-200">
+            <CardHeader className="bg-gradient-to-r from-purple-50 to-cyan-50">
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="w-5 h-5 text-purple-600" />
+                ייצוא סיכום
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4 space-y-4">
+              <Button
+                onClick={generateSummary}
+                className="w-full bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white gap-2 h-12 text-base"
+              >
+                <CheckCircle className="w-5 h-5" />
+                צור סיכום WhatsApp
+              </Button>
+
+              {showSummary && summaryText && (
+                <div className="space-y-3">
+                  <Textarea
+                    value={summaryText}
+                    readOnly
+                    className="min-h-[200px] bg-slate-50 font-mono text-sm"
+                  />
+                  <Button
+                    onClick={copyToClipboard}
+                    variant="outline"
+                    className="w-full gap-2"
+                  >
+                    <Copy className="w-4 h-4" />
+                    העתק ללוח
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Action Buttons - Mobile */}
+        <div className="lg:hidden mb-6 space-y-4">
+          <div className="flex gap-2">
             <Button
               onClick={saveSilshuch}
               disabled={saving}
-              className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white gap-2 h-12 text-base"
+              className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white gap-2 h-12"
             >
               <Save className="w-5 h-5" />
-              {saving ? "שומר..." : "שמור שיבוץ"}
+              {saving ? "שומר..." : "שמור"}
             </Button>
-          </CardContent>
-        </Card>
-
-        {/* Generate Summary Section */}
-        <Card className="mb-6 border-2 border-purple-200">
-          <CardHeader className="bg-gradient-to-r from-purple-50 to-cyan-50">
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="w-5 h-5 text-purple-600" />
-              ייצוא סיכום
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-4 space-y-4">
             <Button
               onClick={generateSummary}
-              className="w-full bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white gap-2 h-12 text-base"
+              className="flex-1 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white gap-2 h-12"
             >
               <CheckCircle className="w-5 h-5" />
-              צור סיכום WhatsApp
+              סיכום WhatsApp
             </Button>
+          </div>
 
-            {showSummary && summaryText && (
-              <div className="space-y-3">
+          {showSummary && summaryText && (
+            <Card>
+              <CardContent className="pt-4 space-y-3">
                 <Textarea
                   value={summaryText}
                   readOnly
@@ -643,10 +782,10 @@ export default function SilshuchCreator() {
                   <Copy className="w-4 h-4" />
                   העתק ללוח
                 </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          )}
+        </div>
 
         {/* Headset Selection Modal */}
         <Dialog open={isHeadsetModalOpen} onOpenChange={setIsHeadsetModalOpen}>
