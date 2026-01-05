@@ -287,16 +287,14 @@ export default function SilshuchCreator() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-xl flex items-center justify-center shadow-lg">
-                <Stamp className="text-white" size={28} />
-              </div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-purple-900">ניהול שיבוצים</h1>
-                <p className="text-slate-500 text-xs sm:text-sm">ניהול שיבוץ משקפות לאירועים וסילבוסים</p>
-              </div>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-xl flex items-center justify-center shadow-lg">
+              <Stamp className="text-white" size={28} />
             </div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-purple-900">ניהול שיבוצים</h1>
+          </div>
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-slate-600 text-sm">יוצר שיבוץ משקפות</p>
             {viewMode === "list" && (
               <Button
                 onClick={createNewSilshuch}
@@ -316,7 +314,7 @@ export default function SilshuchCreator() {
               </Button>
             )}
           </div>
-          <BackHomeButtons />
+          <BackHomeButtons backLabel="לעמוד הקודם" showHomeButton={false} />
         </div>
 
         {/* List View */}
