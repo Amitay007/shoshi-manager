@@ -292,12 +292,12 @@ export default function CRMHub() {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-0 shadow-lg">
+          <Card className="bg-gradient-to-br from-gray-50 to-slate-100 border-0 shadow-lg">
             <CardContent className="p-3">
               <div className="flex flex-col items-center">
-                <BookOpen className="w-8 h-8 text-purple-600 mb-1" />
-                <p className="text-2xl font-bold text-purple-900">{stats.totalPrograms}</p>
-                <p className="text-xs text-slate-600">תוכניות</p>
+                <BookOpen className="w-8 h-8 text-gray-400 mb-1" />
+                <p className="text-2xl font-bold text-gray-600">{stats.totalPrograms}</p>
+                <p className="text-xs text-slate-500">סילבוסים</p>
               </div>
             </CardContent>
           </Card>
