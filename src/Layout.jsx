@@ -31,7 +31,7 @@ function LayoutContent({ children, currentPageName }) {
               --yoya-cyan: #00d4ff;
               --yoya-dark: #2d1b69;
               --yoya-light: #e8def8;
-              --sidebar-width: 250px;
+              --sidebar-height: 80px;
             }
             body { 
               font-family: 'Assistant', sans-serif;
@@ -52,13 +52,13 @@ function LayoutContent({ children, currentPageName }) {
           `}</style>
         
         {showSidebar && <Sidebar onExpandChange={(isSidebarOpen) => {
-          document.documentElement.style.setProperty('--sidebar-width', isSidebarOpen ? '250px' : '15px');
+          document.documentElement.style.setProperty('--sidebar-height', isSidebarOpen ? '80px' : '15px');
         }} />}
-        
-        {/* תוכן ראשי עם מרווח דינמי - ללא padding-bottom */}
+
+        {/* תוכן ראשי עם מרווח דינמי */}
         <div 
           className="transition-all duration-300" 
-          style={{ marginRight: showSidebar ? 'var(--sidebar-width, 80px)' : '0' }}
+          style={{ marginBottom: showSidebar ? 'var(--sidebar-height, 80px)' : '0' }}
         >
           {children}
         </div>
