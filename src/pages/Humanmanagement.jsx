@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { Search, Building2, Users, FileText, Calendar, Plus, Trash2, Eye, Mail, Phone, MapPin, BookOpen } from "lucide-react";
+import { Search, Building2, Users, FileText, Calendar, Plus, Trash2, Eye, Mail, Phone, MapPin, BookOpen, BrainCircuit } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useLoading } from "@/components/common/LoadingContext";
@@ -176,63 +176,16 @@ export default function Humanmanagement() {
         
         {/* Header */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-          <div>
-            <h1 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-2">מרכז ניהול</h1>
-            <p className="text-slate-600">ניהול קשרי לקוחות - בתי ספר, מורים, אנשי קשר ופעילות</p>
+          <div className="flex items-center gap-3">
+            <BrainCircuit className="w-10 h-10 text-purple-600" />
+            <div>
+              <h1 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-2">מרכז יחסי אנוש</h1>
+              <p className="text-slate-600">מעקב וניהול למורה הנחוש</p>
+            </div>
           </div>
-          <BackHomeButtons />
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-blue-700 flex items-center gap-2">
-                <Building2 className="w-4 h-4" />
-                בתי ספר
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-blue-900">{stats.activeSchools}</div>
-            </CardContent>
-          </Card>
 
-          <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-green-700 flex items-center gap-2">
-                <Users className="w-4 h-4" />
-                מורים
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-green-900">{stats.activeTeachers}</div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-purple-700 flex items-center gap-2">
-                <BookOpen className="w-4 h-4" />
-                תוכניות פעילות
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-purple-900">{stats.activePrograms}</div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-orange-700 flex items-center gap-2">
-                <FileText className="w-4 h-4" />
-                אנשי קשר
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-orange-900">{stats.totalContacts}</div>
-            </CardContent>
-          </Card>
-        </div>
 
         {/* Action Buttons */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
