@@ -373,9 +373,9 @@ export default function MasterSchedule() {
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 z-[100]" align="start">
-                  <Command>
-                    <CommandInput placeholder="הקלד לחיפוש..." className="h-9" />
+                <PopoverContent className="w-[500px] p-0" align="start">
+                  <Command className="rounded-lg border shadow-md">
+                    <CommandInput placeholder="הקלד לחיפוש..." />
                     <CommandEmpty>לא נמצא בית ספר.</CommandEmpty>
                     <CommandGroup className="max-h-[300px] overflow-y-auto">
                       {schools.map((school) => (
