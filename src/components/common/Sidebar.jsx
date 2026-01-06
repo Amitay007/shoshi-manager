@@ -39,9 +39,9 @@ export default function Sidebar({ onExpandChange }) {
 
   const handleDragEnd = (event, info) => {
     // גרירה שמאלה = פתיחה, גרירה ימינה = סגירה
-    if (info.offset.x < -50) {
+    if (info.offset.x < -30) {
       setIsSidebarOpen(true);
-    } else if (info.offset.x > 50) {
+    } else if (info.offset.x > 30) {
       setIsSidebarOpen(false);
     }
   };
@@ -51,13 +51,12 @@ export default function Sidebar({ onExpandChange }) {
       {/* --- SIDEBAR (כל הגדלים) --- */}
       <motion.div 
         className={`flex h-screen flex-col fixed right-0 top-0 shadow-2xl z-40 overflow-hidden transition-colors ${
-          isSidebarOpen ? 'bg-gradient-to-b from-slate-800 to-slate-900' : 'bg-gray-400 hover:bg-gray-500'
+          isSidebarOpen ? 'bg-gradient-to-b from-slate-800 to-slate-900' : 'bg-green-500 hover:bg-green-600'
         } cursor-grab active:cursor-grabbing`}
         style={{ width: isSidebarOpen ? '250px' : '15px' }}
         drag="x"
-        dragElastic={0.1}
+        dragElastic={0}
         dragMomentum={false}
-        dragConstraints={{ left: -100, right: 100 }}
         onDragEnd={handleDragEnd}
         animate={{ width: isSidebarOpen ? '250px' : '15px' }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
