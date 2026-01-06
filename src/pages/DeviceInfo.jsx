@@ -194,7 +194,15 @@ export default function DeviceInfo() {
     <div className="min-h-screen bg-slate-50 p-4 sm:p-6" dir="rtl">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-cyan-900">פרטי משקפת: {device.binocular_number}</h1>
+          <h1 className="text-3xl font-bold text-cyan-900 cursor-pointer hover:text-cyan-700" onClick={() => {
+            const newNumber = prompt("הזן מספר משקפת חדש:", device.binocular_number);
+            if (newNumber && newNumber !== device.binocular_number) {
+              (async () => {
+                await with429Retry(() => VRDevice.update(device.id, { binocular_number: parseInt(newNumber) || device.binocular_number }));
+                loadDeviceData();
+              })();
+            }
+          }}>פרטי משקפת: {device.binocular_number}</h1>
           <div className="flex gap-2">
             <Button className="bg-green-600 hover:bg-green-700 gap-2" onClick={() => setShowAddAppsModal(true)}>
               <Plus className="w-4 h-4" />
@@ -209,11 +217,6 @@ export default function DeviceInfo() {
               <Button variant="outline" className="gap-2">
                 חזרה לסקירה <ArrowLeft className="w-4 h-4" />
               </Button>
-            </Link>
-            <Link to={createPageUrl('Home')}>
-                <Button variant="outline" className="gap-2">
-                    תפריט ראשי <ArrowLeft className="w-4 h-4" />
-                </Button>
             </Link>
           </div>
         </div>
@@ -336,7 +339,9 @@ export default function DeviceInfo() {
             <Card>
               <CardHeader>
                 <div className="flex justify-between items-center">
-                  <CardTitle>חשבונות מקושרים</CardTitle>
+                  <Link to={createPageUrl(`AccountsAndUsers?deviceId=${device.id}`)}>
+                    <CardTitle className="cursor-pointer hover:text-cyan-700">חשבונות מקושרים</CardTitle>
+                  </Link>
                   <Button size="sm" onClick={() => setShowAddAccount(true)} className="bg-green-600 hover:bg-green-700 gap-2">
                     <Plus className="w-4 h-4" />
                     הוסף

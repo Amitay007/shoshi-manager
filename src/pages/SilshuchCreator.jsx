@@ -373,21 +373,21 @@ export default function SilshuchCreator() {
               <Stamp className="text-white" size={28} />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-purple-900">ניהול שיבוצים</h1>
+              <h1 className="text-2xl font-bold text-purple-900">שיוך משקפות</h1>
               <p className="text-slate-600 text-xs">יוצר שיבוץ משקפות</p>
             </div>
           </div>
           <div className="flex items-center justify-between gap-2 mb-4">
             {viewMode === "list" && (
               <>
+                <BackHomeButtons backLabel="לעמוד הקודם" showHomeButton={false} />
                 <Button
                   onClick={createNewSilshuch}
                   className="flex-1 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 gap-2"
                 >
                   <Plus className="w-5 h-5" />
-                  צור שיבוץ
+                  צור שיבוץ חדש
                 </Button>
-                <BackHomeButtons backLabel="לעמוד הקודם" showHomeButton={false} />
               </>
             )}
             {viewMode === "form" && (
@@ -408,7 +408,7 @@ export default function SilshuchCreator() {
             <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-xl flex items-center justify-center shadow-lg">
               <Stamp className="text-white" size={28} />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-purple-900">ניהול שיבוצים</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-purple-900">שיוך משקפות</h1>
           </div>
           <div className="flex items-center justify-between mb-4">
             <p className="text-slate-600 text-sm">יוצר שיבוץ משקפות</p>
@@ -466,14 +466,6 @@ export default function SilshuchCreator() {
                       className="hover:shadow-lg transition-shadow cursor-pointer relative"
                       onClick={() => viewSilshuch(silshuch)}
                     >
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="absolute top-2 left-2 z-10 text-red-600 hover:text-red-700 hover:bg-red-50"
-                      onClick={(e) => deleteSilshuch(silshuch, e)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
                     <CardHeader className={`${
                       silshuch.mode === "static" 
                         ? "bg-gradient-to-r from-purple-50 to-purple-100" 
@@ -481,13 +473,15 @@ export default function SilshuchCreator() {
                     }`}>
                       <div className="flex items-center justify-between mb-2">
                         <CardTitle className="text-lg">{silshuch.assignmentName}</CardTitle>
-                        <Badge className={
-                          silshuch.mode === "static"
-                            ? "bg-purple-600"
-                            : "bg-cyan-600"
-                        }>
-                          {silshuch.mode === "static" ? "סטטי" : "דינמי"}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge className={
+                            silshuch.mode === "static"
+                              ? "bg-purple-600"
+                              : "bg-cyan-600"
+                          }>
+                            {silshuch.mode === "static" ? "סטטי" : "דינמי"}
+                          </Badge>
+                        </div>
                       </div>
                       {silshuch.created_date && (
                         <p className="text-xs text-slate-500">
@@ -520,44 +514,34 @@ export default function SilshuchCreator() {
         {/* Form View */}
         {viewMode === "form" && (
           <>
-        {/* Mode Toggle */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>בחר סוג שיבוץ</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-4">
-              <Button
-                onClick={() => setMode("static")}
-                className={`flex-1 h-20 ${
-                  mode === "static"
-                    ? "bg-gradient-to-r from-purple-600 to-purple-700 text-white"
-                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                }`}
-              >
-                <div className="text-center">
-                  <FileText className="w-6 h-6 mx-auto mb-2" />
-                  <div className="font-bold">שיבוץ סטטי</div>
-                  <div className="text-xs opacity-80">אירוע חד פעמי / קבוע</div>
-                </div>
-              </Button>
-              <Button
-                onClick={() => setMode("dynamic")}
-                className={`flex-1 h-20 ${
-                  mode === "dynamic"
-                    ? "bg-gradient-to-r from-cyan-600 to-cyan-700 text-white"
-                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                }`}
-              >
-                <div className="text-center">
-                  <Repeat className="w-6 h-6 mx-auto mb-2" />
-                  <div className="font-bold">שיבוץ דינמי</div>
-                  <div className="text-xs opacity-80">סילבוס עם מפגשים מרובים</div>
-                </div>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Mode Toggle - Compact */}
+        <div className="mb-6 flex items-center gap-3">
+          <span className="text-sm font-medium text-slate-700">סוג שיבוץ:</span>
+          <div className="flex gap-2">
+            <Badge
+              onClick={() => setMode("static")}
+              className={`cursor-pointer px-4 py-2 ${
+                mode === "static"
+                  ? "bg-purple-600 hover:bg-purple-700"
+                  : "bg-slate-200 text-slate-700 hover:bg-slate-300"
+              }`}
+            >
+              <FileText className="w-3 h-3 mr-1" />
+              סטטי
+            </Badge>
+            <Badge
+              onClick={() => setMode("dynamic")}
+              className={`cursor-pointer px-4 py-2 ${
+                mode === "dynamic"
+                  ? "bg-cyan-600 hover:bg-cyan-700"
+                  : "bg-slate-200 text-slate-700 hover:bg-slate-300"
+              }`}
+            >
+              <Repeat className="w-3 h-3 mr-1" />
+              דינמי
+            </Badge>
+          </div>
+        </div>
 
         {/* Basic Info */}
         <Card className="mb-6">
@@ -671,27 +655,48 @@ export default function SilshuchCreator() {
             </CardHeader>
             <CardContent>
               {hasDates && (
-                <div className="mb-4">
-                  <label className="text-sm font-medium text-slate-700 mb-2 block">תאריך ביצוע</label>
+                <div className="mb-4 flex items-center gap-3">
+                  <label className="text-sm font-medium text-slate-700">תאריך ביצוע:</label>
                   <Input
                     type="date"
                     value={executionDate || ""}
                     onChange={(e) => setExecutionDate(e.target.value)}
                     className="max-w-xs"
                   />
+                  {calendarEnabled && (
+                    <Badge className="bg-blue-100 text-blue-700 gap-1">
+                      <Calendar className="w-3 h-3" />
+                      סנכרון יומן
+                    </Badge>
+                  )}
                 </div>
               )}
               {selectedStaticHeadsets.size > 0 ? (
                 <div className="space-y-4">
                   <div className="flex flex-wrap gap-2">
                     {Array.from(selectedStaticHeadsets).map(deviceId => (
-                      <Badge
-                        key={deviceId}
-                        className="bg-gradient-to-r from-purple-500 to-purple-600 text-white text-base px-4 py-2"
-                      >
-                        <Glasses className="w-4 h-4 mr-2" />
-                        משקפת {getHeadsetDisplay(deviceId)}
-                      </Badge>
+                      <div key={deviceId} className="relative group">
+                        <Link to={createPageUrl(`DeviceInfo?id=${getHeadsetDisplay(deviceId)}`)}>
+                          <Badge className="bg-gradient-to-r from-purple-500 to-purple-600 text-white text-base px-4 py-2 cursor-pointer hover:from-purple-600 hover:to-purple-700">
+                            <Glasses className="w-4 h-4 mr-2" />
+                            משקפת {getHeadsetDisplay(deviceId)}
+                          </Badge>
+                        </Link>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="absolute -top-2 -right-2 w-5 h-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity rounded-full bg-red-600 text-white hover:bg-red-700 z-10"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const newSet = new Set(selectedStaticHeadsets);
+                            newSet.delete(deviceId);
+                            setSelectedStaticHeadsets(newSet);
+                          }}
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
+                      </div>
                     ))}
                   </div>
                   <div className="text-sm text-slate-600 font-medium">
@@ -714,20 +719,22 @@ export default function SilshuchCreator() {
             {selectedDynamicHeadsets.map((sessionSet, idx) => (
               <Card key={idx} className="border-2 border-cyan-200">
                 <CardHeader className="bg-gradient-to-r from-cyan-50 to-blue-50">
-                  <div className="flex items-center justify-between mb-2">
-                    <CardTitle className="flex items-center gap-2">
-                      <Calendar className="w-5 h-5 text-cyan-600" />
-                      מפגש {idx + 1}
-                    </CardTitle>
-                    <Button
-                      onClick={() => openHeadsetModal(idx)}
-                      size="sm"
-                      className="bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 gap-2"
-                    >
-                      <Plus className="w-4 h-4" />
-                      הוסף משקפות
-                    </Button>
-                  </div>
+                 <div className="flex items-center justify-between mb-2">
+                   <div className="flex items-center gap-3">
+                     <CardTitle className="flex items-center gap-2">
+                       <Calendar className="w-5 h-5 text-cyan-600" />
+                       מפגש {idx + 1}
+                     </CardTitle>
+                     <Button
+                       onClick={() => openHeadsetModal(idx)}
+                       size="sm"
+                       className="bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 gap-2"
+                     >
+                       <Plus className="w-4 h-4" />
+                       הוסף משקפות
+                     </Button>
+                   </div>
+                 </div>
                   {hasDates && (
                     <div>
                       <label className="text-xs text-slate-600 mb-1 block">תאריך מפגש</label>
@@ -801,32 +808,23 @@ export default function SilshuchCreator() {
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-4 space-y-3">
-              <Button
-                onClick={saveSilshuch}
-                disabled={saving || creatingCalendarEvent}
-                className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white gap-2 h-12 text-base"
-              >
-                <Save className="w-5 h-5" />
-                {saving ? "שומר..." : creatingCalendarEvent ? "יוצר אירוע ביומן..." : "שמור שיבוץ"}
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="mt-6 border-2 border-purple-200">
-            <CardHeader className="bg-gradient-to-r from-purple-50 to-cyan-50">
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="w-5 h-5 text-purple-600" />
-                ייצוא סיכום
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-4 space-y-4">
-              <Button
-                onClick={generateSummary}
-                className="w-full bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white gap-2 h-12 text-base"
-              >
-                <CheckCircle className="w-5 h-5" />
-                צור סיכום WhatsApp
-              </Button>
+              <div className="flex gap-3">
+                <Button
+                  onClick={saveSilshuch}
+                  disabled={saving || creatingCalendarEvent}
+                  className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white gap-2 h-12 text-base"
+                >
+                  <Save className="w-5 h-5" />
+                  {saving ? "שומר..." : creatingCalendarEvent ? "יוצר אירוע..." : "שמור שיבוץ"}
+                </Button>
+                <Button
+                  onClick={generateSummary}
+                  className="flex-1 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white gap-2 h-12 text-base"
+                >
+                  <CheckCircle className="w-5 h-5" />
+                  סיכום WhatsApp
+                </Button>
+              </div>
 
               {showSummary && summaryText && (
                 <div className="space-y-3">

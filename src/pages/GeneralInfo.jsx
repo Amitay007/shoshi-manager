@@ -451,7 +451,7 @@ export default function GeneralInfo() {
                     : "text-slate-500 hover:text-slate-700"
                 }`}
               >
-                בעיות ({issuesCount})
+                תקלות ({issuesCount})
               </button>
             </div>
 
@@ -573,10 +573,6 @@ export default function GeneralInfo() {
                        {device.model || device.headset_type || 'Meta Quest 3'}
                      </div>
                      <div className="grid grid-cols-1 gap-2">
-                       <div className="flex flex-col items-center">
-                         <span className="text-slate-500 text-[10px]">S/N</span>
-                         <span className="font-mono text-slate-900 text-xs">{device.serial_number || 'N/A'}</span>
-                       </div>
                        <div className="flex flex-col items-center">
                          <span className="text-slate-500 text-[10px]">MAC</span>
                          <span className="font-mono text-slate-900 text-[10px]">AA:BB:CC:DD:EE:{String(device.binocular_number).padStart(2, '0')}</span>
