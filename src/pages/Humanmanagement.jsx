@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { Search, Building2, Users, FileText, Calendar, Plus, Trash2, Eye, Mail, Phone, MapPin, BookOpen, BrainCircuit } from "lucide-react";
+import { Search, Building2, Users, FileText, Calendar, Plus, Trash2, Eye, Mail, Phone, MapPin, BookOpen, BrainCircuit, Clock, Stamp, Hourglass, Rocket } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useLoading } from "@/components/common/LoadingContext";
@@ -187,32 +187,55 @@ export default function Humanmanagement() {
 
 
 
-        {/* Action Buttons */}
+        {/* Info Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <Button className="h-24 flex flex-col items-center justify-center gap-2 text-lg">
-            קשרי לקוחות
-          </Button>
-          <Button className="h-24 flex flex-col items-center justify-center gap-2 text-lg">
-            יומן
-          </Button>
-          <Button className="h-24 flex flex-col items-center justify-center gap-2 text-lg">
-            שעות
-          </Button>
-          <Button className="h-24 flex flex-col items-center justify-center gap-2 text-lg">
-            שיבוצים
-          </Button>
-          <Button className="h-24 flex flex-col items-center justify-center gap-2 text-lg">
-            בתי ספר
-          </Button>
-          <Button className="h-24 flex flex-col items-center justify-center gap-2 text-lg">
-            שלישוך
-          </Button>
-          <Button className="h-24 flex flex-col items-center justify-center gap-2 text-lg">
-            בקרוב
-          </Button>
-          <Button className="h-24 flex flex-col items-center justify-center gap-2 text-lg">
-            עוד מעט
-          </Button>
+          <Card className="bg-white shadow-md rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center hover:shadow-lg transition-shadow cursor-pointer">
+            <Users className="w-10 h-10 text-blue-600" />
+            <CardTitle className="text-lg font-semibold text-slate-900">קשרי לקוחות</CardTitle>
+            <p className="text-sm text-slate-500">נהל אנשי קשר</p>
+          </Card>
+
+          <Card className="bg-white shadow-md rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center hover:shadow-lg transition-shadow cursor-pointer">
+            <Calendar className="w-10 h-10 text-green-600" />
+            <CardTitle className="text-lg font-semibold text-slate-900">יומן</CardTitle>
+            <p className="text-sm text-blue-600 font-medium">הבא: פגישת צוות 10:00</p>
+          </Card>
+
+          <Card className="bg-white shadow-md rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center hover:shadow-lg transition-shadow cursor-pointer">
+            <Clock className="w-10 h-10 text-purple-600" />
+            <CardTitle className="text-lg font-semibold text-slate-900">שעות</CardTitle>
+            <p className="text-sm text-purple-600 font-bold">נוכחי: 142 שעות</p>
+          </Card>
+
+          <Card className="bg-white shadow-md rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center hover:shadow-lg transition-shadow cursor-pointer">
+            <FileText className="w-10 h-10 text-orange-600" />
+            <CardTitle className="text-lg font-semibold text-slate-900">שיבוצים</CardTitle>
+            <p className="text-sm text-slate-500">תכנון ושיבוץ</p>
+          </Card>
+
+          <Card className="bg-white shadow-md rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center hover:shadow-lg transition-shadow cursor-pointer">
+            <Building2 className="w-10 h-10 text-indigo-600" />
+            <CardTitle className="text-lg font-semibold text-slate-900">בתי ספר</CardTitle>
+            <p className="text-sm text-slate-500">ניהול מוסדות</p>
+          </Card>
+
+          <Card className="bg-white shadow-md rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center hover:shadow-lg transition-shadow cursor-pointer">
+            <Stamp className="w-10 h-10 text-pink-600" />
+            <CardTitle className="text-lg font-semibold text-slate-900">שלישוך</CardTitle>
+            <p className="text-sm text-red-600 font-bold">2 בקשות ממתינות</p>
+          </Card>
+
+          <Card className="bg-white shadow-md rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center hover:shadow-lg transition-shadow cursor-pointer">
+            <Rocket className="w-10 h-10 text-cyan-600" />
+            <CardTitle className="text-lg font-semibold text-slate-900">בקרוב</CardTitle>
+            <p className="text-sm text-slate-400">תכונה חדשה</p>
+          </Card>
+
+          <Card className="bg-white shadow-md rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center hover:shadow-lg transition-shadow cursor-pointer">
+            <Hourglass className="w-10 h-10 text-amber-600" />
+            <CardTitle className="text-lg font-semibold text-slate-900">עוד מעט</CardTitle>
+            <p className="text-sm text-slate-400">בפיתוח</p>
+          </Card>
         </div>
       </div>
 
