@@ -15,7 +15,7 @@ export default function Sidebar() {
     { id: "silshuch", label: "סלישוך", icon: Stamp, page: "SilshuchCreator" },
     { id: "apps", label: "אפליקציות", icon: Code, page: "GeneralApps" },
     { id: "syllabus", label: "סילבוסים", icon: BookOpen, page: "SyllabusHub" },
-    { id: "schools", label: "יחסי אנוש", icon: School, page: "Schools" },
+    { id: "schools", label: "יחסי אנוש", icon: School, page: "Humanmanagement" },
     { id: "teachers", label: "ניהול", icon: Users, page: "CRMHub" },
     { id: "calculator", label: "מחשבון", icon: Calculator, page: "BinocularCalculator" },
     { id: "accounts", label: "חשבונות", icon: KeyRound, page: "AccountsAndUsers" },
