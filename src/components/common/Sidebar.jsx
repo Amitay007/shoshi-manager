@@ -9,7 +9,7 @@ import { motion, useDragControls } from "framer-motion";
 
 export default function Sidebar({ onExpandChange }) {
   const location = useLocation();
-  const [isOpen, setIsOpen] = useState(true); // true = 20px (icons), false = 4px (button only)
+  const [isOpen, setIsOpen] = useState(true); // true = 200px (icons + text), false = 16px (green line)
   const dragControls = useDragControls();
 
   React.useEffect(() => {
@@ -39,9 +39,9 @@ export default function Sidebar({ onExpandChange }) {
 
   const handleDragEnd = (event, info) => {
     // If dragged left (negative offset.x), close. If dragged right (positive offset.x), open.
-    if (info.offset.x < -20) {
+    if (info.offset.x < -30) {
       setIsOpen(false);
-    } else if (info.offset.x > 20) {
+    } else if (info.offset.x > 30) {
       setIsOpen(true);
     }
   };
@@ -50,30 +50,33 @@ export default function Sidebar({ onExpandChange }) {
     <>
       {/* --- SIDEBAR (כל הגדלים) --- */}
       <motion.div 
-        className={`flex h-screen bg-gradient-to-b from-slate-800 to-slate-900 flex-col fixed right-0 top-0 shadow-2xl z-40 overflow-hidden`}
-        style={{ width: isOpen ? '80px' : '16px' }}
+        className={`flex h-screen flex-col fixed right-0 top-0 shadow-2xl z-40 overflow-hidden ${
+          isOpen ? 'bg-gradient-to-b from-slate-800 to-slate-900' : 'bg-green-500 hover:bg-green-600'
+        }`}
+        style={{ width: isOpen ? '200px' : '16px' }}
         drag="x"
-        dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={0.1}
+        dragElastic={0.2}
+        dragMomentum={false}
         onDragEnd={handleDragEnd}
-        dragControls={dragControls}
-        animate={{ width: isOpen ? '80px' : '16px' }}
+        animate={{ width: isOpen ? '200px' : '16px' }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
+        onClick={() => !isOpen && setIsOpen(true)}
+        className={`flex h-screen flex-col fixed right-0 top-0 shadow-2xl z-40 overflow-hidden transition-colors cursor-pointer ${
+          isOpen ? 'bg-gradient-to-b from-slate-800 to-slate-900 cursor-auto' : 'bg-green-500 hover:bg-green-600 cursor-grab active:cursor-grabbing'
+        }`}
         dir="rtl"
       >
-        {/* כפתור שליפה */}
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          onPointerDown={(e) => dragControls.start(e)}
-          className="absolute top-1/2 -translate-y-1/2 -left-3 z-50 bg-gradient-to-r from-purple-600 to-cyan-600 text-white p-2 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110 cursor-grab active:cursor-grabbing"
-        >
-          {isOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-        </button>
         {/* Logo - only show when open */}
         {isOpen && (
-          <div className="p-6 border-b border-slate-700 flex justify-center">
-            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">
-              <span className="text-white font-bold text-2xl">Y</span>
+          <div className="p-6 border-b border-slate-700">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-white font-bold text-2xl">Y</span>
+              </div>
+              <div>
+                <h2 className="text-white font-bold text-xl">Yoya</h2>
+                <p className="text-purple-300 text-xs">VR Management</p>
+              </div>
             </div>
           </div>
         )}
@@ -90,13 +93,13 @@ export default function Sidebar({ onExpandChange }) {
                     <Link 
                       key={item.id} 
                       to={createPageUrl(item.page)} 
-                      className={`flex flex-col items-center justify-center px-2 py-3 rounded-lg transition-all duration-200 ${
+                      className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                         active ? 'bg-gradient-to-r from-purple-600 to-cyan-600 text-white shadow-lg' : 'text-slate-300 hover:bg-slate-700 hover:text-white'
                       }`}
-                      title={item.label}
                     >
                       <Icon className="w-5 h-5 shrink-0" />
-                      <span className="text-[10px] mt-1 text-center">{item.label}</span>
+                      <span className="font-medium text-sm">{item.label}</span>
+                      {active && <ChevronRight className="w-4 h-4 mr-auto" />}
                     </Link>
                   );
                 })}
