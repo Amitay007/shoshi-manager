@@ -5,11 +5,12 @@ import {
   Home, Code, BookOpen, School, Users, Calculator, ChevronRight, ChevronLeft, KeyRound, Stamp, Layers
 } from "lucide-react";
 import VRIcon from "@/components/icons/VRIcon";
-import { motion } from "framer-motion";
+import { motion, useDragControls } from "framer-motion";
 
 export default function Sidebar({ onExpandChange }) {
   const location = useLocation();
-  const [isOpen, setIsOpen] = useState(true); // true = 80px (icons), false = 16px (button only)
+  const [isOpen, setIsOpen] = useState(true); // true = 20px (icons), false = 4px (button only)
+  const dragControls = useDragControls();
 
   React.useEffect(() => {
     if (onExpandChange) {
@@ -49,12 +50,13 @@ export default function Sidebar({ onExpandChange }) {
     <>
       {/* --- SIDEBAR (כל הגדלים) --- */}
       <motion.div 
-        className={`flex h-screen bg-gradient-to-b from-slate-800 to-slate-900 flex-col fixed right-0 top-0 shadow-2xl z-40 overflow-hidden cursor-grab active:cursor-grabbing`}
+        className={`flex h-screen bg-gradient-to-b from-slate-800 to-slate-900 flex-col fixed right-0 top-0 shadow-2xl z-40 overflow-hidden`}
         style={{ width: isOpen ? '80px' : '16px' }}
         drag="x"
-        dragElastic={0.2}
-        dragMomentum={false}
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.1}
         onDragEnd={handleDragEnd}
+        dragControls={dragControls}
         animate={{ width: isOpen ? '80px' : '16px' }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
         dir="rtl"
@@ -62,7 +64,8 @@ export default function Sidebar({ onExpandChange }) {
         {/* כפתור שליפה */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="absolute top-1/2 -translate-y-1/2 -left-3 z-50 bg-gradient-to-r from-purple-600 to-cyan-600 text-white p-2 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110"
+          onPointerDown={(e) => dragControls.start(e)}
+          className="absolute top-1/2 -translate-y-1/2 -left-3 z-50 bg-gradient-to-r from-purple-600 to-cyan-600 text-white p-2 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110 cursor-grab active:cursor-grabbing"
         >
           {isOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
         </button>
