@@ -377,14 +377,10 @@ export default function CRMHub() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} dir="rtl">
-          <TabsList className="grid w-full grid-cols-4 mb-6">
+          <TabsList className="grid w-full grid-cols-3 mb-6">
             <TabsTrigger value="schools" className="gap-2">
               <Building2 className="w-4 h-4" />
               בתי ספר
-            </TabsTrigger>
-            <TabsTrigger value="teachers" className="gap-2">
-              <Users className="w-4 h-4" />
-              מורים
             </TabsTrigger>
             <TabsTrigger value="contacts" className="gap-2">
               <UserCircle className="w-4 h-4" />
@@ -482,92 +478,7 @@ export default function CRMHub() {
             )}
           </TabsContent>
 
-          {/* Teachers Tab */}
-          <TabsContent value="teachers">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredTeachers.map(teacher => {
-                const school = schools.find(s => s.id === teacher.institution_id);
-                const stats = getTeacherStats(teacher.name);
-                
-                return (
-                  <motion.div
-                    key={teacher.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    whileHover={{ scale: 1.02, y: -4 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <Card 
-                      className="bg-white hover:shadow-xl transition-all duration-300 border-0 cursor-pointer"
-                      onClick={() => window.location.href = createPageUrl(`TeacherProfile?teacherId=${teacher.id}`)}
-                    >
-                    <div className="h-1.5 bg-gradient-to-r from-cyan-600 to-teal-600"></div>
-                    
-                    <CardHeader className="pb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-gradient-to-br from-cyan-100 to-teal-100 rounded-full flex items-center justify-center">
-                          <Users className="w-6 h-6 text-cyan-700" />
-                        </div>
-                        <div>
-                          <CardTitle className="text-lg">{teacher.name}</CardTitle>
-                          {school && (
-                            <p className="text-xs text-slate-500">{school.name}</p>
-                          )}
-                        </div>
-                      </div>
-                    </CardHeader>
 
-                    <CardContent className="space-y-2 text-sm">
-                      {teacher.email && (
-                        <div className="flex items-center gap-2 text-slate-600">
-                          <Mail className="w-4 h-4 text-slate-400" />
-                          <span className="truncate">{teacher.email}</span>
-                        </div>
-                      )}
-
-                      {teacher.phone && (
-                        <div className="flex items-center gap-2 text-slate-600">
-                          <Phone className="w-4 h-4 text-slate-400" />
-                          <span>{teacher.phone}</span>
-                        </div>
-                      )}
-
-                      {(teacher.subjects || []).length > 0 && (
-                        <div className="flex flex-wrap gap-1 pt-2">
-                          {teacher.subjects.slice(0, 3).map((subject, idx) => (
-                            <Badge key={idx} className="bg-teal-100 text-teal-800 text-xs">
-                              {subject}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-
-                      <div className="pt-3 border-t border-slate-100 grid grid-cols-2 gap-2">
-                        <div className="text-center p-2 bg-purple-50 rounded">
-                          <div className="text-xs text-purple-600">תוכניות</div>
-                          <div className="text-lg font-bold text-purple-900">{stats.programs}</div>
-                        </div>
-                        <div className="text-center p-2 bg-green-50 rounded">
-                          <div className="text-xs text-green-600">מפגשים</div>
-                          <div className="text-lg font-bold text-green-900">{stats.sessions}</div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  </motion.div>
-                );
-              })}
-            </div>
-
-            {filteredTeachers.length === 0 && (
-              <Card className="shadow-lg border-0">
-                <CardContent className="text-center py-12">
-                  <Users className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                  <p className="text-slate-500 text-lg">לא נמצאו מורים</p>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
 
           {/* Contacts Tab */}
           <TabsContent value="contacts">

@@ -31,12 +31,12 @@ import SilshuchCreator from './pages/SilshuchCreator';
 import SyllabusHub from './pages/SyllabusHub';
 import SyllabusValuesManager from './pages/SyllabusValuesManager';
 import SyllabusWizard from './pages/SyllabusWizard';
+import TeacherProfile from './pages/TeacherProfile';
+import TeachersList from './pages/TeachersList';
 import UpdateAppStatus from './pages/UpdateAppStatus';
 import UpdateAppsFromPDF from './pages/UpdateAppsFromPDF';
 import UploadLogo from './pages/UploadLogo';
 import Version2 from './pages/Version2';
-import TeacherProfile from './pages/TeacherProfile';
-import TeachersList from './pages/TeachersList';
 import __Layout from './Layout.jsx';
 
 
@@ -74,12 +74,12 @@ export const PAGES = {
     "SyllabusHub": SyllabusHub,
     "SyllabusValuesManager": SyllabusValuesManager,
     "SyllabusWizard": SyllabusWizard,
+    "TeacherProfile": TeacherProfile,
+    "TeachersList": TeachersList,
     "UpdateAppStatus": UpdateAppStatus,
     "UpdateAppsFromPDF": UpdateAppsFromPDF,
     "UploadLogo": UploadLogo,
     "Version2": Version2,
-    "TeacherProfile": TeacherProfile,
-    "TeachersList": TeachersList,
 }
 
 export const pagesConfig = {
