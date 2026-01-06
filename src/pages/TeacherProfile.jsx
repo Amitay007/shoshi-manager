@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,20 +8,17 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/components/ui/use-toast";
-import { DollarSign, Clock, TrendingUp, Edit, Calendar, BookOpen, ArrowRight } from "lucide-react";
+import { DollarSign, Clock, TrendingUp, Pencil, User, Calendar } from "lucide-react";
 import BackHomeButtons from "@/components/common/BackHomeButtons";
 import { useLoading } from "@/components/common/LoadingContext";
-import { with429Retry } from "@/components/utils/retry";
 
 export default function TeacherProfile() {
   const { teacherId } = useParams();
-  const navigate = useNavigate();
   const [teacher, setTeacher] = useState(null);
   const [shifts, setShifts] = useState([]);
-  const [programs, setPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showEditRate, setShowEditRate] = useState(false);
-  const [newRate, setNewRate] = useState("");
+  const [newHourlyRate, setNewHourlyRate] = useState(0);
 
   const { toast } = useToast();
   const { showLoader, hideLoader } = useLoading();
@@ -31,31 +28,22 @@ export default function TeacherProfile() {
   }, [teacherId]);
 
   const loadData = async () => {
-    if (!teacherId) {
-      toast({ title: "שגיאה", description: "מזהה מורה חסר", variant: "destructive" });
-      return;
-    }
-
     showLoader();
     setLoading(true);
     try {
-      const [teacherData, scheduleData, syllabusData] = await Promise.all([
-        with429Retry(() => base44.entities.Teacher.list()),
-        with429Retry(() => base44.entities.ScheduleEntry.list()),
-        with429Retry(() => base44.entities.Syllabus.list())
-      ]);
-
-      const selectedTeacher = teacherData.find(t => t.id === teacherId);
-      if (!selectedTeacher) {
+      // Load teacher data
+      const teachers = await base44.entities.Teacher.list();
+      const teacherData = teachers.find(t => t.id === teacherId);
+      
+      if (!teacherData) {
         toast({ title: "שגיאה", description: "מורה לא נמצא", variant: "destructive" });
-        navigate(-1);
         return;
       }
 
-      setTeacher(selectedTeacher);
-      setNewRate(selectedTeacher.hourly_rate || 0);
+      setTeacher(teacherData);
+      setNewHourlyRate(teacherData.hourlyRate || 0);
 
-      // Mock shifts for this teacher (current month, completed)
+      // Mock shifts data for this teacher (current month)
       const today = new Date();
       const currentMonth = today.getMonth();
       const currentYear = today.getFullYear();
@@ -67,9 +55,8 @@ export default function TeacherProfile() {
           date: "2026-01-03",
           start_time: "08:00",
           end_time: "14:00",
+          program_name: "מבוא ל-VR - כיתה ז'",
           duration: 6,
-          program_id: syllabusData?.[0]?.id || "prog1",
-          program_name: syllabusData?.[0]?.title || "סדנת VR מתקדמת",
           status: "הסתיים"
         },
         {
@@ -78,9 +65,8 @@ export default function TeacherProfile() {
           date: "2026-01-05",
           start_time: "09:00",
           end_time: "15:30",
+          program_name: "סדנת מציאות רבודה",
           duration: 6.5,
-          program_id: syllabusData?.[1]?.id || "prog2",
-          program_name: syllabusData?.[1]?.title || "הכרת מציאות מדומה",
           status: "הסתיים"
         },
         {
@@ -89,20 +75,18 @@ export default function TeacherProfile() {
           date: "2026-01-02",
           start_time: "08:30",
           end_time: "13:30",
+          program_name: "גיאוגרפיה במציאות מדומה",
           duration: 5,
-          program_id: syllabusData?.[2]?.id || "prog3",
-          program_name: syllabusData?.[2]?.title || "שיעור גיאוגרפיה בVR",
           status: "הסתיים"
         },
         {
           id: "4",
           teacher_id: teacherId,
-          date: "2026-01-04",
+          date: "2026-01-06",
           start_time: "10:00",
           end_time: "16:00",
+          program_name: "חקר החלל ב-3D",
           duration: 6,
-          program_id: syllabusData?.[3]?.id || "prog4",
-          program_name: syllabusData?.[3]?.title || "מסע בחלל",
           status: "הסתיים"
         }
       ].filter(shift => {
@@ -113,14 +97,9 @@ export default function TeacherProfile() {
       });
 
       setShifts(mockShifts);
-      setPrograms(syllabusData || []);
     } catch (error) {
       console.error("Error loading data:", error);
-      toast({
-        title: "שגיאה",
-        description: "לא הצלחנו לטעון את הנתונים",
-        variant: "destructive",
-      });
+      toast({ title: "שגיאה", description: "לא הצלחנו לטעון את הנתונים", variant: "destructive" });
     } finally {
       setLoading(false);
       hideLoader();
@@ -128,11 +107,11 @@ export default function TeacherProfile() {
   };
 
   const stats = useMemo(() => {
-    const hourlyRate = teacher?.hourly_rate || 0;
     const totalHours = shifts.reduce((sum, shift) => sum + shift.duration, 0);
-    const earnedSoFar = totalHours * hourlyRate;
+    const hourlyRate = teacher?.hourlyRate || 0;
+    const totalEarned = totalHours * hourlyRate;
     
-    return { hourlyRate, totalHours, earnedSoFar };
+    return { totalHours, hourlyRate, totalEarned };
   }, [shifts, teacher]);
 
   const sortedShifts = useMemo(() => {
@@ -141,20 +120,19 @@ export default function TeacherProfile() {
 
   const handleUpdateRate = async () => {
     try {
-      await with429Retry(() => base44.entities.Teacher.update(teacherId, { hourly_rate: parseFloat(newRate) }));
-      setTeacher({ ...teacher, hourly_rate: parseFloat(newRate) });
+      await base44.entities.Teacher.update(teacherId, { hourlyRate: parseFloat(newHourlyRate) });
+      setTeacher({ ...teacher, hourlyRate: parseFloat(newHourlyRate) });
       setShowEditRate(false);
       toast({ title: "הצלחה", description: "שכר שעתי עודכן בהצלחה" });
-      loadData();
     } catch (error) {
       toast({ title: "שגיאה", description: "לא הצלחנו לעדכן את השכר", variant: "destructive" });
     }
   };
 
-  const getInitials = (name) => {
-    if (!name) return "?";
-    const parts = name.split(" ");
-    return parts.length >= 2 ? `${parts[0][0]}${parts[1][0]}` : name[0];
+  const getDayName = (dateStr) => {
+    const date = new Date(dateStr);
+    const days = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
+    return days[date.getDay()];
   };
 
   const formatDate = (dateStr) => {
@@ -164,12 +142,8 @@ export default function TeacherProfile() {
     return `${day}/${month}`;
   };
 
-  if (loading) {
+  if (loading || !teacher) {
     return <div className="p-8 text-center">טוען נתונים...</div>;
-  }
-
-  if (!teacher) {
-    return <div className="p-8 text-center">מורה לא נמצא</div>;
   }
 
   return (
@@ -179,18 +153,20 @@ export default function TeacherProfile() {
         {/* Header */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           <div className="flex items-center gap-4">
-            <Avatar className="w-20 h-20 bg-gradient-to-br from-purple-500 to-cyan-500">
-              <AvatarFallback className="text-white text-2xl font-bold">
-                {getInitials(teacher.name)}
+            <Avatar className="w-20 h-20 border-4 border-white shadow-lg">
+              <AvatarFallback className="text-2xl font-bold bg-gradient-to-br from-purple-500 to-cyan-500 text-white">
+                {teacher.name?.charAt(0) || "M"}
               </AvatarFallback>
             </Avatar>
             <div>
               <h1 className="text-3xl lg:text-4xl font-bold text-slate-900">{teacher.name}</h1>
-              <p className="text-slate-600">{teacher.role || "מדריך VR"}</p>
-              {teacher.email && <p className="text-sm text-slate-500">{teacher.email}</p>}
+              <div className="flex items-center gap-2 text-slate-600 mt-1">
+                <User className="w-4 h-4" />
+                <span>מדריך VR</span>
+              </div>
             </div>
           </div>
-          <BackHomeButtons backTo="CRMHub" backLabel="חזור למרכז ניהול" />
+          <BackHomeButtons backTo="CRMHub" backLabel="חזור לרשימת מורים" />
         </div>
 
         {/* Payroll Summary Cards */}
@@ -198,17 +174,17 @@ export default function TeacherProfile() {
           <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-green-700 flex items-center justify-between">
-                <span className="flex items-center gap-2">
+                <div className="flex items-center gap-2">
                   <DollarSign className="w-5 h-5" />
-                  שכר לשעה
-                </span>
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  className="h-6 w-6"
+                  שכר שעתי
+                </div>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 w-8 p-0 hover:bg-green-200"
                   onClick={() => setShowEditRate(true)}
                 >
-                  <Edit className="w-4 h-4 text-green-600" />
+                  <Pencil className="w-4 h-4" />
                 </Button>
               </CardTitle>
             </CardHeader>
@@ -227,7 +203,7 @@ export default function TeacherProfile() {
             </CardHeader>
             <CardContent>
               <div className="text-4xl font-bold text-blue-900">{stats.totalHours}</div>
-              <p className="text-sm text-blue-600 mt-1">החודש</p>
+              <p className="text-sm text-blue-600 mt-1">שעות החודש</p>
             </CardContent>
           </Card>
 
@@ -239,101 +215,70 @@ export default function TeacherProfile() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-4xl font-bold text-purple-900">₪{stats.earnedSoFar.toFixed(0)}</div>
+              <div className="text-4xl font-bold text-purple-900">₪{stats.totalEarned.toLocaleString()}</div>
               <p className="text-sm text-purple-600 mt-1">החודש</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Detailed Shifts Table */}
+        {/* Detailed Log */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="w-5 h-5" />
-              לוג משמרות מפורט
+            <CardTitle className="text-xl font-bold flex items-center gap-2">
+              <Calendar className="w-6 h-6 text-slate-700" />
+              רשימת משמרות מפורטת
             </CardTitle>
           </CardHeader>
           <CardContent>
             {sortedShifts.length === 0 ? (
-              <p className="text-center text-slate-500 py-8">אין משמרות לחודש זה</p>
+              <div className="text-center py-8 text-slate-500">אין משמרות להצגה</div>
             ) : (
-              <div className="space-y-3">
-                {/* Desktop Table */}
-                <div className="hidden lg:block overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="border-b-2 border-slate-200">
-                      <tr className="text-right">
-                        <th className="py-3 px-4 font-semibold text-slate-700">תאריך</th>
-                        <th className="py-3 px-4 font-semibold text-slate-700">שעות</th>
-                        <th className="py-3 px-4 font-semibold text-slate-700">שם תוכנית</th>
-                        <th className="py-3 px-4 font-semibold text-slate-700">משך</th>
-                        <th className="py-3 px-4 font-semibold text-slate-700">רווח</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {sortedShifts.map((shift) => {
-                        const earnings = shift.duration * stats.hourlyRate;
-                        return (
-                          <tr key={shift.id} className="border-b border-slate-100 hover:bg-slate-50">
-                            <td className="py-3 px-4 font-medium">{formatDate(shift.date)}</td>
-                            <td className="py-3 px-4 text-slate-600">{shift.start_time} - {shift.end_time}</td>
-                            <td className="py-3 px-4">
-                              <span className="inline-flex items-center gap-1 text-purple-600 font-medium">
-                                <BookOpen className="w-4 h-4" />
-                                {shift.program_name}
-                              </span>
-                            </td>
-                            <td className="py-3 px-4 text-slate-700">{shift.duration} שעות</td>
-                            <td className="py-3 px-4 font-bold text-green-700">₪{earnings.toFixed(0)}</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                    <tfoot className="border-t-2 border-slate-300 bg-slate-50">
-                      <tr>
-                        <td colSpan="3" className="py-3 px-4 font-bold text-slate-900">סה"כ</td>
-                        <td className="py-3 px-4 font-bold text-slate-900">{stats.totalHours} שעות</td>
-                        <td className="py-3 px-4 font-bold text-green-700 text-lg">₪{stats.earnedSoFar.toFixed(0)}</td>
-                      </tr>
-                    </tfoot>
-                  </table>
-                </div>
-
-                {/* Mobile Cards */}
-                <div className="lg:hidden space-y-3">
-                  {sortedShifts.map((shift) => {
-                    const earnings = shift.duration * stats.hourlyRate;
-                    return (
-                      <Card key={shift.id} className="hover:shadow-md transition-shadow">
-                        <CardContent className="p-4">
-                          <div className="flex justify-between items-start mb-2">
-                            <div>
-                              <div className="font-bold text-lg">{formatDate(shift.date)}</div>
-                              <div className="text-sm text-slate-600">{shift.start_time} - {shift.end_time}</div>
-                            </div>
-                            <div className="text-left">
-                              <div className="text-sm text-slate-600">{shift.duration} שעות</div>
-                              <div className="text-lg font-bold text-green-700">₪{earnings.toFixed(0)}</div>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-1 text-purple-600 font-medium text-sm">
-                            <BookOpen className="w-4 h-4" />
-                            {shift.program_name}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                  <Card className="bg-slate-100">
-                    <CardContent className="p-4 flex justify-between items-center">
-                      <span className="font-bold text-slate-900">סה"כ החודש:</span>
-                      <div className="text-left">
-                        <div className="text-sm text-slate-700">{stats.totalHours} שעות</div>
-                        <div className="text-xl font-bold text-green-700">₪{stats.earnedSoFar.toFixed(0)}</div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b-2 border-slate-200">
+                      <th className="text-right py-3 px-4 font-semibold text-slate-700">תאריך</th>
+                      <th className="text-right py-3 px-4 font-semibold text-slate-700">שעות</th>
+                      <th className="text-right py-3 px-4 font-semibold text-slate-700">שם תוכנית</th>
+                      <th className="text-right py-3 px-4 font-semibold text-slate-700">משך</th>
+                      <th className="text-right py-3 px-4 font-semibold text-slate-700">רווח</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sortedShifts.map((shift) => {
+                      const earnings = shift.duration * stats.hourlyRate;
+                      return (
+                        <tr key={shift.id} className="border-b border-slate-100 hover:bg-slate-50">
+                          <td className="py-3 px-4">
+                            <div className="font-medium text-slate-900">{formatDate(shift.date)}</div>
+                            <div className="text-xs text-slate-500">{getDayName(shift.date)}</div>
+                          </td>
+                          <td className="py-3 px-4 text-sm text-slate-600">
+                            {shift.start_time} - {shift.end_time}
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className="inline-block px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+                              {shift.program_name}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 font-semibold text-slate-900">
+                            {shift.duration} שעות
+                          </td>
+                          <td className="py-3 px-4 font-bold text-green-600">
+                            ₪{earnings.toLocaleString()}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                  <tfoot>
+                    <tr className="bg-slate-100 font-bold">
+                      <td colSpan="3" className="py-3 px-4 text-right">סה"כ</td>
+                      <td className="py-3 px-4">{stats.totalHours} שעות</td>
+                      <td className="py-3 px-4 text-green-600">₪{stats.totalEarned.toLocaleString()}</td>
+                    </tr>
+                  </tfoot>
+                </table>
               </div>
             )}
           </CardContent>
@@ -349,12 +294,14 @@ export default function TeacherProfile() {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>שכר לשעה (₪)</Label>
+              <Label>שכר שעתי (₪)</Label>
               <Input
                 type="number"
-                value={newRate}
-                onChange={(e) => setNewRate(e.target.value)}
-                placeholder="80"
+                value={newHourlyRate}
+                onChange={(e) => setNewHourlyRate(e.target.value)}
+                placeholder="0"
+                min="0"
+                step="0.5"
               />
             </div>
           </div>
