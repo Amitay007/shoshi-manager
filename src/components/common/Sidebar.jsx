@@ -9,14 +9,14 @@ import { motion, useDragControls } from "framer-motion";
 
 export default function Sidebar({ onExpandChange }) {
   const location = useLocation();
-  const [isOpen, setIsOpen] = useState(true); // true = 200px (icons + text), false = 16px (green line)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // true = 250px (icons + text), false = 15px (green line)
   const dragControls = useDragControls();
 
   React.useEffect(() => {
     if (onExpandChange) {
-      onExpandChange(isOpen);
+      onExpandChange(isSidebarOpen);
     }
-  }, [isOpen, onExpandChange]);
+  }, [isSidebarOpen, onExpandChange]);
   
   const menuItems = [
     { id: "dashboard", label: "שושי 2.1", icon: Home, page: "Dashboard" },
@@ -40,9 +40,9 @@ export default function Sidebar({ onExpandChange }) {
   const handleDragEnd = (event, info) => {
     // If dragged left (negative offset.x), close. If dragged right (positive offset.x), open.
     if (info.offset.x < -30) {
-      setIsOpen(false);
+      setIsSidebarOpen(false);
     } else if (info.offset.x > 30) {
-      setIsOpen(true);
+      setIsSidebarOpen(true);
     }
   };
 
@@ -51,20 +51,20 @@ export default function Sidebar({ onExpandChange }) {
       {/* --- SIDEBAR (כל הגדלים) --- */}
       <motion.div 
         className={`flex h-screen flex-col fixed right-0 top-0 shadow-2xl z-40 overflow-hidden transition-colors ${
-          isOpen ? 'bg-gradient-to-b from-slate-800 to-slate-900 cursor-auto' : 'bg-green-500 hover:bg-green-600 cursor-grab active:cursor-grabbing'
+          isSidebarOpen ? 'bg-gradient-to-b from-slate-800 to-slate-900 cursor-auto' : 'bg-green-500 hover:bg-green-600 cursor-grab active:cursor-grabbing'
         }`}
-        style={{ width: isOpen ? '200px' : '16px' }}
+        style={{ width: isSidebarOpen ? '250px' : '15px' }}
         drag="x"
         dragElastic={0.2}
         dragMomentum={false}
         onDragEnd={handleDragEnd}
-        animate={{ width: isOpen ? '200px' : '16px' }}
+        animate={{ width: isSidebarOpen ? '250px' : '15px' }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
-        onClick={() => !isOpen && setIsOpen(true)}
+        onClick={() => !isSidebarOpen && setIsSidebarOpen(true)}
         dir="rtl"
       >
         {/* Logo - only show when open */}
-        {isOpen && (
+        {isSidebarOpen && (
           <div className="p-6 border-b border-slate-700">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">
@@ -79,7 +79,7 @@ export default function Sidebar({ onExpandChange }) {
         )}
 
         {/* Navigation - only show when open */}
-        {isOpen && (
+        {isSidebarOpen && (
           <>
             <nav className="flex-1 py-6 px-3 overflow-y-auto">
               <div className="space-y-1">
