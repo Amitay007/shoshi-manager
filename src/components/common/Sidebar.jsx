@@ -5,12 +5,10 @@ import {
   Home, Code, BookOpen, School, Users, Calculator, ChevronRight, ChevronLeft, KeyRound, Stamp, Layers
 } from "lucide-react";
 import VRIcon from "@/components/icons/VRIcon";
-import { motion, useDragControls } from "framer-motion";
 
 export default function Sidebar({ onExpandChange }) {
   const location = useLocation();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // true = 250px (icons + text), false = 15px (green line)
-  const dragControls = useDragControls();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   React.useEffect(() => {
     if (onExpandChange) {
@@ -37,34 +35,25 @@ export default function Sidebar({ onExpandChange }) {
     return currentPath === pagePath || currentPath.includes(`/${page}`);
   };
 
-  const handleDragEnd = (event, info) => {
-    // גרירה שמאלה = פתיחה, גרירה ימינה = סגירה
-    if (info.offset.x < -30) {
-      setIsSidebarOpen(true);
-    } else if (info.offset.x > 30) {
-      setIsSidebarOpen(false);
-    }
-  };
-
   return (
     <>
       {/* --- SIDEBAR (כל הגדלים) --- */}
-      <motion.div 
-        className={`flex h-screen flex-col fixed right-0 top-0 shadow-2xl z-40 overflow-hidden transition-colors ${
+      <div 
+        className={`flex h-screen flex-col fixed right-0 top-0 shadow-2xl z-40 overflow-hidden transition-all duration-300 ${
           isSidebarOpen ? 'bg-gradient-to-b from-slate-800 to-slate-900' : 'bg-green-500 hover:bg-green-600'
-        } cursor-grab active:cursor-grabbing`}
+        }`}
         style={{ width: isSidebarOpen ? '250px' : '15px' }}
-        drag="x"
-        dragElastic={0}
-        dragMomentum={false}
-        onDragEnd={handleDragEnd}
-        animate={{ width: isSidebarOpen ? '250px' : '15px' }}
-        transition={{ duration: 0.3, ease: "easeInOut" }}
         dir="rtl"
       >
+        {/* Toggle bar - always visible */}
+        <div 
+          className="absolute left-0 top-0 h-full w-full cursor-pointer z-50"
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+        />
+        
         {/* Logo - only show when open */}
         {isSidebarOpen && (
-          <div className="p-6 border-b border-slate-700">
+          <div className="p-6 border-b border-slate-700 relative z-10 pointer-events-none">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">
                 <span className="text-white font-bold text-2xl">Y</span>
@@ -80,7 +69,7 @@ export default function Sidebar({ onExpandChange }) {
         {/* Navigation - only show when open */}
         {isSidebarOpen && (
           <>
-            <nav className="flex-1 py-6 px-3 overflow-y-auto">
+            <nav className="flex-1 py-6 px-3 overflow-y-auto relative z-10 pointer-events-auto">
               <div className="space-y-1">
                 {menuItems.map((item) => {
                   const Icon = item.icon;
@@ -102,7 +91,7 @@ export default function Sidebar({ onExpandChange }) {
               </div>
             </nav>
             
-            <div className="p-4 border-t border-slate-700 text-center">
+            <div className="p-4 border-t border-slate-700 text-center relative z-10 pointer-events-none">
               <p className="text-slate-500 text-xs">© 2026 Yoya</p>
             </div>
           </>
