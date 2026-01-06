@@ -20,6 +20,8 @@ import EditHeadset from './pages/EditHeadset';
 import GeneralApps from './pages/GeneralApps';
 import GeneralInfo from './pages/GeneralInfo';
 import Home from './pages/Home';
+import HoursReport from './pages/HoursReport';
+import Humanmanagement from './pages/Humanmanagement';
 import ProgramView from './pages/ProgramView';
 import Programs from './pages/Programs';
 import ResearchPage from './pages/ResearchPage';
@@ -33,8 +35,6 @@ import UpdateAppStatus from './pages/UpdateAppStatus';
 import UpdateAppsFromPDF from './pages/UpdateAppsFromPDF';
 import UploadLogo from './pages/UploadLogo';
 import Version2 from './pages/Version2';
-import Humanmanagement from './pages/Humanmanagement';
-import HoursReport from './pages/HoursReport';
 import __Layout from './Layout.jsx';
 
 
@@ -61,6 +61,8 @@ export const PAGES = {
     "GeneralApps": GeneralApps,
     "GeneralInfo": GeneralInfo,
     "Home": Home,
+    "HoursReport": HoursReport,
+    "Humanmanagement": Humanmanagement,
     "ProgramView": ProgramView,
     "Programs": Programs,
     "ResearchPage": ResearchPage,
@@ -74,8 +76,6 @@ export const PAGES = {
     "UpdateAppsFromPDF": UpdateAppsFromPDF,
     "UploadLogo": UploadLogo,
     "Version2": Version2,
-    "Humanmanagement": Humanmanagement,
-    "HoursReport": HoursReport,
 }
 
 export const pagesConfig = {

@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { Clock, Calendar, AlertCircle, Plus, Minus, CheckCircle, HourglassIcon } from "lucide-react";
+import { Clock, Calendar, AlertCircle, Plus, Minus, CheckCircle, HourglassIcon, LogIn, LogOut } from "lucide-react";
 import BackHomeButtons from "@/components/common/BackHomeButtons";
 import { useLoading } from "@/components/common/LoadingContext";
 
@@ -16,16 +16,14 @@ export default function HoursReport() {
   const [shifts, setShifts] = useState([]);
   const [schools, setSchools] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showReportShift, setShowReportShift] = useState(false);
   const [showReportAbsence, setShowReportAbsence] = useState(false);
+  const [showClockOutModal, setShowClockOutModal] = useState(false);
   
-  const [newShift, setNewShift] = useState({
-    date: "",
-    start_time: "",
-    end_time: "",
-    school_id: "",
-    status: "ממתין לאישור"
-  });
+  // Clock In/Out State
+  const [isClockedIn, setIsClockedIn] = useState(false);
+  const [clockInTime, setClockInTime] = useState(null);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [programName, setProgramName] = useState("");
 
   const [newAbsence, setNewAbsence] = useState({
     date: "",
@@ -38,7 +36,32 @@ export default function HoursReport() {
 
   useEffect(() => {
     loadData();
+    
+    // Load clock state from localStorage
+    const savedClockedIn = localStorage.getItem('isClockedIn') === 'true';
+    const savedClockInTime = localStorage.getItem('clockInTime');
+    
+    if (savedClockedIn && savedClockInTime) {
+      setIsClockedIn(true);
+      setClockInTime(new Date(savedClockInTime));
+    }
   }, []);
+
+  // Timer for elapsed time
+  useEffect(() => {
+    let interval;
+    if (isClockedIn && clockInTime) {
+      interval = setInterval(() => {
+        const now = new Date();
+        const elapsed = Math.floor((now - clockInTime) / 1000);
+        setElapsedTime(elapsed);
+      }, 1000);
+    }
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isClockedIn, clockInTime]);
 
   const loadData = async () => {
     showLoader();
@@ -68,7 +91,8 @@ export default function HoursReport() {
           school_id: schoolsData?.[0]?.id || "school1",
           school_name: schoolsData?.[0]?.name || "בי\"ס יעלים",
           duration: 6,
-          status: "מאושר"
+          status: "מאושר",
+          program_name: "סדנת VR מתקדמת"
         },
         {
           id: "2",
@@ -79,7 +103,8 @@ export default function HoursReport() {
           school_id: schoolsData?.[1]?.id || "school2",
           school_name: schoolsData?.[1]?.name || "בי\"ס הדסים",
           duration: 6.5,
-          status: "ממתין לאישור"
+          status: "ממתין לאישור",
+          program_name: "הכרת מציאות מדומה"
         },
         {
           id: "3",
@@ -90,7 +115,8 @@ export default function HoursReport() {
           school_id: schoolsData?.[0]?.id || "school1",
           school_name: schoolsData?.[0]?.name || "בי\"ס יעלים",
           duration: 5,
-          status: "מאושר"
+          status: "מאושר",
+          program_name: "שיעור גיאוגרפיה בVR"
         },
         {
           id: "4",
@@ -101,7 +127,8 @@ export default function HoursReport() {
           school_id: schoolsData?.[2]?.id || "school3",
           school_name: schoolsData?.[2]?.name || "בי\"ס רימון",
           duration: 6,
-          status: "ממתין לאישור"
+          status: "ממתין לאישור",
+          program_name: "מסע בחלל"
         }
       ].filter(shift => {
         const shiftDate = new Date(shift.date);
@@ -137,31 +164,64 @@ export default function HoursReport() {
     return [...shifts].sort((a, b) => new Date(b.date) - new Date(a.date));
   }, [shifts]);
 
-  const handleSaveShift = async () => {
-    // Calculate duration
-    const start = new Date(`2000-01-01T${newShift.start_time}`);
-    const end = new Date(`2000-01-01T${newShift.end_time}`);
-    const duration = (end - start) / (1000 * 60 * 60);
+  const formatElapsedTime = (seconds) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  };
 
-    const school = schools.find(s => s.id === newShift.school_id);
+  const handleClockIn = () => {
+    const now = new Date();
+    setIsClockedIn(true);
+    setClockInTime(now);
+    setElapsedTime(0);
+    
+    localStorage.setItem('isClockedIn', 'true');
+    localStorage.setItem('clockInTime', now.toISOString());
+    
+    toast({ title: "כניסה נרשמה", description: "המערכת מתחילה לספור את הזמן" });
+  };
+
+  const handleClockOutRequest = () => {
+    setShowClockOutModal(true);
+  };
+
+  const handleClockOutConfirm = () => {
+    if (!programName.trim()) {
+      toast({ title: "שגיאה", description: "נא להזין שם תוכנית", variant: "destructive" });
+      return;
+    }
+
+    const now = new Date();
+    const duration = (now - clockInTime) / (1000 * 60 * 60); // hours
     
     const shift = {
       id: Date.now().toString(),
       user_id: currentUser.id,
-      date: newShift.date,
-      start_time: newShift.start_time,
-      end_time: newShift.end_time,
-      school_id: newShift.school_id,
-      school_name: school?.name || "לא צוין",
-      duration: duration,
-      status: newShift.status
+      date: clockInTime.toISOString().split('T')[0],
+      start_time: clockInTime.toTimeString().slice(0, 5),
+      end_time: now.toTimeString().slice(0, 5),
+      school_id: schools[0]?.id || "",
+      school_name: schools[0]?.name || "מיקום לא צוין",
+      duration: parseFloat(duration.toFixed(2)),
+      status: "ממתין לאישור",
+      program_name: programName
     };
 
     setShifts([...shifts, shift]);
-    setShowReportShift(false);
-    setNewShift({ date: "", start_time: "", end_time: "", school_id: "", status: "ממתין לאישור" });
     
-    toast({ title: "הצלחה", description: "המשמרת נוספה בהצלחה" });
+    // Reset clock state
+    setIsClockedIn(false);
+    setClockInTime(null);
+    setElapsedTime(0);
+    setProgramName("");
+    setShowClockOutModal(false);
+    
+    localStorage.removeItem('isClockedIn');
+    localStorage.removeItem('clockInTime');
+    
+    toast({ title: "יציאה נרשמה", description: "המשמרת נשמרה בהצלחה" });
   };
 
   const handleSaveAbsence = async () => {
@@ -244,19 +304,31 @@ export default function HoursReport() {
           </Card>
         </div>
 
-        {/* Actions */}
-        <div className="flex gap-3">
-          <Button 
-            onClick={() => setShowReportShift(true)}
-            className="flex-1 lg:flex-none gap-2 bg-purple-600 hover:bg-purple-700"
-          >
-            <Plus className="w-5 h-5" />
-            דווח משמרת
-          </Button>
+        {/* Clock In/Out Toggle Button */}
+        <div className="flex flex-col gap-3">
+          {!isClockedIn ? (
+            <Button 
+              onClick={handleClockIn}
+              className="w-full h-20 text-2xl font-bold bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-lg"
+            >
+              <LogIn className="w-8 h-8 ml-3" />
+              🟢 כניסה לעבודה
+            </Button>
+          ) : (
+            <Button 
+              onClick={handleClockOutRequest}
+              className="w-full h-20 text-2xl font-bold bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 shadow-lg"
+            >
+              <LogOut className="w-8 h-8 ml-3" />
+              🔴 יציאה מעבודה
+              <span className="mr-4 font-mono">{formatElapsedTime(elapsedTime)}</span>
+            </Button>
+          )}
+          
           <Button 
             onClick={() => setShowReportAbsence(true)}
             variant="outline"
-            className="flex-1 lg:flex-none gap-2"
+            className="gap-2"
           >
             <Minus className="w-5 h-5" />
             דווח היעדרות
@@ -282,10 +354,13 @@ export default function HoursReport() {
                       <div className="text-xs text-slate-500">{getDayName(shift.date)}</div>
                     </div>
 
-                    {/* Center: School & Hours */}
+                    {/* Center: School, Hours & Program */}
                     <div className="flex-1">
                       <div className="font-semibold text-slate-900">{shift.school_name}</div>
                       <div className="text-sm text-slate-600">{shift.start_time} - {shift.end_time}</div>
+                      {shift.program_name && (
+                        <div className="text-xs text-purple-600 font-medium mt-1">📚 {shift.program_name}</div>
+                      )}
                     </div>
 
                     {/* Right: Duration & Status */}
@@ -313,77 +388,32 @@ export default function HoursReport() {
         </div>
       </div>
 
-      {/* Report Shift Dialog */}
-      <Dialog open={showReportShift} onOpenChange={setShowReportShift}>
+      {/* Clock Out Modal - Program Name */}
+      <Dialog open={showClockOutModal} onOpenChange={setShowClockOutModal}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>דיווח משמרת חדשה</DialogTitle>
-            <DialogDescription>מלא את פרטי המשמרת</DialogDescription>
+            <DialogTitle>סיום משמרת</DialogTitle>
+            <DialogDescription>נא להזין את שם התוכנית/שיעור שלימדת</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>תאריך</Label>
+              <Label>שם התוכנית / נושא השיעור *</Label>
               <Input
-                type="date"
-                value={newShift.date}
-                onChange={(e) => setNewShift({ ...newShift, date: e.target.value })}
+                value={programName}
+                onChange={(e) => setProgramName(e.target.value)}
+                placeholder="לדוגמה: סדנת VR מתקדמת"
+                autoFocus
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label>שעת התחלה</Label>
-                <Input
-                  type="time"
-                  value={newShift.start_time}
-                  onChange={(e) => setNewShift({ ...newShift, start_time: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label>שעת סיום</Label>
-                <Input
-                  type="time"
-                  value={newShift.end_time}
-                  onChange={(e) => setNewShift({ ...newShift, end_time: e.target.value })}
-                />
-              </div>
-            </div>
-            <div>
-              <Label>בית ספר / מיקום</Label>
-              <Select
-                value={newShift.school_id}
-                onValueChange={(value) => setNewShift({ ...newShift, school_id: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="בחר בית ספר" />
-                </SelectTrigger>
-                <SelectContent>
-                  {schools.map((school) => (
-                    <SelectItem key={school.id} value={school.id}>
-                      {school.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>סטטוס</Label>
-              <Select
-                value={newShift.status}
-                onValueChange={(value) => setNewShift({ ...newShift, status: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ממתין לאישור">ממתין לאישור</SelectItem>
-                  <SelectItem value="מאושר">מאושר</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="bg-slate-100 p-3 rounded-lg text-sm">
+              <p className="font-semibold text-slate-700">פרטי המשמרת:</p>
+              <p className="text-slate-600">זמן כניסה: {clockInTime?.toLocaleTimeString('he-IL')}</p>
+              <p className="text-slate-600">משך: {formatElapsedTime(elapsedTime)}</p>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowReportShift(false)}>ביטול</Button>
-            <Button onClick={handleSaveShift}>שמור</Button>
+            <Button variant="outline" onClick={() => setShowClockOutModal(false)}>ביטול</Button>
+            <Button onClick={handleClockOutConfirm}>שמור וסיים משמרת</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
