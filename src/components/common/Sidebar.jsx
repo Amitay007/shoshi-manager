@@ -96,7 +96,7 @@ export default function Sidebar({ onExpandChange }) {
             </div>
           </>
         )}
-      </motion.div>
-    </>
-  );
-}
+        </div>
+        </>
+        );
+        }
