@@ -38,6 +38,7 @@ import UpdateAppsFromPDF from './pages/UpdateAppsFromPDF';
 import UploadLogo from './pages/UploadLogo';
 import Version2 from './pages/Version2';
 import MySchedule from './pages/MySchedule';
+import MasterSchedule from './pages/MasterSchedule';
 import __Layout from './Layout.jsx';
 
 
@@ -82,6 +83,7 @@ export const PAGES = {
     "UploadLogo": UploadLogo,
     "Version2": Version2,
     "MySchedule": MySchedule,
+    "MasterSchedule": MasterSchedule,
 }
 
 export const pagesConfig = {
