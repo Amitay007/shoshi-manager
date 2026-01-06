@@ -69,7 +69,7 @@ export default function Sidebar({ onExpandChange }) {
         {/* Navigation - only show when open */}
         {isSidebarOpen && (
           <>
-            <nav className="flex-1 px-4 overflow-x-auto relative z-10 pointer-events-auto flex items-center">
+            <nav className="flex-1 px-4 overflow-x-auto no-scrollbar relative z-10 pointer-events-auto flex items-center">
               <div className="flex flex-nowrap gap-2 w-max">
                 {menuItems.map((item) => {
                   const Icon = item.icon;
