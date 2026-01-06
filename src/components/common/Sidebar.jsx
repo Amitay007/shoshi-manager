@@ -50,8 +50,8 @@ export default function Sidebar({ onExpandChange }) {
     <>
       {/* --- SIDEBAR (כל הגדלים) --- */}
       <motion.div 
-        className={`flex h-screen flex-col fixed right-0 top-0 shadow-2xl z-40 overflow-hidden ${
-          isOpen ? 'bg-gradient-to-b from-slate-800 to-slate-900' : 'bg-green-500 hover:bg-green-600'
+        className={`flex h-screen flex-col fixed right-0 top-0 shadow-2xl z-40 overflow-hidden transition-colors ${
+          isOpen ? 'bg-gradient-to-b from-slate-800 to-slate-900 cursor-auto' : 'bg-green-500 hover:bg-green-600 cursor-grab active:cursor-grabbing'
         }`}
         style={{ width: isOpen ? '200px' : '16px' }}
         drag="x"
@@ -61,9 +61,6 @@ export default function Sidebar({ onExpandChange }) {
         animate={{ width: isOpen ? '200px' : '16px' }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
         onClick={() => !isOpen && setIsOpen(true)}
-        className={`flex h-screen flex-col fixed right-0 top-0 shadow-2xl z-40 overflow-hidden transition-colors cursor-pointer ${
-          isOpen ? 'bg-gradient-to-b from-slate-800 to-slate-900 cursor-auto' : 'bg-green-500 hover:bg-green-600 cursor-grab active:cursor-grabbing'
-        }`}
         dir="rtl"
       >
         {/* Logo - only show when open */}
