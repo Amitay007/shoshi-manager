@@ -88,10 +88,12 @@ export default function SyllabusHub() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button disabled className="bg-gray-400 text-gray-600 shadow-lg gap-2 w-full sm:w-auto flex-1 sm:flex-none cursor-not-allowed">
-              <Plus className="w-4 h-4" />
-              סילבוס חדש
-            </Button>
+            <Link to={createPageUrl("SyllabusWizard")} className="flex-1 sm:flex-none">
+              <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg gap-2 w-full sm:w-auto">
+                <Plus className="w-4 h-4" />
+                סילבוס חדש
+              </Button>
+            </Link>
             <div className="hidden lg:block">
               <BackHomeButtons />
             </div>

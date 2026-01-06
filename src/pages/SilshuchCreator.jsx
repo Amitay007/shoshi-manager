@@ -466,6 +466,14 @@ export default function SilshuchCreator() {
                       className="hover:shadow-lg transition-shadow cursor-pointer relative"
                       onClick={() => viewSilshuch(silshuch)}
                     >
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="absolute top-2 left-2 z-10 text-red-600 hover:text-red-700 hover:bg-red-50"
+                      onClick={(e) => deleteSilshuch(silshuch, e)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                     <CardHeader className={`${
                       silshuch.mode === "static" 
                         ? "bg-gradient-to-r from-purple-50 to-purple-100" 
@@ -487,26 +495,18 @@ export default function SilshuchCreator() {
                         </p>
                       )}
                     </CardHeader>
-                    <CardContent className="pt-4 pb-3">
+                    <CardContent className="pt-4">
                       {silshuch.details && (
                         <p className="text-sm text-slate-600 mb-3">{silshuch.details}</p>
                       )}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1 text-sm text-slate-500">
+                      <div className="flex items-center gap-4 text-sm text-slate-500">
+                        <div className="flex items-center gap-1">
                           <Glasses className="w-4 h-4" />
                           {silshuch.mode === "static" 
                             ? `${(silshuch.selectedHeadsets || []).length} משקפות`
                             : `${silshuch.numberOfSessions} מפגשים`
                           }
                         </div>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50 text-xs h-7"
-                          onClick={(e) => deleteSilshuch(silshuch, e)}
-                        >
-                          מחיקה
-                        </Button>
                       </div>
                     </CardContent>
                   </Card>

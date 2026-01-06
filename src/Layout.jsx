@@ -31,7 +31,6 @@ function LayoutContent({ children, currentPageName }) {
               --yoya-cyan: #00d4ff;
               --yoya-dark: #2d1b69;
               --yoya-light: #e8def8;
-              --sidebar-height: 80px;
             }
             body { 
               font-family: 'Assistant', sans-serif;
@@ -51,15 +50,10 @@ function LayoutContent({ children, currentPageName }) {
             }
           `}</style>
         
-        {showSidebar && <Sidebar onExpandChange={(isSidebarOpen) => {
-          document.documentElement.style.setProperty('--sidebar-height', isSidebarOpen ? '80px' : '15px');
-        }} />}
-
-        {/* תוכן ראשי עם מרווח דינמי */}
-        <div 
-          className="transition-all duration-300" 
-          style={{ marginBottom: showSidebar ? 'var(--sidebar-height, 80px)' : '0' }}
-        >
+        {showSidebar && <Sidebar />}
+        
+        {/* FIX: Margin only on Desktop (lg), Padding Bottom on Mobile for nav */}
+        <div className={`transition-all duration-300 ${showSidebar ? "lg:mr-64 pb-24 lg:pb-0" : ""}`}>
           {children}
         </div>
         
