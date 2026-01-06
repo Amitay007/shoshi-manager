@@ -38,11 +38,11 @@ export default function Sidebar({ onExpandChange }) {
   };
 
   const handleDragEnd = (event, info) => {
-    // If dragged left (negative offset.x), close. If dragged right (positive offset.x), open.
+    // Slide left (negative offset.x) = open, Slide right (positive offset.x) = close
     if (info.offset.x < -30) {
-      setIsSidebarOpen(false);
-    } else if (info.offset.x > 30) {
       setIsSidebarOpen(true);
+    } else if (info.offset.x > 30) {
+      setIsSidebarOpen(false);
     }
   };
 
@@ -60,7 +60,6 @@ export default function Sidebar({ onExpandChange }) {
         onDragEnd={handleDragEnd}
         animate={{ width: isSidebarOpen ? '250px' : '15px' }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
-        onClick={() => !isSidebarOpen && setIsSidebarOpen(true)}
         dir="rtl"
       >
         {/* Logo - only show when open */}
