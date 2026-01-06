@@ -34,6 +34,7 @@ import UpdateAppsFromPDF from './pages/UpdateAppsFromPDF';
 import UploadLogo from './pages/UploadLogo';
 import Version2 from './pages/Version2';
 import Humanmanagement from './pages/Humanmanagement';
+import HoursReport from './pages/HoursReport';
 import __Layout from './Layout.jsx';
 
 
@@ -74,6 +75,7 @@ export const PAGES = {
     "UploadLogo": UploadLogo,
     "Version2": Version2,
     "Humanmanagement": Humanmanagement,
+    "HoursReport": HoursReport,
 }
 
 export const pagesConfig = {
