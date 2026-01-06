@@ -7,8 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 import { useToast } from "@/components/ui/use-toast";
-import { Calendar as CalendarIcon, AlertCircle, CheckCircle, Clock, Building2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar as CalendarIcon, AlertCircle, CheckCircle, Clock, Building2, ChevronLeft, ChevronRight, ChevronsUpDown } from "lucide-react";
 import BackHomeButtons from "@/components/common/BackHomeButtons";
 import { useLoading } from "@/components/common/LoadingContext";
 import { with429Retry } from "@/components/utils/retry";
@@ -24,6 +26,7 @@ export default function MasterSchedule() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
   const [showNewShiftDialog, setShowNewShiftDialog] = useState(false);
+  const [openSchoolSelect, setOpenSchoolSelect] = useState(false);
 
   const [newShift, setNewShift] = useState({
     program_id: "",
@@ -182,6 +185,7 @@ export default function MasterSchedule() {
                       variant="outline"
                       size="sm"
                       onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                      className="cursor-pointer"
                     >
                       <ChevronRight className="w-4 h-4" />
                     </Button>
@@ -189,6 +193,7 @@ export default function MasterSchedule() {
                       variant="outline"
                       size="sm"
                       onClick={() => setCurrentMonth(new Date())}
+                      className="cursor-pointer"
                     >
                       היום
                     </Button>
@@ -196,6 +201,7 @@ export default function MasterSchedule() {
                       variant="outline"
                       size="sm"
                       onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+                      className="cursor-pointer"
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </Button>
@@ -325,7 +331,7 @@ export default function MasterSchedule() {
                             <Button
                               size="sm"
                               variant="outline"
-                              className="w-full text-xs h-7"
+                              className="w-full text-xs h-7 cursor-pointer"
                               onClick={() => window.location.href = `tel:${teacher.phone}`}
                             >
                               התקשר לתזכורת
@@ -350,24 +356,45 @@ export default function MasterSchedule() {
           </DialogHeader>
           <div className="space-y-4">
             
-            {/* School Selection */}
+            {/* School Selection - Searchable Combobox */}
             <div>
               <Label>בית ספר *</Label>
-              <Select
-                value={newShift.institution_id}
-                onValueChange={(v) => setNewShift({ ...newShift, institution_id: v })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="בחר בית ספר" />
-                </SelectTrigger>
-                <SelectContent>
-                  {schools.map(school => (
-                    <SelectItem key={school.id} value={school.id}>
-                      {school.name} - {school.city}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover open={openSchoolSelect} onOpenChange={setOpenSchoolSelect}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={openSchoolSelect}
+                    className="w-full justify-between cursor-pointer"
+                  >
+                    {newShift.institution_id
+                      ? schools.find((school) => school.id === newShift.institution_id)?.name
+                      : "חפש בית ספר..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 z-[100]" align="start">
+                  <Command>
+                    <CommandInput placeholder="הקלד לחיפוש..." className="h-9" />
+                    <CommandEmpty>לא נמצא בית ספר.</CommandEmpty>
+                    <CommandGroup className="max-h-[300px] overflow-y-auto">
+                      {schools.map((school) => (
+                        <CommandItem
+                          key={school.id}
+                          value={`${school.name} ${school.city}`}
+                          onSelect={() => {
+                            setNewShift({ ...newShift, institution_id: school.id });
+                            setOpenSchoolSelect(false);
+                          }}
+                          className="cursor-pointer"
+                        >
+                          {school.name} - {school.city}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
 
             {/* Program Selection */}
@@ -451,10 +478,10 @@ export default function MasterSchedule() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNewShiftDialog(false)}>
+            <Button variant="outline" onClick={() => setShowNewShiftDialog(false)} className="cursor-pointer">
               ביטול
             </Button>
-            <Button onClick={handleCreateShift} className="bg-indigo-600 hover:bg-indigo-700">
+            <Button onClick={handleCreateShift} className="bg-indigo-600 hover:bg-indigo-700 cursor-pointer">
               צור משמרת
             </Button>
           </DialogFooter>

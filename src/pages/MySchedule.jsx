@@ -248,7 +248,7 @@ export default function MySchedule() {
                       {!isConfirmed && (
                         <Button
                           onClick={() => handleConfirmArrival(shift.id)}
-                          className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold gap-2"
+                          className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold gap-2 cursor-pointer z-10"
                         >
                           <CheckCircle className="w-5 h-5" />
                           אשר הגעה למשמרת
@@ -260,7 +260,7 @@ export default function MySchedule() {
                         <Button
                           onClick={() => handleNavigate(school?.address || shift.custom_location)}
                           variant="outline"
-                          className="gap-2"
+                          className="gap-2 cursor-pointer"
                         >
                           <Navigation className="w-4 h-4" />
                           ניווט (Waze)
@@ -268,7 +268,7 @@ export default function MySchedule() {
                         <Button
                           onClick={() => handleCall(school?.phone)}
                           variant="outline"
-                          className="gap-2"
+                          className="gap-2 cursor-pointer"
                         >
                           <Phone className="w-4 h-4" />
                           התקשר לבית הספר

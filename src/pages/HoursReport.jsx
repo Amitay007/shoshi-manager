@@ -309,7 +309,7 @@ export default function HoursReport() {
           {!isClockedIn ? (
             <Button 
               onClick={handleClockIn}
-              className="w-full h-20 text-2xl font-bold bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-lg"
+              className="w-full h-20 text-2xl font-bold bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-lg cursor-pointer z-10"
             >
               <LogIn className="w-8 h-8 ml-3" />
               🟢 כניסה לעבודה
@@ -317,7 +317,7 @@ export default function HoursReport() {
           ) : (
             <Button 
               onClick={handleClockOutRequest}
-              className="w-full h-20 text-2xl font-bold bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 shadow-lg"
+              className="w-full h-20 text-2xl font-bold bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 shadow-lg cursor-pointer z-10"
             >
               <LogOut className="w-8 h-8 ml-3" />
               🔴 יציאה מעבודה
@@ -328,7 +328,7 @@ export default function HoursReport() {
           <Button 
             onClick={() => setShowReportAbsence(true)}
             variant="outline"
-            className="gap-2"
+            className="gap-2 cursor-pointer"
           >
             <Minus className="w-5 h-5" />
             דווח היעדרות
@@ -412,8 +412,8 @@ export default function HoursReport() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowClockOutModal(false)}>ביטול</Button>
-            <Button onClick={handleClockOutConfirm}>שמור וסיים משמרת</Button>
+            <Button variant="outline" onClick={() => setShowClockOutModal(false)} className="cursor-pointer">ביטול</Button>
+            <Button onClick={handleClockOutConfirm} className="cursor-pointer">שמור וסיים משמרת</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -461,8 +461,8 @@ export default function HoursReport() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowReportAbsence(false)}>ביטול</Button>
-            <Button onClick={handleSaveAbsence}>שמור</Button>
+            <Button variant="outline" onClick={() => setShowReportAbsence(false)} className="cursor-pointer">ביטול</Button>
+            <Button onClick={handleSaveAbsence} className="cursor-pointer">שמור</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
