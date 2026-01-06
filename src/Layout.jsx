@@ -51,8 +51,8 @@ function LayoutContent({ children, currentPageName }) {
             }
           `}</style>
         
-        {showSidebar && <Sidebar onExpandChange={(expanded) => {
-          document.documentElement.style.setProperty('--sidebar-width', expanded ? '256px' : '80px');
+        {showSidebar && <Sidebar onExpandChange={(isOpen) => {
+          document.documentElement.style.setProperty('--sidebar-width', isOpen ? '80px' : '16px');
         }} />}
         
         {/* תוכן ראשי עם מרווח דינמי - ללא padding-bottom */}

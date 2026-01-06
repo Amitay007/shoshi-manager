@@ -5,16 +5,18 @@ import {
   Home, Code, BookOpen, School, Users, Calculator, ChevronRight, ChevronLeft, KeyRound, Stamp, Layers
 } from "lucide-react";
 import VRIcon from "@/components/icons/VRIcon";
+import { motion, useDragControls } from "framer-motion";
 
 export default function Sidebar({ onExpandChange }) {
   const location = useLocation();
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isOpen, setIsOpen] = useState(true); // true = 20px (icons), false = 4px (button only)
+  const dragControls = useDragControls();
 
   React.useEffect(() => {
     if (onExpandChange) {
-      onExpandChange(isExpanded);
+      onExpandChange(isOpen);
     }
-  }, [isExpanded, onExpandChange]);
+  }, [isOpen, onExpandChange]);
   
   const menuItems = [
     { id: "dashboard", label: "שושי 2.1", icon: Home, page: "Dashboard" },
@@ -35,78 +37,78 @@ export default function Sidebar({ onExpandChange }) {
     return currentPath === pagePath || currentPath.includes(`/${page}`);
   };
 
+  const handleDragEnd = (event, info) => {
+    // If dragged left (negative offset.x), close. If dragged right (positive offset.x), open.
+    if (info.offset.x < -20) {
+      setIsOpen(false);
+    } else if (info.offset.x > 20) {
+      setIsOpen(true);
+    }
+  };
+
   return (
     <>
       {/* --- SIDEBAR (כל הגדלים) --- */}
-      <div 
-        className={`flex h-screen bg-gradient-to-b from-slate-800 to-slate-900 flex-col fixed right-0 top-0 shadow-2xl z-40 transition-all duration-300 ${
-          isExpanded ? "w-64" : "w-20"
-        }`} 
+      <motion.div 
+        className={`flex h-screen bg-gradient-to-b from-slate-800 to-slate-900 flex-col fixed right-0 top-0 shadow-2xl z-40 overflow-hidden`}
+        style={{ width: isOpen ? '80px' : '16px' }}
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.1}
+        onDragEnd={handleDragEnd}
+        dragControls={dragControls}
+        animate={{ width: isOpen ? '80px' : '16px' }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
         dir="rtl"
       >
-        {/* כפתור כיווץ/הרחבה - בצד שמאל של הסיידבר */}
+        {/* כפתור שליפה */}
         <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="absolute top-1/2 -translate-y-1/2 -left-4 z-50 bg-gradient-to-r from-purple-600 to-cyan-600 text-white p-2 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110"
+          onClick={() => setIsOpen(!isOpen)}
+          onPointerDown={(e) => dragControls.start(e)}
+          className="absolute top-1/2 -translate-y-1/2 -left-3 z-50 bg-gradient-to-r from-purple-600 to-cyan-600 text-white p-2 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110 cursor-grab active:cursor-grabbing"
         >
-          {isExpanded ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+          {isOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
         </button>
-        {/* Logo */}
-        <div className="p-6 border-b border-slate-700">
-          {isExpanded ? (
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">
-                <span className="text-white font-bold text-2xl">Y</span>
-              </div>
-              <div>
-                <h2 className="text-white font-bold text-xl">Yoya</h2>
-                <p className="text-purple-300 text-xs">VR Management</p>
-              </div>
+        {/* Logo - only show when open */}
+        {isOpen && (
+          <div className="p-6 border-b border-slate-700 flex justify-center">
+            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">
+              <span className="text-white font-bold text-2xl">Y</span>
             </div>
-          ) : (
-            <div className="flex justify-center">
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">
-                <span className="text-white font-bold text-2xl">Y</span>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 py-6 px-3 overflow-y-auto">
-          <div className="space-y-1">
-            {menuItems.map((item) => {
-              const Icon = item.icon;
-              const active = isActive(item.page);
-              return (
-                <Link 
-                  key={item.id} 
-                  to={createPageUrl(item.page)} 
-                  className={`flex ${isExpanded ? 'items-center gap-3' : 'flex-col items-center justify-center'} px-4 py-3 rounded-lg transition-all duration-200 ${
-                    active ? 'bg-gradient-to-r from-purple-600 to-cyan-600 text-white shadow-lg' : 'text-slate-300 hover:bg-slate-700 hover:text-white'
-                  }`}
-                >
-                  <Icon className="w-5 h-5 shrink-0" />
-                  {isExpanded ? (
-                    <>
-                      <span className="font-medium text-sm">{item.label}</span>
-                      {active && <ChevronRight className="w-4 h-4 mr-auto" />}
-                    </>
-                  ) : (
-                    <span className="text-[10px] mt-1 text-center">{item.label}</span>
-                  )}
-                </Link>
-              );
-            })}
-          </div>
-        </nav>
-        
-        {isExpanded && (
-          <div className="p-4 border-t border-slate-700 text-center">
-            <p className="text-slate-500 text-xs">© 2026 Yoya</p>
           </div>
         )}
-      </div>
+
+        {/* Navigation - only show when open */}
+        {isOpen && (
+          <>
+            <nav className="flex-1 py-6 px-3 overflow-y-auto">
+              <div className="space-y-1">
+                {menuItems.map((item) => {
+                  const Icon = item.icon;
+                  const active = isActive(item.page);
+                  return (
+                    <Link 
+                      key={item.id} 
+                      to={createPageUrl(item.page)} 
+                      className={`flex flex-col items-center justify-center px-2 py-3 rounded-lg transition-all duration-200 ${
+                        active ? 'bg-gradient-to-r from-purple-600 to-cyan-600 text-white shadow-lg' : 'text-slate-300 hover:bg-slate-700 hover:text-white'
+                      }`}
+                      title={item.label}
+                    >
+                      <Icon className="w-5 h-5 shrink-0" />
+                      <span className="text-[10px] mt-1 text-center">{item.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </nav>
+            
+            <div className="p-4 border-t border-slate-700 text-center">
+              <p className="text-slate-500 text-xs">© 2026 Yoya</p>
+            </div>
+          </>
+        )}
+      </motion.div>
     </>
   );
 }
