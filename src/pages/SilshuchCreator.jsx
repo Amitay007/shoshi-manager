@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
-import { Plus, Copy, Save, Repeat, Glasses, Calendar, FileText, Search, CheckCircle, Stamp, MessageSquare, Trash2 } from "lucide-react";
+import { Plus, Copy, Save, Repeat, Glasses, Calendar, FileText, Search, CheckCircle, Stamp, MessageSquare, Trash2, X } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -489,22 +489,32 @@ export default function SilshuchCreator() {
                         </p>
                       )}
                     </CardHeader>
-                    <CardContent className="pt-4">
-                      {silshuch.details && (
-                        <p className="text-sm text-slate-600 mb-3">{silshuch.details}</p>
-                      )}
-                      <div className="flex items-center gap-4 text-sm text-slate-500">
-                        <div className="flex items-center gap-1">
-                          <Glasses className="w-4 h-4" />
-                          {silshuch.mode === "static" 
-                            ? `${(silshuch.selectedHeadsets || []).length} משקפות`
-                            : `${silshuch.numberOfSessions} מפגשים`
-                          }
-                        </div>
-                      </div>
+                    <CardContent className="pt-4 pb-12">
+                     {silshuch.details && (
+                       <p className="text-sm text-slate-600 mb-3">{silshuch.details}</p>
+                     )}
+                     <div className="flex items-center gap-4 text-sm text-slate-500">
+                       <div className="flex items-center gap-1">
+                         <Glasses className="w-4 h-4" />
+                         {silshuch.mode === "static" 
+                           ? `${(silshuch.selectedHeadsets || []).length} משקפות`
+                           : `${silshuch.numberOfSessions} מפגשים`
+                         }
+                       </div>
+                     </div>
+                     <div className="absolute bottom-2 left-2">
+                       <Button
+                         size="sm"
+                         variant="ghost"
+                         className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 w-8 p-0"
+                         onClick={(e) => deleteSilshuch(silshuch, e)}
+                       >
+                         <Trash2 className="w-4 h-4" />
+                       </Button>
+                     </div>
                     </CardContent>
-                  </Card>
-                  </motion.div>
+                    </Card>
+                    </motion.div>
                 ))}
               </div>
             )}
