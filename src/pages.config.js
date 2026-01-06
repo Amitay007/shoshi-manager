@@ -25,14 +25,15 @@ import Programs from './pages/Programs';
 import ResearchPage from './pages/ResearchPage';
 import SchoolDetails from './pages/SchoolDetails';
 import Schools from './pages/Schools';
-import SilshuchCreator from './pages/SilshuchCreator';
-import SyllabusHub from './pages/SyllabusHub';
 import SyllabusValuesManager from './pages/SyllabusValuesManager';
 import SyllabusWizard from './pages/SyllabusWizard';
 import UpdateAppStatus from './pages/UpdateAppStatus';
 import UpdateAppsFromPDF from './pages/UpdateAppsFromPDF';
 import UploadLogo from './pages/UploadLogo';
 import Version2 from './pages/Version2';
+import SyllabusHub from './pages/SyllabusHub';
+import SilshuchCreator from './pages/SilshuchCreator';
+import Humanmanagement from './pages/Humanmanagement';
 import __Layout from './Layout.jsx';
 
 
@@ -64,14 +65,15 @@ export const PAGES = {
     "ResearchPage": ResearchPage,
     "SchoolDetails": SchoolDetails,
     "Schools": Schools,
-    "SilshuchCreator": SilshuchCreator,
-    "SyllabusHub": SyllabusHub,
     "SyllabusValuesManager": SyllabusValuesManager,
     "SyllabusWizard": SyllabusWizard,
     "UpdateAppStatus": UpdateAppStatus,
     "UpdateAppsFromPDF": UpdateAppsFromPDF,
     "UploadLogo": UploadLogo,
     "Version2": Version2,
+    "SyllabusHub": SyllabusHub,
+    "SilshuchCreator": SilshuchCreator,
+    "Humanmanagement": Humanmanagement,
 }
 
 export const pagesConfig = {
