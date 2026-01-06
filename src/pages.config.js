@@ -36,6 +36,7 @@ import UpdateAppsFromPDF from './pages/UpdateAppsFromPDF';
 import UploadLogo from './pages/UploadLogo';
 import Version2 from './pages/Version2';
 import TeacherProfile from './pages/TeacherProfile';
+import TeachersList from './pages/TeachersList';
 import __Layout from './Layout.jsx';
 
 
@@ -78,6 +79,7 @@ export const PAGES = {
     "UploadLogo": UploadLogo,
     "Version2": Version2,
     "TeacherProfile": TeacherProfile,
+    "TeachersList": TeachersList,
 }
 
 export const pagesConfig = {

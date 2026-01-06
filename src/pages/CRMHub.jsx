@@ -282,7 +282,7 @@ export default function CRMHub() {
 
           <Card 
             className="bg-gradient-to-br from-cyan-50 to-teal-50 border-0 shadow-lg cursor-pointer hover:shadow-xl hover:scale-105 active:scale-95 transition-all"
-            onClick={() => setActiveTab("teachers")}
+            onClick={() => window.location.href = createPageUrl("TeachersList")}
           >
             <CardContent className="p-3">
               <div className="flex flex-col items-center">
