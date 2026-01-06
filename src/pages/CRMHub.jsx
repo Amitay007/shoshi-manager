@@ -498,7 +498,8 @@ export default function CRMHub() {
                     transition={{ duration: 0.2 }}
                   >
                     <Card 
-                      className="bg-white hover:shadow-xl transition-all duration-300 border-0"
+                      className="bg-white hover:shadow-xl transition-all duration-300 border-0 cursor-pointer"
+                      onClick={() => window.location.href = createPageUrl(`TeacherProfile?teacherId=${teacher.id}`)}
                     >
                     <div className="h-1.5 bg-gradient-to-r from-cyan-600 to-teal-600"></div>
                     
