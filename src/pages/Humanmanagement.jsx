@@ -234,243 +234,33 @@ export default function Humanmanagement() {
           </Card>
         </div>
 
-        {/* Search Bar */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="relative">
-              <Search className="absolute right-3 top-3 h-4 w-4 text-slate-400" />
-              <Input
-                placeholder="חיפוש בתי ספר, מורים, אנשי קשר..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pr-10"
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Tabs */}
-        <Tabs defaultValue="schools" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
-            <TabsTrigger value="schools">בתי ספר</TabsTrigger>
-            <TabsTrigger value="teachers">מורים</TabsTrigger>
-            <TabsTrigger value="contacts">אנשי קשר</TabsTrigger>
-            <TabsTrigger value="activities">פעילות</TabsTrigger>
-          </TabsList>
-
-          {/* Schools Tab */}
-          <TabsContent value="schools" className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">בתי ספר ({filteredSchools.length})</h3>
-              <Link to={createPageUrl("SchoolDetails")}>
-                <Button className="gap-2">
-                  <Plus className="w-4 h-4" />
-                  הוסף בית ספר
-                </Button>
-              </Link>
-            </div>
-            <div className="grid gap-4">
-              {filteredSchools.map((school) => (
-                <Card key={school.id} className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle className="text-xl">{school.name}</CardTitle>
-                        <CardDescription className="mt-1">
-                          {school.type} • {school.city}
-                        </CardDescription>
-                      </div>
-                      <Link to={createPageUrl("SchoolDetails") + `?id=${school.id}`}>
-                        <Button variant="outline" size="sm" className="gap-2">
-                          <Eye className="w-4 h-4" />
-                          צפייה
-                        </Button>
-                      </Link>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2 text-sm">
-                      {school.contact_person && (
-                        <div className="flex items-center gap-2 text-slate-600">
-                          <Users className="w-4 h-4" />
-                          {school.contact_person}
-                        </div>
-                      )}
-                      {school.contact_email && (
-                        <div className="flex items-center gap-2 text-slate-600">
-                          <Mail className="w-4 h-4" />
-                          {school.contact_email}
-                        </div>
-                      )}
-                      {school.phone && (
-                        <div className="flex items-center gap-2 text-slate-600">
-                          <Phone className="w-4 h-4" />
-                          {school.phone}
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
-          {/* Teachers Tab */}
-          <TabsContent value="teachers" className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">מורים ({filteredTeachers.length})</h3>
-            </div>
-            <div className="grid gap-4">
-              {filteredTeachers.map((teacher) => (
-                <Card key={teacher.id} className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle className="text-xl">{teacher.name}</CardTitle>
-                        {teacher.subjects && teacher.subjects.length > 0 && (
-                          <CardDescription className="mt-1">
-                            {teacher.subjects.join(", ")}
-                          </CardDescription>
-                        )}
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2 text-sm">
-                      {teacher.email && (
-                        <div className="flex items-center gap-2 text-slate-600">
-                          <Mail className="w-4 h-4" />
-                          {teacher.email}
-                        </div>
-                      )}
-                      {teacher.phone && (
-                        <div className="flex items-center gap-2 text-slate-600">
-                          <Phone className="w-4 h-4" />
-                          {teacher.phone}
-                        </div>
-                      )}
-                      {teacher.specialty && (
-                        <div className="text-slate-600">
-                          התמחות: {teacher.specialty}
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
-          {/* Contacts Tab */}
-          <TabsContent value="contacts" className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">אנשי קשר ({filteredContacts.length})</h3>
-              <Button onClick={() => { setShowAddContact(true); setEditingContact(null); }} className="gap-2">
-                <Plus className="w-4 h-4" />
-                הוסף איש קשר
-              </Button>
-            </div>
-            <div className="grid gap-4">
-              {filteredContacts.map((contact) => (
-                <Card key={contact.id} className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle className="text-xl">{contact.name}</CardTitle>
-                        {contact.role && (
-                          <CardDescription className="mt-1">{contact.role}</CardDescription>
-                        )}
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setEditingContact(contact);
-                            setNewContact(contact);
-                            setShowAddContact(true);
-                          }}
-                        >
-                          ערוך
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteContact(contact.id)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2 text-sm">
-                      {contact.organization && (
-                        <div className="flex items-center gap-2 text-slate-600">
-                          <Building2 className="w-4 h-4" />
-                          {contact.organization}
-                        </div>
-                      )}
-                      {contact.email && (
-                        <div className="flex items-center gap-2 text-slate-600">
-                          <Mail className="w-4 h-4" />
-                          {contact.email}
-                        </div>
-                      )}
-                      {contact.phone && (
-                        <div className="flex items-center gap-2 text-slate-600">
-                          <Phone className="w-4 h-4" />
-                          {contact.phone}
-                        </div>
-                      )}
-                      {contact.notes && (
-                        <div className="text-slate-600 mt-2">{contact.notes}</div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
-          {/* Activities Tab */}
-          <TabsContent value="activities" className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">פעילות אחרונה</h3>
-              <Button onClick={() => setShowAddActivity(true)} className="gap-2">
-                <Plus className="w-4 h-4" />
-                הוסף פעילות
-              </Button>
-            </div>
-            <div className="grid gap-4">
-              {recentActivities.map((activity) => (
-                <Card key={activity.id}>
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle className="text-lg">{activity.title}</CardTitle>
-                        {activity.activity_type && (
-                          <CardDescription className="mt-1">{activity.activity_type}</CardDescription>
-                        )}
-                      </div>
-                      {activity.activity_date && (
-                        <div className="flex items-center gap-1 text-sm text-slate-500">
-                          <Calendar className="w-4 h-4" />
-                          {new Date(activity.activity_date).toLocaleDateString('he-IL')}
-                        </div>
-                      )}
-                    </div>
-                  </CardHeader>
-                  {activity.description && (
-                    <CardContent>
-                      <p className="text-sm text-slate-600">{activity.description}</p>
-                    </CardContent>
-                  )}
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-        </Tabs>
+        {/* Action Buttons */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <Button className="h-24 flex flex-col items-center justify-center gap-2 text-lg">
+            קשרי לקוחות
+          </Button>
+          <Button className="h-24 flex flex-col items-center justify-center gap-2 text-lg">
+            יומן
+          </Button>
+          <Button className="h-24 flex flex-col items-center justify-center gap-2 text-lg">
+            שעות
+          </Button>
+          <Button className="h-24 flex flex-col items-center justify-center gap-2 text-lg">
+            שיבוצים
+          </Button>
+          <Button className="h-24 flex flex-col items-center justify-center gap-2 text-lg">
+            בתי ספר
+          </Button>
+          <Button className="h-24 flex flex-col items-center justify-center gap-2 text-lg">
+            שלישוך
+          </Button>
+          <Button className="h-24 flex flex-col items-center justify-center gap-2 text-lg">
+            בקרוב
+          </Button>
+          <Button className="h-24 flex flex-col items-center justify-center gap-2 text-lg">
+            עוד מעט
+          </Button>
+        </div>
       </div>
 
       {/* Add/Edit Contact Dialog */}
