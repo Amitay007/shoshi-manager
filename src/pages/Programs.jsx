@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from "react";
 import { Syllabus } from "@/entities/Syllabus";
 import { InstitutionProgram } from "@/entities/InstitutionProgram";
@@ -33,14 +32,12 @@ export default function Programs() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      // Load data SEQUENTIALLY with delays to avoid rate limiting
-      const allPrograms = await with429Retry(() => Syllabus.list());
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const allInstPrograms = await with429Retry(() => InstitutionProgram.list());
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const allSchools = await with429Retry(() => EducationInstitution.list());
+      // Load data in parallel for better performance
+      const [allPrograms, allInstPrograms, allSchools] = await Promise.all([
+        with429Retry(() => Syllabus.list()),
+        with429Retry(() => InstitutionProgram.list()),
+        with429Retry(() => EducationInstitution.list())
+      ]);
       
       setPrograms(allPrograms || []);
       setInstPrograms(allInstPrograms || []);

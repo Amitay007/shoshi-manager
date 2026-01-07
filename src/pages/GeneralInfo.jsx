@@ -4,7 +4,7 @@ import { DeviceLinkedAccount } from "@/entities/DeviceLinkedAccount";
 import { VRApp } from "@/entities/VRApp";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, ArrowUp, ArrowDown, Hash, Calendar, Mail, Users, AppWindow, Orbit, Grid, List, LayoutGrid, X, Edit, Save, Clock, MapPin, Star, AlertCircle, CheckCircle } from "lucide-react";
+import { Plus, Hash, Calendar, Mail, Users, AppWindow, Grid, List, X, Edit, Save, Clock, MapPin, Star, AlertCircle, CheckCircle } from "lucide-react";
 import VRIcon from "@/components/icons/VRIcon";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -372,7 +372,7 @@ export default function GeneralInfo() {
   };
 
   return (
-    <div className="min-h-screen bg-white p-6" dir="rtl">
+    <div className="min-h-screen bg-white p-4 md:p-6 lg:p-8" dir="rtl">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6">
@@ -594,7 +594,7 @@ export default function GeneralInfo() {
             })}
           </div>
         ) : viewMode === "tiles" ? (
-          <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 xl:grid-cols-16 gap-2">
+          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
             {filteredAndSortedDevices.length === 0 && (
               <div className="col-span-full text-center py-12 text-slate-500">אין משקפות תואמות.</div>
             )}

@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { Search, Building2, Users, FileText, Calendar, Plus, Trash2, Eye, Mail, Phone, MapPin, BookOpen, BrainCircuit, Clock, Stamp, Hourglass, Rocket, Brain } from "lucide-react";
+import { Search, Building2, Users, FileText, Calendar, Plus, Trash2, Eye, Mail, Phone, MapPin, BookOpen, Clock, Stamp, Hourglass, Rocket, Brain } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useLoading } from "@/components/common/LoadingContext";
@@ -171,7 +171,7 @@ export default function Humanmanagement() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 p-4 lg:p-8" dir="rtl">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 p-4 md:p-6 lg:p-8" dir="rtl">
       <div className="max-w-7xl mx-auto space-y-6">
         
         {/* Header */}
