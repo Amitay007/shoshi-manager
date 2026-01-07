@@ -94,10 +94,14 @@ export default function Programs() {
       // Create a copy without system fields
       const { id, created_date, updated_date, created_by_id, created_by, is_sample, ...programData } = program;
       
+      // Generate a random 4-digit number for the duplicate
+      const randomNum = Math.floor(1000 + Math.random() * 9000).toString();
+
       const duplicateData = {
         ...programData,
         title: `${program.title || program.course_topic || program.subject || "תוכנית"} - עותק`,
-        status: "draft"
+        status: "draft",
+        program_number: randomNum
       };
       
       const newProgram = await with429Retry(() => Syllabus.create(duplicateData));
