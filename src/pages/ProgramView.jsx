@@ -49,6 +49,7 @@ export default function ProgramView() {
   const [instPrograms, setInstPrograms] = React.useState([]);
   const [schools, setSchools] = React.useState([]);
   const [selectedSchoolId, setSelectedSchoolId] = React.useState("none");
+  const [assignedDeviceIds, setAssignedDeviceIds] = React.useState([]); // For storing manual assignments
   // NEW: Map device numbers to full device data for checking disabled status
   const [deviceDataByNumber, setDeviceDataByNumber] = React.useState({});
   // NEW: Map for quick lookup: appId -> Set of deviceIds that have this app
@@ -66,8 +67,10 @@ export default function ProgramView() {
       // Initialize selected school from loaded instPrograms
       if (loadedInstPrograms && loadedInstPrograms.length > 0) {
         setSelectedSchoolId(loadedInstPrograms[0].institution_id);
+        setAssignedDeviceIds(loadedInstPrograms[0].assigned_device_ids || []);
       } else {
         setSelectedSchoolId("none");
+        setAssignedDeviceIds([]);
       }
 
       const allSchools = await with429Retry(() => EducationInstitution.list());
@@ -233,15 +236,26 @@ export default function ProgramView() {
         } else if (selectedSchoolId !== "none") {
           // Create new link
           await with429Retry(() => InstitutionProgram.create({
-            program_id: programId,
-            institution_id: selectedSchoolId,
-            status: "פעילה", // Default status
-            start_date: new Date().toISOString() // Default start date
+           program_id: programId,
+           institution_id: selectedSchoolId,
+           status: "פעילה", // Default status
+           start_date: new Date().toISOString(), // Default start date
+           assigned_device_ids: assignedDeviceIds
           }));
-        }
-      }
+          } else {
+          // Update existing link with assigned_device_ids and status (which might have changed via toggle)
+          // We already updated instPrograms local state on toggle, so use that
+          const ipToUpdate = instPrograms[0];
+          if (ipToUpdate) {
+             await with429Retry(() => InstitutionProgram.update(ipToUpdate.id, { 
+                assigned_device_ids: assignedDeviceIds,
+                status: ipToUpdate.status 
+             }));
+          }
+          }
+          }
 
-      setProgram({...editData, content_areas: fixedData.content_areas, purposes: fixedData.purposes});
+          setProgram({...editData, content_areas: fixedData.content_areas, purposes: fixedData.purposes});
       setEditMode(false);
       await loadData();
     } catch (error) {
@@ -257,28 +271,50 @@ export default function ProgramView() {
     setShowAddDevices(true);
   };
 
-  const confirmDeviceSelection = async () => { // Modified: removed newDeviceIds parameter
-    if (tempSelectedDeviceIds.length === 0) {
-      alert("נא לבחור לפחות משקפת אחת");
-      return;
-    }
-
-    const appsToInstall = Array.from(selectedAppIds);
-    const devicesToAdd = tempSelectedDeviceIds.filter(did => !selectedDeviceIds.includes(did));
+  const confirmDeviceSelection = async () => {
+    // This now updates the assigned_device_ids on the InstitutionProgram
+    // AND installs the apps on them.
     
+    // 1. Update assigned_device_ids local state (saving handles the DB update)
+    // Actually, confirm should probably save? Or just update state?
+    // "handleSave" saves everything. But confirm dialog usually implies "Done".
+    // Since we are in "Edit Mode" generally, let's update state and let user click Save.
+    // BUT the dialog has "Add X devices" button which feels like an action.
+    // Let's make it consistent with App selection: Update state, save on main Save.
+    // Wait, `confirmAppSelection` DOES save immediately. 
+    // Let's save immediately here too for better UX, or just update state.
+    // Given the complexity of `DeviceApp` creation, maybe save immediately is better.
+    // BUT `assigned_device_ids` is on InstitutionProgram.
+    
+    const newAssignedIds = [...new Set([...assignedDeviceIds, ...tempSelectedDeviceIds])];
+    setAssignedDeviceIds(newAssignedIds);
+
+    // Also install apps (legacy/dual support)
+    const appsToInstall = Array.from(selectedAppIds);
     const relations = [];
-    devicesToAdd.forEach(deviceId => {
+    tempSelectedDeviceIds.forEach(deviceId => {
       appsToInstall.forEach(appId => {
         relations.push({ device_id: deviceId, app_id: appId });
       });
     });
     
     if (relations.length > 0) {
-      await with429Retry(() => DeviceApp.bulkCreate(relations));
+      try {
+         await with429Retry(() => DeviceApp.bulkCreate(relations));
+      } catch (e) {
+         console.error("Failed to install apps", e);
+      }
     }
     
+    // Update the InstitutionProgram immediately with the new devices?
+    if (instPrograms.length > 0) {
+       await with429Retry(() => InstitutionProgram.update(instPrograms[0].id, {
+          assigned_device_ids: newAssignedIds
+       }));
+    }
+
     setShowAddDevices(false);
-    setTempSelectedDeviceIds([]); // Reset selection after confirmation
+    setTempSelectedDeviceIds([]); 
     await loadData();
   };
 
@@ -647,7 +683,39 @@ export default function ProgramView() {
           <div className="lg:col-span-5">
             <Card className="shadow-lg h-full">
               <CardHeader className="bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-t-lg">
-                <CardTitle className="text-xl">פרטי התוכנית</CardTitle>
+                 <div className="flex justify-between items-center">
+                    <CardTitle className="text-xl">פרטי התוכנית</CardTitle>
+                    {/* Status Toggle in Header */}
+                    {instPrograms.length > 0 && (
+                      <div className="bg-white/20 p-1 rounded-lg backdrop-blur-sm inline-flex gap-1" dir="rtl">
+                        {[
+                          { id: "פעילה", label: "פעיל" },
+                          { id: "לא פעילה", label: "לא פעיל" },
+                          { id: "מדף", label: "מדף" },
+                        ].map(opt => (
+                          <button
+                            key={opt.id}
+                            disabled={!editMode}
+                            onClick={() => {
+                               // Update local state instantly for UI
+                               const newStatus = opt.id;
+                               // We need to update instPrograms[0] in state
+                               const updated = [...instPrograms];
+                               updated[0] = { ...updated[0], status: newStatus };
+                               setInstPrograms(updated);
+                            }}
+                            className={`px-2 py-0.5 rounded text-xs font-bold transition-all ${
+                              (instPrograms[0]?.status || "פעילה") === opt.id
+                                ? "bg-white text-cyan-800 shadow-sm"
+                                : "text-white/70 hover:text-white disabled:opacity-50"
+                            }`}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                 </div>
               </CardHeader>
               <CardContent className="p-6 space-y-4">
                 <div className="space-y-3 text-sm">
@@ -697,12 +765,7 @@ export default function ProgramView() {
                         })}
                       </div>
 
-                      <div className="flex justify-between">
-                        <span className="text-slate-500 font-medium">פעיל/לא פעיל:</span>
-                        <Badge className={editData.active !== false ? "bg-green-100 text-green-700" : "bg-rose-100 text-rose-700"}>
-                          {editData.active !== false ? "פעיל" : "לא פעיל"}
-                        </Badge>
-                      </div>
+                      {/* Replaced by Header Toggle */}
 
                       {instPrograms[0]?.start_date && (
                         <div className="flex justify-between">
@@ -841,59 +904,69 @@ export default function ProgramView() {
               </CardHeader>
               <CardContent className="p-4">
                 <div className="grid grid-cols-4 gap-2">
-                  {selectedDeviceNumbers.length > 0 ? (
-                    selectedDeviceNumbers.map(num => {
-                      const device = deviceDataByNumber[num];
-                      const isDisabled = device?.is_disabled || false;
-                      
-                      return (
-                        <div key={num} className="relative group">
-                          <Link
-                            to={createPageUrl(`DeviceInfo?id=${deviceIdByNumber[num]}`)}
-                            className="block"
-                          >
-                            <div 
-                              className={`p-2 rounded-lg text-center cursor-pointer border-2 transition-colors aspect-square flex flex-col items-center justify-center ${
-                                isDisabled 
-                                  ? 'bg-slate-200 hover:bg-slate-300 border-slate-400 hover:border-slate-500' 
-                                  : 'bg-emerald-50 hover:bg-emerald-100 border-emerald-200 hover:border-emerald-300'
-                              }`}
-                              title={isDisabled ? `משקפת ${num} - מושבת${device?.disable_reason ? `: ${device.disable_reason}` : ''}` : `משקפת ${num}`}
-                            >
-                              <Glasses className={`w-6 h-6 mb-1 ${isDisabled ? 'text-slate-500' : 'text-emerald-600'}`} />
-                              <p className={`text-xs font-bold ${isDisabled ? 'text-slate-600' : 'text-slate-800'}`}>
-                                #{String(num).padStart(3, '0')}
-                              </p>
-                            </div>
-                          </Link>
-                          {editMode && (
-                            <div className="absolute -top-1 -right-1 z-10">
-                              <Checkbox
-                                checked={selectedDevicesForRemoval.has(num)}
-                                onCheckedChange={(checked) => {
-                                  setSelectedDevicesForRemoval(prev => {
-                                    const next = new Set(prev);
-                                    if (checked) {
-                                      next.add(num);
-                                    } else {
-                                      next.delete(num);
-                                    }
-                                    return next;
-                                  });
-                                }}
-                                className="bg-white border-2 border-emerald-600"
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                            </div>
-                          )}
+                  {/* Use assignedDeviceIds to derive numbers for display */}
+                  {(() => {
+                     // Filter allDevices by assignedDeviceIds
+                     const assignedDevices = allDevices.filter(d => assignedDeviceIds.includes(d.id));
+                     const assignedNumbers = assignedDevices.map(d => Number(d.binocular_number)).sort((a,b) => a-b);
+                     
+                     if (assignedNumbers.length === 0) return (
+                        <div className="col-span-full text-center text-slate-500 text-sm py-8">
+                          אין משקפות משויכות לתוכנית זו
                         </div>
-                      );
-                    })
-                  ) : (
-                    <div className="col-span-full text-center text-slate-500 text-sm py-8">
-                      אין משקפות
-                    </div>
-                  )}
+                     );
+
+                     return assignedNumbers.map(num => {
+                        const device = deviceDataByNumber[num];
+                        const isDisabled = device?.is_disabled || false;
+                        
+                        return (
+                          <div key={num} className="relative group">
+                            <Link
+                              to={createPageUrl(`DeviceInfo?id=${deviceIdByNumber[num]}`)}
+                              className="block"
+                            >
+                              <div 
+                                className={`p-2 rounded-lg text-center cursor-pointer border-2 transition-colors aspect-square flex flex-col items-center justify-center ${
+                                  isDisabled 
+                                    ? 'bg-slate-200 hover:bg-slate-300 border-slate-400 hover:border-slate-500' 
+                                    : 'bg-emerald-50 hover:bg-emerald-100 border-emerald-200 hover:border-emerald-300'
+                                }`}
+                                title={isDisabled ? `משקפת ${num} - מושבת${device?.disable_reason ? `: ${device.disable_reason}` : ''}` : `משקפת ${num}`}
+                              >
+                                <Glasses className={`w-6 h-6 mb-1 ${isDisabled ? 'text-slate-500' : 'text-emerald-600'}`} />
+                                <p className={`text-xs font-bold ${isDisabled ? 'text-slate-600' : 'text-slate-800'}`}>
+                                  #{String(num).padStart(3, '0')}
+                                </p>
+                              </div>
+                            </Link>
+                            {editMode && (
+                              <div className="absolute -top-1 -right-1 z-10">
+                                <button
+                                  onClick={async (e) => {
+                                     e.stopPropagation();
+                                     if(!confirm("להסיר משקפת זו?")) return;
+                                     // Remove from assigned list
+                                     const deviceId = deviceIdByNumber[num];
+                                     const newAssigned = assignedDeviceIds.filter(id => id !== deviceId);
+                                     setAssignedDeviceIds(newAssigned);
+                                     if (instPrograms.length > 0) {
+                                        await with429Retry(() => InstitutionProgram.update(instPrograms[0].id, {
+                                           assigned_device_ids: newAssigned
+                                        }));
+                                     }
+                                     await loadData();
+                                  }}
+                                  className="bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600"
+                                >
+                                   <X className="w-3 h-3" />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        );
+                     });
+                  })()}
                 </div>
               </CardContent>
             </Card>

@@ -27,7 +27,8 @@ export default function BinocularCalculator() {
   const [allDeviceApps, setAllDeviceApps] = useState([]);
   const [loading, setLoading] = useState(true);
   const [comparisonMode, setComparisonMode] = useState("programs"); // 'programs' or 'syllabi'
-  
+  const [programStatusFilter, setProgramStatusFilter] = useState("active"); // active, inactive, shelf, all
+
   // Selected IDs (Syllabus IDs or InstitutionProgram IDs depending on mode)
   const [selectedProgram1, setSelectedProgram1] = useState("");
   const [selectedProgram2, setSelectedProgram2] = useState("");
@@ -133,24 +134,25 @@ export default function BinocularCalculator() {
       return deviceNumbers.sort((a, b) => a - b);
 
     } else {
-      // Logic: Devices belonging to the program's school (Inventory)
+      // Logic: Devices explicitly assigned to the program
       const iprog = instPrograms.find(ip => ip.id === selectedId);
       if (!iprog) return [];
       
-      const school = schools.find(s => s.id === iprog.institution_id);
-      if (!school) return [];
-
-      const deviceNumbers = [];
-      allDevices.forEach(d => {
-        // Check if device school name matches
-        if (d.school === school.name) {
-          const num = Number(d.binocular_number);
-          if (Number.isFinite(num)) {
-            deviceNumbers.push(num);
-          }
-        }
-      });
-      return deviceNumbers.sort((a, b) => a - b);
+      // If assigned_device_ids exists and has items, use it
+      if (iprog.assigned_device_ids && iprog.assigned_device_ids.length > 0) {
+         const deviceNumbers = [];
+         allDevices.forEach(d => {
+           if (iprog.assigned_device_ids.includes(d.id)) {
+              const num = Number(d.binocular_number);
+              if (Number.isFinite(num)) deviceNumbers.push(num);
+           }
+         });
+         return deviceNumbers.sort((a,b) => a - b);
+      }
+      
+      // Fallback: If no assigned devices, fallback to School Inventory? 
+      // The user wants manual assignment. If empty, it's empty.
+      return []; 
     }
   };
 
@@ -285,7 +287,19 @@ export default function BinocularCalculator() {
   ];
 
   const modeLabel = comparisonMode === 'syllabi' ? 'סילבוס' : 'תוכנית';
-  const availableOptions = comparisonMode === 'syllabi' ? programs : instPrograms;
+  const availableOptions = useMemo(() => {
+    if (comparisonMode === 'syllabi') return programs;
+    
+    // For programs (InstitutionProgram), apply status filter
+    return instPrograms.filter(ip => {
+      if (programStatusFilter === 'all') return true;
+      const st = ip.status || 'פעילה';
+      if (programStatusFilter === 'active') return st === 'פעילה';
+      if (programStatusFilter === 'inactive') return st === 'לא פעילה';
+      if (programStatusFilter === 'shelf') return st === 'מדף';
+      return true;
+    });
+  }, [comparisonMode, programs, instPrograms, programStatusFilter]);
 
   return (
     <div className="min-h-screen bg-white p-4 sm:p-8" dir="rtl">
@@ -330,6 +344,29 @@ export default function BinocularCalculator() {
             </div>
           </div>
           <div className="flex items-center gap-6">
+            {comparisonMode === 'programs' && (
+               <div className="bg-slate-100 p-1 rounded-lg border border-slate-200 inline-flex gap-1 mx-4" dir="rtl">
+                  {[
+                    { id: "active", label: "פעיל" },
+                    { id: "inactive", label: "לא פעיל" },
+                    { id: "shelf", label: "מדף" },
+                    { id: "all", label: "כולם" }
+                  ].map(opt => (
+                    <button
+                      key={opt.id}
+                      onClick={() => setProgramStatusFilter(opt.id)}
+                      className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${
+                        programStatusFilter === opt.id
+                          ? "bg-white text-cyan-700 shadow-sm"
+                          : "text-slate-400 hover:text-slate-600"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+               </div>
+            )}
+
             <div className="flex items-center gap-2 bg-slate-100 p-1.5 rounded-lg border border-slate-200">
               <span className={`text-sm font-bold px-2 cursor-pointer ${comparisonMode === 'programs' ? 'text-slate-400' : 'text-purple-600'}`} onClick={() => setComparisonMode('syllabi')}>סילבוסים</span>
               <Switch 

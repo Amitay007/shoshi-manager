@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { GraduationCap, Plus, School, Users, BookOpen, Calendar, Calculator } from "lucide-react";
+import { GraduationCap, Plus, School, Users, BookOpen, Calendar, Calculator, Eye, Copy } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "@/components/ui/use-toast";
 import BackHomeButtons from "@/components/common/BackHomeButtons";
 import ProgramsFilterBar from "@/components/filters/ProgramsFilterBar";
 import { with429Retry } from "@/components/utils/retry";
@@ -17,6 +19,7 @@ export default function Programs() {
   const [instPrograms, setInstPrograms] = useState([]);
   const [schools, setSchools] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState("active"); // active, inactive, shelf, all
   const [filters, setFilters] = useState({
     search: "",
     activity_types: [],
@@ -47,6 +50,36 @@ export default function Programs() {
       alert("שגיאה בטעינת התוכניות. אנא המתן רגע ורענן את הדף.");
     }
     setIsLoading(false);
+  };
+
+  const handleStatusChange = async (program, newStatus, e) => {
+    if (e) e.stopPropagation();
+    
+    // We need to update the InstitutionProgram(s) associated with this syllabus
+    // Find them
+    const associatedIPs = instPrograms.filter(ip => ip.program_id === program.id);
+    
+    if (associatedIPs.length === 0) {
+      toast({ title: "לא נמצא שיוך למוסד", description: "לא ניתן לעדכן סטטוס לתוכנית שאינה משוייכת למוסד", variant: "destructive" });
+      return;
+    }
+    
+    try {
+      // Update all associated IPs (usually 1)
+      await Promise.all(associatedIPs.map(ip => 
+        with429Retry(() => InstitutionProgram.update(ip.id, { status: newStatus }))
+      ));
+      
+      // Update local state
+      setInstPrograms(prev => prev.map(ip => 
+        ip.program_id === program.id ? { ...ip, status: newStatus } : ip
+      ));
+      
+      toast({ title: "הסטטוס עודכן בהצלחה" });
+    } catch (err) {
+      console.error("Failed to update status", err);
+      toast({ title: "שגיאה בעדכון הסטטוס", variant: "destructive" });
+    }
   };
 
   const handleDuplicate = async (program, e) => {
@@ -80,6 +113,46 @@ export default function Programs() {
   const filteredPrograms = useMemo(() => {
     let result = [...(programs || [])]; // Fix: ensure programs is array
     const term = (filters.search || "").toLowerCase().trim();
+    
+    // Status Filter Logic
+    result = result.filter(p => {
+       // Find the institution program status for this syllabus
+       // Note: 'programs' here are actually Syllabi. The status is on InstitutionProgram (instPrograms).
+       // We need to check if ANY linked InstitutionProgram matches the status, OR if we display Syllabi directly.
+       // The UI displays Syllabi as cards.
+       // However, the user asked for "Program" status. 
+       // If a Syllabus is linked to multiple schools, it might have different statuses.
+       // BUT, in this app, it seems 1 Syllabus = 1 Program loosely, or 1 Syllabus can have many.
+       // Let's check how 'instPrograms' relates.
+       // Lines 178-181 find schools for program.
+       
+       // If we look at the request: "Toggle... Active, Inactive...". 
+       // We should filter based on the 'instPrograms' status associated with this Syllabus.
+       // If *any* instProgram associated with this Syllabus matches the filter, show it?
+       // Or does the Syllabus itself have a status? Syllabus has 'status' (draft/final).
+       // User explicitly mentioned "InstitutionProgram" status in the previous turn ("properties... status... active/inactive").
+       
+       // Let's look for the matching InstitutionProgram(s).
+       const associatedInstProgs = instPrograms.filter(ip => ip.program_id === p.id);
+       
+       if (associatedInstProgs.length === 0) {
+          // If no institution program, maybe use Syllabus status?
+          // Syllabus status is usually 'draft' or 'final'.
+          // Let's assume 'active' if no explicit status?
+          // If filter is 'shelf', and no inst program, maybe hide?
+          // Simplification: Check associatedInstProgs statuses.
+          return true; // Fallback
+       }
+       
+       const statuses = associatedInstProgs.map(ip => ip.status || "פעילה");
+       
+       if (statusFilter === 'all') return true;
+       if (statusFilter === 'active') return statuses.includes("פעילה");
+       if (statusFilter === 'inactive') return statuses.includes("לא פעילה");
+       if (statusFilter === 'shelf') return statuses.includes("מדף");
+       
+       return true;
+    });
 
     if (term) {
       result = result.filter(p => {
@@ -157,6 +230,30 @@ export default function Programs() {
             </Link>
             <BackHomeButtons />
           </div>
+        </div>
+
+        {/* Status Toggle */}
+        <div className="flex justify-center mb-6">
+           <div className="bg-white p-1 rounded-lg border shadow-sm inline-flex gap-1" dir="rtl">
+              {[
+                { id: "active", label: "פעיל" },
+                { id: "inactive", label: "לא פעיל" },
+                { id: "shelf", label: "מדף" },
+                { id: "all", label: "כולם" }
+              ].map(opt => (
+                <button
+                  key={opt.id}
+                  onClick={() => setStatusFilter(opt.id)}
+                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+                    statusFilter === opt.id
+                      ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-sm"
+                      : "text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+           </div>
         </div>
 
         {/* Filters */}
@@ -296,26 +393,41 @@ export default function Programs() {
 
                 {/* Footer with Actions */}
                 <div className="px-4 pb-3 mt-auto border-t border-slate-100 pt-2">
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-28 shrink-0" onClick={e => e.stopPropagation()}>
+                       <Select 
+                         value={instPrograms.find(ip => ip.program_id === program.id)?.status || "פעילה"} 
+                         onValueChange={(v) => handleStatusChange(program, v)}
+                       >
+                          <SelectTrigger className="h-8 text-xs px-2">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="פעילה">פעילה</SelectItem>
+                            <SelectItem value="לא פעילה">לא פעילה</SelectItem>
+                            <SelectItem value="מדף">מדף</SelectItem>
+                          </SelectContent>
+                       </Select>
+                    </div>
+
                     <Button 
                       variant="outline" 
                       size="sm"
-                      className="w-full border border-cyan-200 hover:bg-gradient-to-r hover:from-cyan-50 hover:to-blue-50 hover:border-cyan-400 transition-all text-xs h-7"
+                      className="flex-1 border border-cyan-200 hover:bg-gradient-to-r hover:from-cyan-50 hover:to-blue-50 hover:border-cyan-400 transition-all text-xs h-8"
                       onClick={(e) => {
                         e.stopPropagation();
                         window.location.href = createPageUrl(`ProgramView?id=${program.id}`);
                       }}
                     >
-                      צפה בפרטים
+                      <Eye className="w-3 h-3 mr-1" /> פרטים
                     </Button>
                     <Button 
                       variant="outline" 
-                      size="sm"
-                      className="w-full border border-blue-200 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:border-blue-400 transition-all text-xs h-7 gap-1"
+                      size="icon"
+                      className="h-8 w-8 shrink-0 border border-blue-200"
                       onClick={(e) => handleDuplicate(program, e)}
                     >
-                      <Plus className="w-3 h-3" />
-                      שכפל
+                      <Copy className="w-3 h-3" />
                     </Button>
                   </div>
                 </div>
