@@ -70,7 +70,8 @@ export default function ProgramView() {
         setAssignedDeviceIds(loadedInstPrograms[0].assigned_device_ids || []);
       } else {
         setSelectedSchoolId("none");
-        setAssignedDeviceIds([]);
+        // Fallback to Syllabus assigned devices if no institution link
+        setAssignedDeviceIds(currentProg.assigned_device_ids || []);
       }
 
       const allSchools = await with429Retry(() => EducationInstitution.list());
@@ -306,11 +307,16 @@ export default function ProgramView() {
       }
     }
     
-    // Update the InstitutionProgram immediately with the new devices?
+    // Update the InstitutionProgram or Syllabus immediately with the new devices
     if (instPrograms.length > 0) {
        await with429Retry(() => InstitutionProgram.update(instPrograms[0].id, {
           assigned_device_ids: newAssignedIds
        }));
+    } else {
+       await with429Retry(() => Syllabus.update(programId, {
+          assigned_device_ids: newAssignedIds
+       }));
+       setProgram(prev => ({ ...prev, assigned_device_ids: newAssignedIds }));
     }
 
     setShowAddDevices(false);
@@ -592,7 +598,14 @@ export default function ProgramView() {
         {/* Header */}
         <div className="flex items-center justify-between gap-4 mb-6">
           <div className="flex flex-col gap-1">
-            <span className="text-sm font-medium text-slate-500">תוכנית</span>
+            <span className="text-sm font-medium text-slate-500 flex items-center gap-2">
+              תוכנית
+              {program.program_number && (
+                <Badge variant="outline" className="text-xs bg-slate-50">
+                  #{program.program_number}
+                </Badge>
+              )}
+            </span>
             <h1 className="text-3xl font-bold text-cyan-900">
               {editMode ? (
                 <div className="space-y-2">
@@ -962,6 +975,11 @@ export default function ProgramView() {
                                         await with429Retry(() => InstitutionProgram.update(instPrograms[0].id, {
                                            assigned_device_ids: newAssigned
                                         }));
+                                     } else {
+                                        await with429Retry(() => Syllabus.update(programId, {
+                                           assigned_device_ids: newAssigned
+                                        }));
+                                        setProgram(prev => ({ ...prev, assigned_device_ids: newAssigned }));
                                      }
                                      await loadData();
                                   }}

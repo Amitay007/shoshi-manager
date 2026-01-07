@@ -278,10 +278,15 @@ export default function Programs() {
                 <div className="h-1.5 bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600"></div>
                 
                 <CardHeader className="pb-2 pt-3 px-4">
-                  <div className="h-12 flex items-start mb-1">
+                  <div className="h-12 flex items-start mb-1 justify-between gap-2">
                     <CardTitle className="text-base leading-tight line-clamp-2 group-hover:text-cyan-700 transition-colors">
                       {title}
                     </CardTitle>
+                    {program.program_number && (
+                      <span className="text-[10px] text-slate-400 font-mono bg-slate-50 px-1 rounded border border-slate-100 shrink-0">
+                        #{program.program_number}
+                      </span>
+                    )}
                   </div>
                   {program.activity_type && (
                     <Badge className="bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 border-0 w-fit text-xs px-2 py-0">
