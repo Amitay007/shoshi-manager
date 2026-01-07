@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { GraduationCap, Plus, School, Users, BookOpen, Calendar, Calculator, Eye, Copy } from "lucide-react";
+import { GraduationCap, Plus, School, Users, BookOpen, Calendar, Calculator, Eye, Copy, Trash2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
 import BackHomeButtons from "@/components/common/BackHomeButtons";
@@ -115,7 +115,32 @@ export default function Programs() {
       console.error("Error duplicating program:", error);
       alert("שגיאה בשכפול התוכנית");
     }
-  };
+    };
+
+    const handleDelete = async (program, e) => {
+    e.stopPropagation();
+    if (!confirm(`האם למחוק את התוכנית "${program.title || program.course_topic || program.subject}"? פעולה זו אינה הפיכה.`)) return;
+
+    try {
+      // 1. Delete associated InstitutionPrograms
+      const associatedIPs = instPrograms.filter(ip => ip.program_id === program.id);
+      await Promise.all(associatedIPs.map(ip => 
+        with429Retry(() => InstitutionProgram.delete(ip.id))
+      ));
+
+      // 2. Delete the Syllabus
+      await with429Retry(() => Syllabus.delete(program.id));
+
+      // 3. Update state
+      setPrograms(prev => prev.filter(p => p.id !== program.id));
+      setInstPrograms(prev => prev.filter(ip => ip.program_id !== program.id));
+
+      toast({ title: "התוכנית נמחקה בהצלחה" });
+    } catch (error) {
+      console.error("Error deleting program:", error);
+      toast({ title: "שגיאה במחיקת התוכנית", variant: "destructive" });
+    }
+    };
 
   const filteredPrograms = useMemo(() => {
     let result = [...(programs || [])]; // Fix: ensure programs is array
@@ -425,10 +450,20 @@ export default function Programs() {
                       size="icon"
                       className="h-8 w-8 shrink-0 border border-blue-200"
                       onClick={(e) => handleDuplicate(program, e)}
+                      title="שכפל"
                     >
                       <Copy className="w-3 h-3" />
                     </Button>
-                  </div>
+                    <Button 
+                      variant="outline" 
+                      size="icon"
+                      className="h-8 w-8 shrink-0 border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 hover:text-red-700"
+                      onClick={(e) => handleDelete(program, e)}
+                      title="מחק"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                    </div>
                 </div>
               </Card>
             );
