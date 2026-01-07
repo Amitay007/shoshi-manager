@@ -9,7 +9,7 @@ import { Syllabus } from "@/entities/Syllabus";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Star, ArrowLeft, Mail, Calendar, Hash, AppWindow, Plus, Edit, Save, X, Clock, MapPin, AlertCircle, CheckCircle } from "lucide-react";
+import { Star, ArrowLeft, ArrowRight, Mail, Calendar, Hash, AppWindow, Plus, Edit, Save, X, Clock, MapPin, AlertCircle, CheckCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
