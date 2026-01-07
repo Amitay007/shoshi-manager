@@ -419,9 +419,7 @@ export default function SyllabusWizard() {
           </div>
 
           <Card className="shadow-lg border-0">
-            <CardHeader className="bg-gradient-to-r from-cyan-50 to-blue-50">
 
-            </CardHeader>
             <CardContent className="space-y-3 pt-4">
 
               <div><strong>מורה:</strong> {data.teacher_name || "—"}</div>
