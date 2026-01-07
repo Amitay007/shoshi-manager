@@ -11,7 +11,6 @@ const VRIcon = forwardRef(({ className = "", size = 24, ...props }, ref) => {
       xmlns="http://www.w3.org/2000/svg"
       className={className}
       {...props}
-      {...props}
     >
       <path 
         d="M14 24C14 10 50 10 50 24" 
