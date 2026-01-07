@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Syllabus } from "@/entities/Syllabus";
 import { EducationInstitution } from "@/entities/EducationInstitution";
@@ -48,6 +47,7 @@ export default function ProgramView() {
 
   const [instPrograms, setInstPrograms] = React.useState([]);
   const [schools, setSchools] = React.useState([]);
+  const [selectedSchoolId, setSelectedSchoolId] = React.useState("none");
   // NEW: Map device numbers to full device data for checking disabled status
   const [deviceDataByNumber, setDeviceDataByNumber] = React.useState({});
   // NEW: Map for quick lookup: appId -> Set of deviceIds that have this app
@@ -62,6 +62,12 @@ export default function ProgramView() {
 
       const loadedInstPrograms = await with429Retry(() => InstitutionProgram.filter({ program_id: programId }));
       setInstPrograms(loadedInstPrograms || []);
+      // Initialize selected school from loaded instPrograms
+      if (loadedInstPrograms && loadedInstPrograms.length > 0) {
+        setSelectedSchoolId(loadedInstPrograms[0].institution_id);
+      } else {
+        setSelectedSchoolId("none");
+      }
 
       const allSchools = await with429Retry(() => EducationInstitution.list());
       setSchools(allSchools || []);
@@ -203,6 +209,37 @@ export default function ProgramView() {
       }
       
       await with429Retry(() => Syllabus.update(programId, fixedData));
+
+      // Handle School Link Update
+      const originalSchoolId = instPrograms.length > 0 ? instPrograms[0].institution_id : "none";
+      
+      if (selectedSchoolId !== originalSchoolId) {
+        // If there was an old link, delete/update it
+        if (instPrograms.length > 0) {
+           // If user selected "none", delete all links
+           if (selectedSchoolId === "none") {
+             for (const ip of instPrograms) {
+               await with429Retry(() => InstitutionProgram.delete(ip.id));
+             }
+           } else {
+             // Update the first one, delete others if any (assuming single school for now based on UI)
+             await with429Retry(() => InstitutionProgram.update(instPrograms[0].id, { institution_id: selectedSchoolId }));
+             // Delete duplicates if they exist (cleanup)
+             for (let i = 1; i < instPrograms.length; i++) {
+               await with429Retry(() => InstitutionProgram.delete(instPrograms[i].id));
+             }
+           }
+        } else if (selectedSchoolId !== "none") {
+          // Create new link
+          await with429Retry(() => InstitutionProgram.create({
+            program_id: programId,
+            institution_id: selectedSchoolId,
+            status: "פעילה", // Default status
+            start_date: new Date().toISOString() // Default start date
+          }));
+        }
+      }
+
       setProgram({...editData, content_areas: fixedData.content_areas, purposes: fixedData.purposes});
       setEditMode(false);
       await loadData();
@@ -517,16 +554,55 @@ export default function ProgramView() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between gap-4 mb-6">
-          <h1 className="text-3xl font-bold text-cyan-900">
-            {editMode ? (
-              <Input 
-                value={editData.title || ""} 
-                onChange={(e) => setEditData({...editData, title: e.target.value})}
-                className="bg-white border-slate-300 text-cyan-900"
-                placeholder="שם התוכנית"
-              />
-            ) : title}
-          </h1>
+          <div className="flex flex-col gap-1">
+            <span className="text-sm font-medium text-slate-500">תוכנית</span>
+            <h1 className="text-3xl font-bold text-cyan-900">
+              {editMode ? (
+                <div className="space-y-2">
+                  <Input 
+                    value={editData.title || ""} 
+                    onChange={(e) => setEditData({...editData, title: e.target.value})}
+                    className="bg-white border-slate-300 text-cyan-900 font-bold text-xl"
+                    placeholder="שם התוכנית"
+                  />
+                  <Select value={selectedSchoolId} onValueChange={setSelectedSchoolId}>
+                    <SelectTrigger className="w-[300px] bg-white text-right">
+                      <SelectValue placeholder="בחר בית ספר" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">לא משוייך</SelectItem>
+                      {schools.map(school => (
+                        <SelectItem key={school.id} value={school.id}>{school.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : title}
+            </h1>
+            {!editMode && (
+              <div className="flex items-center gap-2 text-slate-600 font-medium">
+                {instPrograms.length > 0 ? (
+                  <>
+                     {(() => {
+                        const school = schools.find(s => s.id === instPrograms[0].institution_id);
+                        return school ? (
+                          <>
+                             {school.logo_url ? (
+                               <img src={school.logo_url} alt="" className="w-6 h-6 rounded-full object-contain bg-white border" />
+                             ) : (
+                               <School className="w-4 h-4" />
+                             )}
+                             <span>{school.name}</span>
+                          </>
+                        ) : <span>מוסד לא נמצא</span>;
+                     })()}
+                  </>
+                ) : (
+                  <span className="text-slate-400 italic">לא משוייך</span>
+                )}
+              </div>
+            )}
+          </div>
           <div className="flex items-center gap-2 shrink-0">
             <Link to={createPageUrl(`SchedulerPage?programId=${programId}`)}>
               <Button className="gap-2 bg-purple-600 hover:bg-purple-700">

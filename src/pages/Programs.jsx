@@ -248,18 +248,34 @@ export default function Programs() {
                     </div>
                   )}
 
-                  {/* Schools */}
-                  {schoolsForProgram.length > 0 && (
-                    <div className="flex items-start gap-1.5 text-slate-600 pt-1.5 border-t border-slate-100">
-                      <School className="w-3.5 h-3.5 text-indigo-600 mt-0.5 shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <span className="font-medium">בתי ספר:</span>
-                        <div className="mt-0.5 text-[10px] text-slate-500 line-clamp-1">
+                  {/* Schools / Logo */}
+                  <div className="flex items-center gap-2 pt-2 border-t border-slate-100 mt-auto">
+                    {schoolsForProgram.length > 0 ? (
+                      <>
+                        {schoolsForProgram[0].logo_url ? (
+                          <img 
+                            src={schoolsForProgram[0].logo_url} 
+                            alt={schoolsForProgram[0].name} 
+                            className="w-6 h-6 object-contain rounded-full bg-slate-50 border border-slate-200"
+                          />
+                        ) : (
+                          <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center border border-indigo-200">
+                            <School className="w-3.5 h-3.5 text-indigo-600" />
+                          </div>
+                        )}
+                        <span className="text-xs font-medium text-slate-700 truncate">
                           {schoolsForProgram.map(s => s.name).join(", ")}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200">
+                          <School className="w-3.5 h-3.5 text-slate-400" />
                         </div>
-                      </div>
-                    </div>
-                  )}
+                        <span className="text-xs text-slate-400 italic">לא משוייך</span>
+                      </>
+                    )}
+                  </div>
 
                   {/* Target Audience */}
                   {(program.target_audience || []).length > 0 && (

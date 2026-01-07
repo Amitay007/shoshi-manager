@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Syllabus } from "@/entities/Syllabus";
 import { EducationInstitution } from "@/entities/EducationInstitution";
@@ -424,7 +423,7 @@ export default function SyllabusWizard() {
               <CardTitle>פרטי פתיחה</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 pt-4">
-              <div><strong>בית ספר:</strong> {schoolName}</div>
+
               <div><strong>מורה:</strong> {data.teacher_name || "—"}</div>
               <div><strong>כיתות:</strong> {classesDisplay}</div>
               {data.notes && <div><strong>הערות:</strong> {data.notes}</div>}
@@ -740,14 +739,7 @@ export default function SyllabusWizard() {
             <Input placeholder="כותרת סילבוס (אופציונלי)" value={data.title} onChange={(e) => setField("title", e.target.value)} className="text-right shadow-sm" />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <Select value={data.school_id} onValueChange={(v) => setField("school_id", v)}>
-                  <SelectTrigger className="text-right shadow-sm"><SelectValue placeholder="בית ספר" /></SelectTrigger>
-                  <SelectContent>
-                    {(schools || []).map((s) => <SelectItem key={s.id} value={s.id}>{s.name || s.id}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
+
               <div>
                 <Select value={data.teacher_name} onValueChange={(v) => setField("teacher_name", v)}>
                   <SelectTrigger className="text-right shadow-sm"><SelectValue placeholder="שם מורה" /></SelectTrigger>
