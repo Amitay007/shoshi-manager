@@ -269,17 +269,6 @@ export default function BinocularCalculator() {
     );
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white" dir="rtl">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-pink-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-xl font-semibold text-gray-700">טוען נתונים...</p>
-        </div>
-      </div>
-    );
-  }
-
   const selectedItems = [
     { id: selectedProgram1, devices: program1Devices, setter: setSelectedProgram1, color: 'from-purple-500 to-purple-700', title: getSelectionTitle(selectedProgram1), bgCard: 'bg-gradient-to-br from-purple-50 to-purple-100', borderCard: 'border-purple-400' },
     { id: selectedProgram2, devices: program2Devices, setter: setSelectedProgram2, color: 'from-blue-400 to-cyan-500', title: getSelectionTitle(selectedProgram2), bgCard: 'bg-gradient-to-br from-blue-50 to-cyan-50', borderCard: 'border-cyan-400' },
@@ -300,6 +289,17 @@ export default function BinocularCalculator() {
       return true;
     });
   }, [comparisonMode, programs, instPrograms, programStatusFilter]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white" dir="rtl">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-pink-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-xl font-semibold text-gray-700">טוען נתונים...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white p-4 sm:p-8" dir="rtl">
