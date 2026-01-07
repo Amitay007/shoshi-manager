@@ -5,7 +5,8 @@ import { Syllabus } from "@/entities/Syllabus";
 import { VRApp } from "@/entities/VRApp";
 import { EducationInstitution } from "@/entities/EducationInstitution";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { Glasses, BookOpen, School, AlertTriangle, AppWindow } from "lucide-react";
+import { BookOpen, School, AlertTriangle, AppWindow } from "lucide-react";
+import VRIcon from "@/components/icons/VRIcon";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { format } from "date-fns";
@@ -107,7 +108,7 @@ export default function Dashboard() {
                     <p className="text-xs text-slate-500 mt-1">סה"כ משקפות פעילות</p>
                   </div>
                   <div className="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center">
-                    <Glasses className="w-8 h-8 text-green-600" />
+                    <VRIcon className="w-8 h-8 text-green-600" />
                   </div>
                 </div>
               </CardContent>
@@ -153,9 +154,9 @@ export default function Dashboard() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-slate-600 mb-1">התראות</p>
+                    <p className="text-sm text-slate-600 mb-1">תקלות</p>
                     <p className="text-4xl font-bold text-slate-900">{stats.issuesCount}</p>
-                    <p className="text-xs text-slate-500 mt-1">מכשירים בעייתיים</p>
+                    <p className="text-xs text-slate-500 mt-1">מכשירים בתקלה</p>
                   </div>
                   <div className="w-14 h-14 bg-red-100 rounded-xl flex items-center justify-center">
                     <AlertTriangle className="w-8 h-8 text-red-600" />
@@ -222,7 +223,7 @@ export default function Dashboard() {
                   {alerts.map((device) => (
                     <div key={device.id} className="flex items-start justify-between p-3 bg-red-50 rounded-lg border border-red-200">
                       <div className="flex-1">
-                        <div className="font-semibold text-slate-900">משקפת {device.binocular_number} במצוקה</div>
+                        <div className="font-semibold text-slate-900">משקפת {device.binocular_number} תקולה</div>
                         <div className="text-sm text-slate-600 mt-1">
                           {device.disable_reason || "לא צוין סיבה"}
                         </div>

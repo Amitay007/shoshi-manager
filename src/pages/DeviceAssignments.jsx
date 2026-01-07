@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
-import { Plus, Copy, Save, Repeat, Calendar, FileText, Search, CheckCircle, Stamp, MessageSquare, Trash2, X, Edit, ArrowRight } from "lucide-react";
+import { Plus, Copy, Save, Repeat, Calendar, FileText, Search, CheckCircle, Stamp, MessageSquare, Trash2, X, Edit, ArrowRight, ArrowLeft } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -50,7 +50,7 @@ export default function DeviceAssignments() {
   
   // View mode state
   const [viewMode, setViewMode] = useState("list"); // "list" or "form"
-  const [isEditing, setIsEditing] = useState(true); // "read-only" vs "edit"
+  const [isReadOnly, setIsReadOnly] = useState(true); // Default to Read Only for existing items
   const [allSilshuchim, setAllSilshuchim] = useState([]);
   const [editingSilshuch, setEditingSilshuch] = useState(null);
   
@@ -108,7 +108,7 @@ export default function DeviceAssignments() {
 
   // Open modal for headset selection
   const openHeadsetModal = (sessionIndex = null) => {
-    if (!isEditing) return;
+    if (isReadOnly) return;
     setCurrentSessionIndex(sessionIndex);
     if (sessionIndex === null) {
       // Static mode
@@ -240,7 +240,6 @@ export default function DeviceAssignments() {
       });
 
       // Try to create Google Calendar event if dates are present and creating new or user wants update
-      // Logic simplified for now
       if (hasDates && calendarEnabled) {
         setCreatingCalendarEvent(true);
         try {
@@ -293,12 +292,13 @@ export default function DeviceAssignments() {
     setSummaryText("");
     setEditingSilshuch(null);
     setCalendarEnabled(false);
+    setIsReadOnly(true);
   };
 
   // Open form for new silshuch
   const createNewSilshuch = () => {
     resetForm();
-    setIsEditing(true);
+    setIsReadOnly(false); // New assignments are editable by default
     setViewMode("form");
   };
 
@@ -321,7 +321,7 @@ export default function DeviceAssignments() {
       setSessionDates(dates);
     }
     
-    setIsEditing(false); // Default to read-only
+    setIsReadOnly(true); // Read Only by default for existing
     setViewMode("form");
   };
 
@@ -373,18 +373,21 @@ export default function DeviceAssignments() {
           </div>
           <div className="flex items-center justify-between gap-2 mb-4">
             {viewMode === "list" && (
-              <>
+              <div className="flex gap-2 w-full">
                 <BackHomeButtons backLabel="לעמוד הקודם" showHomeButton={false} />
                 <Button onClick={createNewSilshuch} className="flex-1 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 gap-2">
                   <Plus className="w-5 h-5" />
                   צור שיבוץ חדש
                 </Button>
-              </>
+              </div>
             )}
             {viewMode === "form" && (
-              <Button onClick={() => setViewMode("list")} variant="outline" className="gap-2 w-full">
-                חזור לרשימה
-              </Button>
+              <div className="flex gap-2 w-full">
+                <Button onClick={() => setViewMode("list")} variant="outline" className="gap-2 flex-1">
+                  <ArrowRight className="w-4 h-4" /> חזור לרשימה
+                </Button>
+                <BackHomeButtons backLabel="" showHomeButton={false} className="w-auto" />
+              </div>
             )}
           </div>
         </div>
@@ -409,9 +412,12 @@ export default function DeviceAssignments() {
               </div>
             )}
             {viewMode === "form" && (
-              <Button onClick={() => setViewMode("list")} variant="outline" className="gap-2">
-                חזור לרשימה
-              </Button>
+              <div className="flex gap-2">
+                <Button onClick={() => setViewMode("list")} variant="outline" className="gap-2">
+                  <ArrowRight className="w-4 h-4" /> חזור לרשימה
+                </Button>
+                <BackHomeButtons backLabel="לעמוד הקודם" showHomeButton={false} />
+              </div>
             )}
           </div>
         </div>
@@ -441,7 +447,7 @@ export default function DeviceAssignments() {
                     whileHover={{ scale: 1.02, y: -4 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <Card className="hover:shadow-lg transition-shadow cursor-pointer relative" onClick={() => viewSilshuch(silshuch)}>
+                    <Card className="hover:shadow-lg transition-shadow cursor-pointer relative h-full flex flex-col" onClick={() => viewSilshuch(silshuch)}>
                       <CardHeader className={`${silshuch.mode === "static" ? "bg-gradient-to-r from-purple-50 to-purple-100" : "bg-gradient-to-r from-cyan-50 to-cyan-100"}`}>
                         <div className="flex items-center justify-between mb-2">
                           <CardTitle className="text-lg">{silshuch.assignmentName}</CardTitle>
@@ -455,15 +461,16 @@ export default function DeviceAssignments() {
                           </p>
                         )}
                       </CardHeader>
-                      <CardContent className="pt-4 pb-12">
+                      <CardContent className="pt-4 flex-1 relative">
                         {silshuch.details && <p className="text-sm text-slate-600 mb-3">{silshuch.details}</p>}
-                        <div className="flex items-center gap-4 text-sm text-slate-500">
+                        <div className="flex items-center gap-4 text-sm text-slate-500 mb-8">
                           <div className="flex items-center gap-1">
                             <VRIcon className="w-4 h-4" />
                             {silshuch.mode === "static" ? `${(silshuch.selectedHeadsets || []).length} משקפות` : `${silshuch.numberOfSessions} מפגשים`}
                           </div>
                         </div>
-                        <div className="absolute bottom-2 left-2">
+                        {/* Delete Button - Bottom Left */}
+                        <div className="absolute bottom-4 left-4">
                           <Button size="sm" variant="ghost" className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 w-8 p-0" onClick={(e) => deleteSilshuch(silshuch, e)}>
                             <Trash2 className="w-4 h-4" />
                           </Button>
@@ -482,18 +489,29 @@ export default function DeviceAssignments() {
           <>
             <div className="flex justify-between items-center mb-6">
               <div className="flex items-center gap-3">
-                <span className="text-sm font-medium text-slate-700">סוג שיבוץ:</span>
-                <div className="flex gap-2">
-                  <Badge onClick={() => isEditing && setMode("static")} className={`cursor-pointer px-4 py-2 ${mode === "static" ? "bg-purple-600" : "bg-slate-200 text-slate-700"}`}>
-                    <FileText className="w-3 h-3 mr-1" /> סטטי
-                  </Badge>
-                  <Badge onClick={() => isEditing && setMode("dynamic")} className={`cursor-pointer px-4 py-2 ${mode === "dynamic" ? "bg-cyan-600" : "bg-slate-200 text-slate-700"}`}>
-                    <Repeat className="w-3 h-3 mr-1" /> דינמי
-                  </Badge>
+                <span className="text-sm font-medium text-slate-700">סוג:</span>
+                {/* Small Toggle Selector */}
+                <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
+                  <button 
+                    onClick={() => !isReadOnly && setMode("static")} 
+                    disabled={isReadOnly}
+                    className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${mode === "static" ? "bg-white shadow text-purple-700" : "text-slate-500 hover:text-slate-700"}`}
+                  >
+                    סטטי
+                  </button>
+                  <button 
+                    onClick={() => !isReadOnly && setMode("dynamic")} 
+                    disabled={isReadOnly}
+                    className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${mode === "dynamic" ? "bg-white shadow text-cyan-700" : "text-slate-500 hover:text-slate-700"}`}
+                  >
+                    דינמי
+                  </button>
                 </div>
               </div>
-              {!isEditing && (
-                <Button onClick={() => setIsEditing(true)} className="gap-2" variant="outline">
+              
+              {/* Edit Button */}
+              {isReadOnly && (
+                <Button onClick={() => setIsReadOnly(false)} className="gap-2" variant="outline">
                   <Edit className="w-4 h-4" /> ערוך
                 </Button>
               )}
@@ -504,24 +522,24 @@ export default function DeviceAssignments() {
               <CardContent className="space-y-4">
                 <div>
                   <label className="text-sm font-medium text-slate-700 mb-2 block">שם השיבוץ</label>
-                  {isEditing ? (
+                  {!isReadOnly ? (
                     <Input value={assignmentName} onChange={(e) => setAssignmentName(e.target.value)} placeholder="לדוגמה: סדנת VR לכיתה ט'" className="text-base" />
                   ) : (
-                    <div className="text-lg font-medium">{assignmentName}</div>
+                    <div className="text-lg font-medium p-2 bg-slate-50 rounded border border-slate-100">{assignmentName}</div>
                   )}
                 </div>
                 <div>
                   <label className="text-sm font-medium text-slate-700 mb-2 block">פרטים נוספים</label>
-                  {isEditing ? (
+                  {!isReadOnly ? (
                     <Textarea value={details} onChange={(e) => setDetails(e.target.value)} placeholder="תאור השיבוץ..." className="min-h-[100px]" />
                   ) : (
-                    <div className="text-slate-600">{details || "אין פרטים נוספים"}</div>
+                    <div className="text-slate-600 p-2 bg-slate-50 rounded border border-slate-100 min-h-[60px]">{details || "אין פרטים נוספים"}</div>
                   )}
                 </div>
                 {mode === "dynamic" && (
                   <div>
                     <label className="text-sm font-medium text-slate-700 mb-2 block">מספר מפגשים</label>
-                    {isEditing ? (
+                    {!isReadOnly ? (
                       <Input type="number" min="1" max="20" value={numberOfSessions} onChange={(e) => setNumberOfSessions(Math.max(1, parseInt(e.target.value) || 1))} className="text-base w-32" />
                     ) : (
                       <div className="font-medium">{numberOfSessions}</div>
@@ -531,7 +549,7 @@ export default function DeviceAssignments() {
                 <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-lg border-2 border-slate-200">
                   <label className="text-sm font-medium text-slate-700 flex-1">האם יש תאריכים לשיבוץ?</label>
                   <div className="flex gap-2">
-                    {isEditing ? (
+                    {!isReadOnly ? (
                       <>
                         <Button type="button" size="sm" variant={!hasDates ? "default" : "outline"} onClick={() => setHasDates(false)} className={!hasDates ? "bg-slate-700" : ""}>אין תאריך</Button>
                         <Button type="button" size="sm" variant={hasDates ? "default" : "outline"} onClick={() => setHasDates(true)} className={hasDates ? "bg-purple-600" : ""}>יש תאריכים</Button>
@@ -541,7 +559,7 @@ export default function DeviceAssignments() {
                     )}
                   </div>
                 </div>
-                {hasDates && isEditing && (
+                {hasDates && !isReadOnly && (
                   <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border-2 border-blue-200">
                     <div className="flex-1">
                       <label className="text-sm font-medium text-blue-900 block">סנכרון עם Google Calendar 📅</label>
@@ -560,7 +578,7 @@ export default function DeviceAssignments() {
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle>משקפות משוייכות</CardTitle>
-                    {isEditing && (
+                    {!isReadOnly && (
                       <Button onClick={() => openHeadsetModal(null)} className="bg-gradient-to-r from-purple-600 to-purple-700 gap-2">
                         <Plus className="w-4 h-4" /> הוסף משקפות
                       </Button>
@@ -568,33 +586,40 @@ export default function DeviceAssignments() {
                   </div>
                 </CardHeader>
                 <CardContent>
+                  {/* Date Picker moved here for static mode */}
                   {hasDates && (
-                    <div className="mb-4 flex items-center gap-3">
-                      <label className="text-sm font-medium text-slate-700">תאריך ביצוע:</label>
-                      {isEditing ? (
-                        <Input type="date" value={executionDate || ""} onChange={(e) => setExecutionDate(e.target.value)} className="max-w-xs" />
+                    <div className="mb-6 p-3 bg-purple-50 rounded border border-purple-100 flex items-center gap-3">
+                      <label className="text-sm font-medium text-purple-900">תאריך ביצוע:</label>
+                      {!isReadOnly ? (
+                        <Input type="date" value={executionDate || ""} onChange={(e) => setExecutionDate(e.target.value)} className="max-w-xs bg-white" />
                       ) : (
-                        <span>{executionDate ? format(new Date(executionDate), 'dd/MM/yyyy') : "לא נקבע"}</span>
+                        <span className="font-medium">{executionDate ? format(new Date(executionDate), 'dd/MM/yyyy') : "לא נקבע"}</span>
                       )}
                     </div>
                   )}
+                  
                   {selectedStaticHeadsets.size > 0 ? (
                     <div className="space-y-4">
                       <div className="flex flex-wrap gap-2">
                         {Array.from(selectedStaticHeadsets).map(deviceId => (
                           <div key={deviceId} className="relative group">
                             <Link to={createPageUrl(`DeviceInfo?id=${getHeadsetDisplay(deviceId)}`)}>
-                              <Badge className="bg-gradient-to-r from-purple-500 to-purple-600 text-white text-base px-4 py-2 cursor-pointer hover:from-purple-600 hover:to-purple-700">
+                              <Badge className="bg-gradient-to-r from-purple-500 to-purple-600 text-white text-base px-4 py-2 cursor-pointer hover:from-purple-600 hover:to-purple-700 pl-8">
                                 <VRIcon className="w-4 h-4 mr-2" /> משקפת {getHeadsetDisplay(deviceId)}
                               </Badge>
                             </Link>
-                            {isEditing && (
-                              <Button size="sm" variant="ghost" className="absolute -top-2 -right-2 w-5 h-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity rounded-full bg-red-600 text-white hover:bg-red-700 z-10" onClick={(e) => {
-                                e.preventDefault(); e.stopPropagation();
-                                const newSet = new Set(selectedStaticHeadsets);
-                                newSet.delete(deviceId);
-                                setSelectedStaticHeadsets(newSet);
-                              }}>
+                            {!isReadOnly && (
+                              <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                className="absolute top-1/2 -translate-y-1/2 left-1 w-6 h-6 p-0 rounded-full bg-red-600 text-white hover:bg-red-700 z-10 opacity-80 hover:opacity-100" 
+                                onClick={(e) => {
+                                  e.preventDefault(); e.stopPropagation();
+                                  const newSet = new Set(selectedStaticHeadsets);
+                                  newSet.delete(deviceId);
+                                  setSelectedStaticHeadsets(newSet);
+                                }}
+                              >
                                 <X className="w-3 h-3" />
                               </Button>
                             )}
@@ -623,7 +648,7 @@ export default function DeviceAssignments() {
                           <CardTitle className="flex items-center gap-2">
                             <Calendar className="w-5 h-5 text-cyan-600" /> מפגש {idx + 1}
                           </CardTitle>
-                          {isEditing && (
+                          {!isReadOnly && (
                             <Button onClick={() => openHeadsetModal(idx)} size="sm" className="bg-gradient-to-r from-cyan-600 to-cyan-700 gap-2">
                               <Plus className="w-4 h-4" /> הוסף משקפות
                             </Button>
@@ -633,7 +658,7 @@ export default function DeviceAssignments() {
                       {hasDates && (
                         <div className="flex items-center gap-2">
                           <label className="text-xs text-slate-600">תאריך:</label>
-                          {isEditing ? (
+                          {!isReadOnly ? (
                             <Input type="date" value={sessionDates[idx] || ""} onChange={(e) => {
                               const newDates = [...sessionDates];
                               newDates[idx] = e.target.value;
@@ -651,16 +676,21 @@ export default function DeviceAssignments() {
                           <div className="flex flex-wrap gap-2">
                             {Array.from(sessionSet).map(deviceId => (
                               <div key={deviceId} className="relative group">
-                                <Badge className="bg-gradient-to-r from-cyan-500 to-cyan-600 text-white text-sm px-3 py-1">
+                                <Badge className="bg-gradient-to-r from-cyan-500 to-cyan-600 text-white text-sm px-3 py-1 pl-6">
                                   <VRIcon className="w-3 h-3 mr-1" /> {getHeadsetDisplay(deviceId)}
                                 </Badge>
-                                {isEditing && (
-                                  <Button size="sm" variant="ghost" className="absolute -top-2 -right-2 w-4 h-4 p-0 opacity-0 group-hover:opacity-100 transition-opacity rounded-full bg-red-600 text-white hover:bg-red-700 z-10" onClick={() => {
-                                    const newDynamic = [...selectedDynamicHeadsets];
-                                    newDynamic[idx] = new Set(sessionSet);
-                                    newDynamic[idx].delete(deviceId);
-                                    setSelectedDynamicHeadsets(newDynamic);
-                                  }}>
+                                {!isReadOnly && (
+                                  <Button 
+                                    size="sm" 
+                                    variant="ghost" 
+                                    className="absolute top-1/2 -translate-y-1/2 left-1 w-4 h-4 p-0 rounded-full bg-red-600 text-white hover:bg-red-700 z-10 opacity-80 hover:opacity-100" 
+                                    onClick={() => {
+                                      const newDynamic = [...selectedDynamicHeadsets];
+                                      newDynamic[idx] = new Set(sessionSet);
+                                      newDynamic[idx].delete(deviceId);
+                                      setSelectedDynamicHeadsets(newDynamic);
+                                    }}
+                                  >
                                     <X className="w-3 h-3" />
                                   </Button>
                                 )}
@@ -691,8 +721,8 @@ export default function DeviceAssignments() {
                   <CardTitle className="flex items-center gap-2"><Save className="w-5 h-5 text-green-600" /> פעולות</CardTitle>
                 </CardHeader>
                 <CardContent className="pt-4 space-y-3">
-                  <div className="flex gap-3">
-                    {isEditing && (
+                  <div className="flex flex-row gap-3">
+                    {!isReadOnly && (
                       <Button onClick={saveSilshuch} disabled={saving || creatingCalendarEvent} className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 text-white gap-2 h-12 text-base">
                         <Save className="w-5 h-5" /> {saving ? "שומר..." : "שמור שיבוץ"}
                       </Button>

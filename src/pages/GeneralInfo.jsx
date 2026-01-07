@@ -570,10 +570,7 @@ export default function GeneralInfo() {
                        {device.model || device.headset_type || 'Meta Quest 3'}
                      </div>
                      <div className="grid grid-cols-1 gap-2">
-                       <div className="flex flex-col items-center">
-                         <span className="text-slate-500 text-[10px]">MAC</span>
-                         <span className="font-mono text-slate-900 text-[10px]">AA:BB:CC:DD:EE:{String(device.binocular_number).padStart(2, '0')}</span>
-                       </div>
+                       {/* S/N removed */}
                      </div>
                      {device.primary_email && (
                        <div className="flex items-center justify-center gap-1 mt-2">
@@ -673,7 +670,14 @@ export default function GeneralInfo() {
           {selectedDevice && (
             <>
               <DialogHeader>
-                <DialogTitle className="text-2xl">פרטי משקפת: {selectedDevice.binocular_number}</DialogTitle>
+                <div className="flex items-center gap-2">
+                  <DialogTitle className="text-2xl">פרטי משקפת:</DialogTitle>
+                  <Input
+                    value={editGeneralData.binocular_number || selectedDevice.binocular_number}
+                    onChange={(e) => setEditGeneralData({ ...editGeneralData, binocular_number: e.target.value })}
+                    className="w-32 text-xl font-bold"
+                  />
+                </div>
               </DialogHeader>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -791,7 +795,9 @@ export default function GeneralInfo() {
                   <Card>
                     <CardHeader>
                       <div className="flex justify-between items-center">
-                        <CardTitle>חשבונות מקושרים</CardTitle>
+                        <Link to={createPageUrl(`AccountsAndUsers?deviceId=${selectedDevice.id}`)} className="hover:underline">
+                          <CardTitle className="text-blue-700 cursor-pointer">חשבונות מקושרים 🔗</CardTitle>
+                        </Link>
                         <Button size="sm" onClick={() => setShowAddAccount(true)} className="bg-green-600 hover:bg-green-700 gap-2">
                           <Plus className="w-4 h-4" />
                           הוסף

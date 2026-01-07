@@ -12,7 +12,7 @@ export default function Sidebar() {
   const menuItems = [
     { id: "dashboard", label: "שושי 2.1", icon: Home, page: "Dashboard" },
     { id: "devices", label: "מכשירי VR", icon: VRIcon, page: "GeneralInfo" },
-    { id: "silshuch", label: "סלישוך", icon: Stamp, page: "SilshuchCreator" },
+    { id: "silshuch", label: "שיוך משקפות", icon: Stamp, page: "DeviceAssignments" },
     { id: "apps", label: "אפליקציות", icon: Code, page: "GeneralApps" },
     { id: "syllabus", label: "סילבוסים", icon: BookOpen, page: "SyllabusHub" },
     { id: "schools", label: "יחסי אנוש", icon: School, page: "Humanmanagement" },
