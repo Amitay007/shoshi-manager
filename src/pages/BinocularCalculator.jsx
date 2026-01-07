@@ -3,8 +3,12 @@ import { Syllabus } from "@/entities/Syllabus";
 import { VRApp } from "@/entities/VRApp";
 import { VRDevice } from "@/entities/VRDevice";
 import { DeviceApp } from "@/entities/DeviceApp";
+import { InstitutionProgram } from "@/entities/InstitutionProgram";
+import { EducationInstitution } from "@/entities/EducationInstitution";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Calculator, Glasses, X } from "lucide-react";
@@ -15,13 +19,16 @@ import { with429Retry } from "@/components/utils/retry";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function BinocularCalculator() {
-  const [programs, setPrograms] = useState([]);
+  const [programs, setPrograms] = useState([]); // These are Syllabi
+  const [instPrograms, setInstPrograms] = useState([]);
+  const [schools, setSchools] = useState([]);
   const [allApps, setAllApps] = useState([]);
   const [allDevices, setAllDevices] = useState([]);
   const [allDeviceApps, setAllDeviceApps] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [comparisonMode, setComparisonMode] = useState("programs"); // 'programs' or 'syllabi'
   
-  // Selected programs (up to 3)
+  // Selected IDs (Syllabus IDs or InstitutionProgram IDs depending on mode)
   const [selectedProgram1, setSelectedProgram1] = useState("");
   const [selectedProgram2, setSelectedProgram2] = useState("");
   const [selectedProgram3, setSelectedProgram3] = useState("");
@@ -41,14 +48,18 @@ export default function BinocularCalculator() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [progs, apps, devices, deviceApps] = await Promise.all([
+      const [progs, iprogs, schs, apps, devices, deviceApps] = await Promise.all([
         with429Retry(() => Syllabus.list()),
+        with429Retry(() => InstitutionProgram.list()),
+        with429Retry(() => EducationInstitution.list()),
         with429Retry(() => VRApp.list()),
         with429Retry(() => VRDevice.list()),
         with429Retry(() => DeviceApp.list())
       ]);
 
       setPrograms(progs || []);
+      setInstPrograms(iprogs || []);
+      setSchools(schs || []);
       setAllApps(apps || []);
       setAllDevices(devices || []);
       setAllDeviceApps(deviceApps || []);
@@ -93,65 +104,68 @@ export default function BinocularCalculator() {
     return Array.from(appIds);
   };
 
-  // Function to get device numbers for a program based on its apps
-  const getDeviceNumbersForProgram = (program) => {
-    const appIds = getProgramAppIds(program);
-    
-    // Find all devices that have at least one of these apps
-    const deviceIdsWithApps = new Set();
-    allDeviceApps.forEach(da => {
-      if (appIds.includes(da.app_id)) {
-        deviceIdsWithApps.add(da.device_id);
-      }
-    });
-    
-    // Convert device IDs to device numbers
-    const deviceNumbers = [];
-    allDevices.forEach(d => {
-      if (deviceIdsWithApps.has(d.id)) {
-        const num = Number(d.binocular_number);
-        if (Number.isFinite(num)) {
-          deviceNumbers.push(num);
+  // Function to get device numbers based on current mode and selection
+  const getDeviceNumbers = (selectedId) => {
+    if (!selectedId) return [];
+
+    if (comparisonMode === 'syllabi') {
+      // Logic: Devices that have the apps required by the syllabus
+      const program = programs.find(p => p.id === selectedId);
+      if (!program) return [];
+
+      const appIds = getProgramAppIds(program);
+      const deviceIdsWithApps = new Set();
+      allDeviceApps.forEach(da => {
+        if (appIds.includes(da.app_id)) {
+          deviceIdsWithApps.add(da.device_id);
         }
-      }
-    });
-    
-    return deviceNumbers.sort((a, b) => a - b);
+      });
+      
+      const deviceNumbers = [];
+      allDevices.forEach(d => {
+        if (deviceIdsWithApps.has(d.id)) {
+          const num = Number(d.binocular_number);
+          if (Number.isFinite(num)) {
+            deviceNumbers.push(num);
+          }
+        }
+      });
+      return deviceNumbers.sort((a, b) => a - b);
+
+    } else {
+      // Logic: Devices belonging to the program's school (Inventory)
+      const iprog = instPrograms.find(ip => ip.id === selectedId);
+      if (!iprog) return [];
+      
+      const school = schools.find(s => s.id === iprog.institution_id);
+      if (!school) return [];
+
+      const deviceNumbers = [];
+      allDevices.forEach(d => {
+        // Check if device school name matches
+        if (d.school === school.name) {
+          const num = Number(d.binocular_number);
+          if (Number.isFinite(num)) {
+            deviceNumbers.push(num);
+          }
+        }
+      });
+      return deviceNumbers.sort((a, b) => a - b);
+    }
   };
 
-  // Update device lists when programs are selected
+  // Update device lists when selections change
   useEffect(() => {
-    if (selectedProgram1) {
-      const program = programs.find(p => p.id === selectedProgram1);
-      if (program) {
-        setProgram1Devices(getDeviceNumbersForProgram(program));
-      }
-    } else {
-      setProgram1Devices([]);
-    }
-  }, [selectedProgram1, programs, allDevices, allDeviceApps]);
+    setProgram1Devices(getDeviceNumbers(selectedProgram1));
+  }, [selectedProgram1, comparisonMode, programs, instPrograms, schools, allDevices, allDeviceApps]);
 
   useEffect(() => {
-    if (selectedProgram2) {
-      const program = programs.find(p => p.id === selectedProgram2);
-      if (program) {
-        setProgram2Devices(getDeviceNumbersForProgram(program));
-      }
-    } else {
-      setProgram2Devices([]);
-    }
-  }, [selectedProgram2, programs, allDevices, allDeviceApps]);
+    setProgram2Devices(getDeviceNumbers(selectedProgram2));
+  }, [selectedProgram2, comparisonMode, programs, instPrograms, schools, allDevices, allDeviceApps]);
 
   useEffect(() => {
-    if (selectedProgram3) {
-      const program = programs.find(p => p.id === selectedProgram3);
-      if (program) {
-        setProgram3Devices(getDeviceNumbersForProgram(program));
-      }
-    } else {
-      setProgram3Devices([]);
-    }
-  }, [selectedProgram3, programs, allDevices, allDeviceApps]);
+    setProgram3Devices(getDeviceNumbers(selectedProgram3));
+  }, [selectedProgram3, comparisonMode, programs, instPrograms, schools, allDevices, allDeviceApps]);
 
   // Calculate overlapping devices
   const overlappingDevices = useMemo(() => {
@@ -180,11 +194,21 @@ export default function BinocularCalculator() {
     return overlapping;
   }, [selectedProgram1, selectedProgram2, selectedProgram3, program1Devices, program2Devices, program3Devices]);
 
-  // Get program title
-  const getProgramTitle = (programId) => {
-    const program = programs.find(p => p.id === programId);
-    if (!program) return "";
-    return program.title || program.course_topic || program.subject || "תוכנית ללא שם";
+  // Get item title based on mode
+  const getSelectionTitle = (id) => {
+    if (!id) return "";
+    if (comparisonMode === 'syllabi') {
+      const p = programs.find(x => x.id === id);
+      return p ? (p.title || p.course_topic || p.subject || "סילבוס ללא שם") : "";
+    } else {
+      const ip = instPrograms.find(x => x.id === id);
+      if (!ip) return "";
+      const prog = programs.find(p => p.id === ip.program_id);
+      const school = schools.find(s => s.id === ip.institution_id);
+      const progName = prog ? (prog.title || prog.course_topic || prog.subject) : "תוכנית";
+      const schoolName = school ? school.name : "";
+      return schoolName ? `${progName} (${schoolName})` : progName;
+    }
   };
 
   // Render device grid for a program
@@ -254,11 +278,14 @@ export default function BinocularCalculator() {
     );
   }
 
-  const selectedPrograms = [
-    { id: selectedProgram1, devices: program1Devices, setter: setSelectedProgram1, color: 'from-purple-500 to-purple-700', title: getProgramTitle(selectedProgram1), bgCard: 'bg-gradient-to-br from-purple-50 to-purple-100', borderCard: 'border-purple-400' },
-    { id: selectedProgram2, devices: program2Devices, setter: setSelectedProgram2, color: 'from-blue-400 to-cyan-500', title: getProgramTitle(selectedProgram2), bgCard: 'bg-gradient-to-br from-blue-50 to-cyan-50', borderCard: 'border-cyan-400' },
-    { id: selectedProgram3, devices: program3Devices, setter: setSelectedProgram3, color: 'from-green-500 to-green-700', title: getProgramTitle(selectedProgram3), bgCard: 'bg-gradient-to-br from-green-50 to-green-100', borderCard: 'border-green-400' }
+  const selectedItems = [
+    { id: selectedProgram1, devices: program1Devices, setter: setSelectedProgram1, color: 'from-purple-500 to-purple-700', title: getSelectionTitle(selectedProgram1), bgCard: 'bg-gradient-to-br from-purple-50 to-purple-100', borderCard: 'border-purple-400' },
+    { id: selectedProgram2, devices: program2Devices, setter: setSelectedProgram2, color: 'from-blue-400 to-cyan-500', title: getSelectionTitle(selectedProgram2), bgCard: 'bg-gradient-to-br from-blue-50 to-cyan-50', borderCard: 'border-cyan-400' },
+    { id: selectedProgram3, devices: program3Devices, setter: setSelectedProgram3, color: 'from-green-500 to-green-700', title: getSelectionTitle(selectedProgram3), bgCard: 'bg-gradient-to-br from-green-50 to-green-100', borderCard: 'border-green-400' }
   ];
+
+  const modeLabel = comparisonMode === 'syllabi' ? 'סילבוס' : 'תוכנית';
+  const availableOptions = comparisonMode === 'syllabi' ? programs : instPrograms;
 
   return (
     <div className="min-h-screen bg-white p-4 sm:p-8" dir="rtl">
@@ -299,10 +326,25 @@ export default function BinocularCalculator() {
             </div>
             <div>
               <h1 className="text-4xl font-black text-gray-900">מחשבון משקפות</h1>
-              <p className="text-gray-600 font-medium mt-1">בדיקת זמינות בין תוכניות</p>
+              <p className="text-gray-600 font-medium mt-1">בדיקת זמינות בין תוכניות וסילבוסים</p>
             </div>
           </div>
-          <BackHomeButtons backTo="Programs" />
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2 bg-slate-100 p-1.5 rounded-lg border border-slate-200">
+              <span className={`text-sm font-bold px-2 cursor-pointer ${comparisonMode === 'programs' ? 'text-slate-400' : 'text-purple-600'}`} onClick={() => setComparisonMode('syllabi')}>סילבוסים</span>
+              <Switch 
+                checked={comparisonMode === 'programs'} 
+                onCheckedChange={(c) => {
+                  setComparisonMode(c ? 'programs' : 'syllabi');
+                  setSelectedProgram1("");
+                  setSelectedProgram2("");
+                  setSelectedProgram3("");
+                }} 
+              />
+              <span className={`text-sm font-bold px-2 cursor-pointer ${comparisonMode === 'programs' ? 'text-cyan-600' : 'text-slate-400'}`} onClick={() => setComparisonMode('programs')}>תוכניות</span>
+            </div>
+            <BackHomeButtons backTo="Programs" />
+          </div>
         </div>
 
         {/* Mobile Legend */}
@@ -328,9 +370,9 @@ export default function BinocularCalculator() {
         <div className="hidden lg:block bg-gradient-to-r from-purple-50 via-cyan-50 to-green-50 rounded-2xl p-6 mb-8 shadow-md border-2 border-purple-200">
           <div className="space-y-3">
             <div className="flex flex-row justify-start gap-8 overflow-x-auto pb-2 px-2 no-scrollbar">
-              <span className="text-sm font-bold text-purple-700">תוכנית 1 - סגול</span>
-              <span className="text-sm font-bold text-cyan-600">תוכנית 2 - כחול תורכיז</span>
-              <span className="text-sm font-bold text-green-700">תוכנית 3 - ירוק</span>
+              <span className="text-sm font-bold text-purple-700">{modeLabel} 1 - סגול</span>
+              <span className="text-sm font-bold text-cyan-600">{modeLabel} 2 - כחול תורכיז</span>
+              <span className="text-sm font-bold text-green-700">{modeLabel} 3 - ירוק</span>
             </div>
             <div className="flex flex-row justify-start gap-8 overflow-x-auto pb-2 px-2 no-scrollbar">
               <span className="text-sm font-bold text-red-700">משקפת חופפת - אדום</span>
@@ -339,19 +381,19 @@ export default function BinocularCalculator() {
           </div>
         </div>
 
-        {/* Program Columns */}
+        {/* Program/Syllabus Columns */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          {selectedPrograms.map((prog, idx) => (
-            <Card key={idx} className={`${prog.bgCard} border-2 ${prog.borderCard} shadow-xl rounded-2xl overflow-hidden transition-all hover:shadow-2xl`}>
+          {selectedItems.map((item, idx) => (
+            <Card key={idx} className={`${item.bgCard} border-2 ${item.borderCard} shadow-xl rounded-2xl overflow-hidden transition-all hover:shadow-2xl`}>
               <CardHeader className="bg-white/80 backdrop-blur-sm border-b-2 border-gray-200 pb-4">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-xl font-black text-gray-900">תוכנית {idx + 1}</CardTitle>
-                  {prog.id && (
+                  <CardTitle className="text-xl font-black text-gray-900">{modeLabel} {idx + 1}</CardTitle>
+                  {item.id && (
                     <Button
                       size="sm"
                       variant="ghost"
                       className="hover:bg-red-100 text-red-600 rounded-full"
-                      onClick={() => prog.setter("")}
+                      onClick={() => item.setter("")}
                     >
                       <X className="w-5 h-5" />
                     </Button>
@@ -359,22 +401,33 @@ export default function BinocularCalculator() {
                 </div>
               </CardHeader>
               <CardContent className="p-6 space-y-4">
-                <Select value={prog.id} onValueChange={prog.setter}>
+                <Select value={item.id} onValueChange={item.setter}>
                   <SelectTrigger className="w-full h-12 text-base font-semibold border-2 border-gray-300 rounded-xl hover:border-purple-400 transition-colors">
-                    <SelectValue placeholder="בחר תוכנית..." />
+                    <SelectValue placeholder={`בחר ${modeLabel}...`} />
                   </SelectTrigger>
                   <SelectContent dir="rtl" align="end" className="lg:max-h-80">
-                    {programs
-                      .filter(p => 
-                        p.id === prog.id || 
-                        (!selectedPrograms.some((sp, i) => i !== idx && sp.id === p.id))
+                    {availableOptions
+                      .filter(opt => 
+                        opt.id === item.id || 
+                        (!selectedItems.some((si, i) => i !== idx && si.id === opt.id))
                       )
-                      .map(program => {
-                        const title = program.title || program.course_topic || program.subject || "תוכנית ללא שם";
+                      .map(opt => {
+                        let title = "";
+                        if (comparisonMode === 'syllabi') {
+                          title = opt.title || opt.course_topic || opt.subject || "סילבוס ללא שם";
+                        } else {
+                          // For programs, find syllabus and school
+                          const prog = programs.find(p => p.id === opt.program_id);
+                          const school = schools.find(s => s.id === opt.institution_id);
+                          const progName = prog ? (prog.title || prog.course_topic || prog.subject) : "תוכנית";
+                          const schoolName = school ? school.name : "";
+                          title = schoolName ? `${progName} (${schoolName})` : progName;
+                        }
+                        
                         return (
                           <SelectItem 
-                            key={program.id} 
-                            value={program.id} 
+                            key={opt.id} 
+                            value={opt.id} 
                             className="font-medium text-right lg:whitespace-normal lg:h-auto lg:py-3"
                           >
                             <div className="lg:max-w-md lg:leading-relaxed">
@@ -386,26 +439,26 @@ export default function BinocularCalculator() {
                   </SelectContent>
                 </Select>
 
-                {prog.id && (
+                {item.id && (
                   <div className="space-y-4">
                     <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between bg-white/70 backdrop-blur-sm p-4 rounded-xl border-2 border-gray-200 gap-3">
                       <div className="font-bold text-gray-900 text-sm lg:text-base flex-1 leading-relaxed">
-                        {prog.title}
+                        {item.title}
                       </div>
                       <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold px-4 py-1.5 rounded-full shadow-md whitespace-nowrap">
-                        {prog.devices.length} משקפות
+                        {item.devices.length} משקפות
                       </Badge>
                     </div>
                     <div className="bg-white/50 backdrop-blur-sm p-4 rounded-xl border-2 border-gray-200">
-                      {renderDeviceGrid(prog.devices, prog.color)}
+                      {renderDeviceGrid(item.devices, item.color)}
                     </div>
                   </div>
                 )}
 
-                {!prog.id && (
+                {!item.id && (
                   <div className="text-center py-16 text-gray-400">
                     <Calculator className="w-16 h-16 mx-auto mb-4 opacity-30" />
-                    <p className="font-semibold">בחר תוכנית להצגת משקפות</p>
+                    <p className="font-semibold">בחר {modeLabel} להצגת משקפות</p>
                   </div>
                 )}
               </CardContent>
