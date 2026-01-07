@@ -55,25 +55,28 @@ export default function Programs() {
   const handleStatusChange = async (program, newStatus, e) => {
     if (e) e.stopPropagation();
     
-    // We need to update the InstitutionProgram(s) associated with this syllabus
-    // Find them
     const associatedIPs = instPrograms.filter(ip => ip.program_id === program.id);
     
-    if (associatedIPs.length === 0) {
-      toast({ title: "לא נמצא שיוך למוסד", description: "לא ניתן לעדכן סטטוס לתוכנית שאינה משוייכת למוסד", variant: "destructive" });
-      return;
-    }
-    
     try {
-      // Update all associated IPs (usually 1)
-      await Promise.all(associatedIPs.map(ip => 
-        with429Retry(() => InstitutionProgram.update(ip.id, { status: newStatus }))
-      ));
-      
-      // Update local state
-      setInstPrograms(prev => prev.map(ip => 
-        ip.program_id === program.id ? { ...ip, status: newStatus } : ip
-      ));
+      if (associatedIPs.length > 0) {
+        // Update associated InstitutionPrograms
+        await Promise.all(associatedIPs.map(ip => 
+          with429Retry(() => InstitutionProgram.update(ip.id, { status: newStatus }))
+        ));
+        
+        // Update local state for instPrograms
+        setInstPrograms(prev => prev.map(ip => 
+          ip.program_id === program.id ? { ...ip, status: newStatus } : ip
+        ));
+      } else {
+        // Update Syllabus directly
+        await with429Retry(() => Syllabus.update(program.id, { program_status: newStatus }));
+        
+        // Update local state for programs
+        setPrograms(prev => prev.map(p => 
+          p.id === program.id ? { ...p, program_status: newStatus } : p
+        ));
+      }
       
       toast({ title: "הסטטוס עודכן בהצלחה" });
     } catch (err) {
@@ -114,44 +117,27 @@ export default function Programs() {
     let result = [...(programs || [])]; // Fix: ensure programs is array
     const term = (filters.search || "").toLowerCase().trim();
     
-    // Status Filter Logic
+    // Status Filter Logic (Combined InstitutionProgram and Syllabus status)
     result = result.filter(p => {
-       // Find the institution program status for this syllabus
-       // Note: 'programs' here are actually Syllabi. The status is on InstitutionProgram (instPrograms).
-       // We need to check if ANY linked InstitutionProgram matches the status, OR if we display Syllabi directly.
-       // The UI displays Syllabi as cards.
-       // However, the user asked for "Program" status. 
-       // If a Syllabus is linked to multiple schools, it might have different statuses.
-       // BUT, in this app, it seems 1 Syllabus = 1 Program loosely, or 1 Syllabus can have many.
-       // Let's check how 'instPrograms' relates.
-       // Lines 178-181 find schools for program.
-       
-       // If we look at the request: "Toggle... Active, Inactive...". 
-       // We should filter based on the 'instPrograms' status associated with this Syllabus.
-       // If *any* instProgram associated with this Syllabus matches the filter, show it?
-       // Or does the Syllabus itself have a status? Syllabus has 'status' (draft/final).
-       // User explicitly mentioned "InstitutionProgram" status in the previous turn ("properties... status... active/inactive").
-       
-       // Let's look for the matching InstitutionProgram(s).
+       if (statusFilter === 'all') return true;
+
+       // 1. Check associated InstitutionPrograms
        const associatedInstProgs = instPrograms.filter(ip => ip.program_id === p.id);
        
-       if (associatedInstProgs.length === 0) {
-          // If no institution program, maybe use Syllabus status?
-          // Syllabus status is usually 'draft' or 'final'.
-          // Let's assume 'active' if no explicit status?
-          // If filter is 'shelf', and no inst program, maybe hide?
-          // Simplification: Check associatedInstProgs statuses.
-          return true; // Fallback
+       if (associatedInstProgs.length > 0) {
+          const statuses = associatedInstProgs.map(ip => ip.status || "פעילה");
+          if (statusFilter === 'active') return statuses.includes("פעילה");
+          if (statusFilter === 'inactive') return statuses.includes("לא פעילה");
+          if (statusFilter === 'shelf') return statuses.includes("מדף");
+       } else {
+          // 2. Fallback to Syllabus status
+          const status = p.program_status || "פעילה";
+          if (statusFilter === 'active') return status === "פעילה";
+          if (statusFilter === 'inactive') return status === "לא פעילה";
+          if (statusFilter === 'shelf') return status === "מדף";
        }
        
-       const statuses = associatedInstProgs.map(ip => ip.status || "פעילה");
-       
-       if (statusFilter === 'all') return true;
-       if (statusFilter === 'active') return statuses.includes("פעילה");
-       if (statusFilter === 'inactive') return statuses.includes("לא פעילה");
-       if (statusFilter === 'shelf') return statuses.includes("מדף");
-       
-       return true;
+       return false;
     });
 
     if (term) {
@@ -396,7 +382,11 @@ export default function Programs() {
                   <div className="flex items-center gap-2">
                     <div className="w-28 shrink-0" onClick={e => e.stopPropagation()}>
                        <Select 
-                         value={instPrograms.find(ip => ip.program_id === program.id)?.status || "פעילה"} 
+                         value={
+                           instPrograms.find(ip => ip.program_id === program.id)?.status || 
+                           program.program_status || 
+                           "פעילה"
+                         } 
                          onValueChange={(v) => handleStatusChange(program, v)}
                        >
                           <SelectTrigger className="h-8 text-xs px-2">

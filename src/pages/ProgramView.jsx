@@ -686,35 +686,43 @@ export default function ProgramView() {
                  <div className="flex justify-between items-center">
                     <CardTitle className="text-xl">פרטי התוכנית</CardTitle>
                     {/* Status Toggle in Header */}
-                    {instPrograms.length > 0 && (
-                      <div className="bg-white/20 p-1 rounded-lg backdrop-blur-sm inline-flex gap-1" dir="rtl">
-                        {[
-                          { id: "פעילה", label: "פעיל" },
-                          { id: "לא פעילה", label: "לא פעיל" },
-                          { id: "מדף", label: "מדף" },
-                        ].map(opt => (
+                    <div className="bg-white/20 p-1 rounded-lg backdrop-blur-sm inline-flex gap-1" dir="rtl">
+                      {[
+                        { id: "פעילה", label: "פעיל" },
+                        { id: "לא פעילה", label: "לא פעיל" },
+                        { id: "מדף", label: "מדף" },
+                      ].map(opt => {
+                        const currentStatus = instPrograms.length > 0 
+                          ? (instPrograms[0]?.status || "פעילה")
+                          : (editData.program_status || "פעילה");
+                          
+                        return (
                           <button
                             key={opt.id}
                             disabled={!editMode}
                             onClick={() => {
-                               // Update local state instantly for UI
                                const newStatus = opt.id;
-                               // We need to update instPrograms[0] in state
-                               const updated = [...instPrograms];
-                               updated[0] = { ...updated[0], status: newStatus };
-                               setInstPrograms(updated);
+                               if (instPrograms.length > 0) {
+                                 // Update local instPrograms state
+                                 const updated = [...instPrograms];
+                                 updated[0] = { ...updated[0], status: newStatus };
+                                 setInstPrograms(updated);
+                               } else {
+                                 // Update local syllabus state
+                                 setEditData(prev => ({ ...prev, program_status: newStatus }));
+                               }
                             }}
                             className={`px-2 py-0.5 rounded text-xs font-bold transition-all ${
-                              (instPrograms[0]?.status || "פעילה") === opt.id
+                              currentStatus === opt.id
                                 ? "bg-white text-cyan-800 shadow-sm"
                                 : "text-white/70 hover:text-white disabled:opacity-50"
                             }`}
                           >
                             {opt.label}
                           </button>
-                        ))}
-                      </div>
-                    )}
+                        );
+                      })}
+                    </div>
                  </div>
               </CardHeader>
               <CardContent className="p-6 space-y-4">
