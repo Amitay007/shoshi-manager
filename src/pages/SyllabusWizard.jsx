@@ -420,7 +420,7 @@ export default function SyllabusWizard() {
 
           <Card className="shadow-lg border-0">
             <CardHeader className="bg-gradient-to-r from-cyan-50 to-blue-50">
-              <CardTitle>פרטי פתיחה</CardTitle>
+
             </CardHeader>
             <CardContent className="space-y-3 pt-4">
 
