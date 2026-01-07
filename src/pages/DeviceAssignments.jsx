@@ -400,10 +400,10 @@ export default function DeviceAssignments() {
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold text-purple-900">שיוך משקפות</h1>
           </div>
-          <div className="flex items-center justify-between mb-4">
+          <div className="mb-4 space-y-4">
             <p className="text-slate-600 text-sm">ניהול הקצאת משקפות</p>
             {viewMode === "list" && (
-              <div className="flex gap-2">
+              <div className="flex gap-2 justify-start">
                 <BackHomeButtons backLabel="לעמוד הקודם" showHomeButton={false} />
                 <Button onClick={createNewSilshuch} className="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 gap-2">
                   <Plus className="w-5 h-5" />
@@ -412,11 +412,16 @@ export default function DeviceAssignments() {
               </div>
             )}
             {viewMode === "form" && (
-              <div className="flex gap-2">
+              <div className="flex gap-2 justify-start">
                 <Button onClick={() => setViewMode("list")} variant="outline" className="gap-2">
                   <ArrowRight className="w-4 h-4" /> חזור לרשימה
                 </Button>
                 <BackHomeButtons backLabel="לעמוד הקודם" showHomeButton={false} />
+                {isReadOnly && (
+                  <Button onClick={() => setIsReadOnly(false)} className="gap-2" variant="outline">
+                    <Edit className="w-4 h-4" /> ערוך
+                  </Button>
+                )}
               </div>
             )}
           </div>
@@ -509,12 +514,6 @@ export default function DeviceAssignments() {
                 </div>
               </div>
               
-              {/* Edit Button */}
-              {isReadOnly && (
-                <Button onClick={() => setIsReadOnly(false)} className="gap-2" variant="outline">
-                  <Edit className="w-4 h-4" /> ערוך
-                </Button>
-              )}
             </div>
 
             <Card className="mb-6">
@@ -576,14 +575,12 @@ export default function DeviceAssignments() {
             {mode === "static" && (
               <Card className="mb-6">
                 <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle>משקפות משוייכות</CardTitle>
-                    {!isReadOnly && (
-                      <Button onClick={() => openHeadsetModal(null)} className="bg-gradient-to-r from-purple-600 to-purple-700 gap-2">
-                        <Plus className="w-4 h-4" /> הוסף משקפות
-                      </Button>
-                    )}
-                  </div>
+                  <CardTitle>משקפות משוייכות</CardTitle>
+                  {!isReadOnly && (
+                    <Button onClick={() => openHeadsetModal(null)} className="bg-gradient-to-r from-purple-600 to-purple-700 gap-2 mt-4 w-fit">
+                      <Plus className="w-4 h-4" /> הוסף משקפות
+                    </Button>
+                  )}
                 </CardHeader>
                 <CardContent>
                   {/* Date Picker moved here for static mode */}

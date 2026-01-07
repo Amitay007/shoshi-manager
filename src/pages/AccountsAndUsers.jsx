@@ -33,6 +33,7 @@ export default function AccountsAndUsers() {
     const [filterType, setFilterType] = useState("ALL");
     const [filterNickname, setFilterNickname] = useState("");
     const [filterNumber, setFilterNumber] = useState("");
+    const [filterDeviceId, setFilterDeviceId] = useState(null); // Added for URL filtering
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState(null);
     const [showEditDialog, setShowEditDialog] = useState(false);
@@ -60,6 +61,13 @@ export default function AccountsAndUsers() {
                 
                 setAccounts(accountsList);
                 setDevices(devicesList.sort((a, b) => a.binocular_number - b.binocular_number));
+
+                // Check URL for deviceId filter
+                const params = new URLSearchParams(window.location.search);
+                const devId = params.get("deviceId");
+                if (devId) {
+                    setFilterDeviceId(devId);
+                }
             } catch (error) {
                 console.error("Error loading data:", error);
             } finally {
@@ -234,6 +242,9 @@ export default function AccountsAndUsers() {
             if (filterNickname && !nickname.toLowerCase().includes(filterNickname.toLowerCase())) return false;
             // Number filter
             if (filterNumber && numberStr !== filterNumber.trim()) return false;
+
+            // Device ID filter (from URL)
+            if (filterDeviceId && account.device_id !== filterDeviceId) return false;
 
             // Free text search (kept)
             const deviceNameText = device ? `משקפת ${device.binocular_number}` : "";

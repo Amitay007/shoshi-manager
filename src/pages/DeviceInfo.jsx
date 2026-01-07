@@ -194,19 +194,7 @@ export default function DeviceInfo() {
     <div className="min-h-screen bg-slate-50 p-4 sm:p-6" dir="rtl">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-6">
-          {isEditingGeneral ? (
-            <div className="flex items-center gap-2">
-              <h1 className="text-3xl font-bold text-cyan-900">פרטי משקפת:</h1>
-              <Input
-                type="number"
-                value={editGeneralData.binocular_number || device.binocular_number}
-                onChange={(e) => setEditGeneralData({ ...editGeneralData, binocular_number: e.target.value })}
-                className="w-24 text-2xl font-bold"
-              />
-            </div>
-          ) : (
-            <h1 className="text-3xl font-bold text-cyan-900">פרטי משקפת: {device.binocular_number}</h1>
-          )}
+          <h1 className="text-3xl font-bold text-cyan-900">פרטי משקפת: {device.binocular_number}</h1>
           <div className="flex gap-2">
             <Button className="bg-green-600 hover:bg-green-700 gap-2" onClick={() => setShowAddAppsModal(true)}>
               <Plus className="w-4 h-4" />
