@@ -69,6 +69,7 @@ export default function SyllabusWizard() {
     teaching_materials: [],
     sessions: [],
     status: "draft",
+    program_number: "",
     active: true
   });
 
@@ -142,6 +143,7 @@ export default function SyllabusWizard() {
               teaching_materials: existing.teaching_materials || [],
               sessions: existing.sessions || [],
               status: existing.status || "draft",
+              program_number: existing.program_number || "",
               active: existing.active !== false
             });
           }
@@ -162,6 +164,7 @@ export default function SyllabusWizard() {
       const dataToSave = {
         ...data,
         status: "draft",
+        program_number: data.program_number || Math.floor(1000 + Math.random() * 9000).toString(),
         meetings_count: (data.sessions || []).length,
         content_areas: typeof data.content_areas === 'string' ? data.content_areas : (Array.isArray(data.content_areas) ? data.content_areas.join(", ") : ""),
         purposes: typeof data.purposes === 'string' ? data.purposes : (Array.isArray(data.purposes) ? data.purposes.join(", ") : "")
@@ -189,6 +192,7 @@ export default function SyllabusWizard() {
       const payload = {
         ...data,
         status: "final",
+        program_number: data.program_number || Math.floor(1000 + Math.random() * 9000).toString(),
         meetings_count: (data.sessions || []).length,
         content_areas: typeof data.content_areas === 'string' ? data.content_areas : (Array.isArray(data.content_areas) ? data.content_areas.join(", ") : ""),
         purposes: typeof data.purposes === 'string' ? data.purposes : (Array.isArray(data.purposes) ? data.purposes.join(", ") : "")
