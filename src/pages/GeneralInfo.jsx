@@ -384,9 +384,6 @@ export default function GeneralInfo() {
                 הוסף מכשיר
               </Button>
             </Link>
-            <div className="hidden lg:block">
-              <BackHomeButtons />
-            </div>
           </div>
         </div>
 
