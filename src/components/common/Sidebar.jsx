@@ -23,10 +23,40 @@ export default function Sidebar() {
     { id: "version2", label: "שושי 2.0 - היסטוריה", icon: Layers, page: "Version2" },
   ];
 
-  const isActive = (page) => {
+  const isActive = (page, itemId) => {
     const currentPath = location.pathname;
     const pagePath = createPageUrl(page);
-    return currentPath === pagePath || currentPath.includes(`/${page}`);
+    
+    // Exact match
+    if (currentPath === pagePath) return true;
+
+    // Remove leading slash and query params to get current page name
+    const currentPage = currentPath.substring(1).split('?')[0];
+
+    // Child to Parent Mapping
+    const childToParent = {
+      'AppDetailsPage': 'apps',
+      'GeneralApps': 'apps',
+      'DeviceInfo': 'devices',
+      'GeneralInfo': 'devices',
+      'DeviceAssignments': 'silshuch',
+      'SyllabusHub': 'syllabus',
+      'SyllabusWizard': 'syllabus',
+      'Humanmanagement': 'schools',
+      'SchoolDetails': 'schools',
+      'CRMHub': 'teachers',
+      'TeachersList': 'teachers',
+      'TeacherProfile': 'teachers',
+      'BinocularCalculator': 'calculator',
+      'AccountsAndUsers': 'accounts',
+      'Programs': 'programs',
+      'ProgramView': 'programs',
+      'Version2': 'version2'
+    };
+
+    if (childToParent[currentPage] === itemId) return true;
+
+    return currentPath.includes(`/${page}`);
   };
 
   return (
@@ -51,7 +81,7 @@ export default function Sidebar() {
           <div className="space-y-1">
             {menuItems.map((item) => {
               const Icon = item.icon;
-              const active = isActive(item.page);
+              const active = isActive(item.page, item.id);
               return (
                 <Link key={item.id} to={createPageUrl(item.page)} className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${active ? 'bg-gradient-to-r from-purple-600 to-cyan-600 text-white shadow-lg' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
                   <Icon className="w-5 h-5" />
@@ -73,7 +103,7 @@ export default function Sidebar() {
         <nav className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full" dir="rtl">
           {menuItems.map((item) => {
             const Icon = item.icon;
-            const active = isActive(item.page);
+            const active = isActive(item.page, item.id);
             return (
               <Link key={item.id} to={createPageUrl(item.page)} className={`flex flex-col items-center justify-center min-w-[70px] p-2 rounded-lg transition-all ${active ? 'text-cyan-400' : 'text-slate-400'}`}>
                 <div className={`p-2 rounded-full ${active ? 'bg-slate-800' : ''}`}>
