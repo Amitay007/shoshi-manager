@@ -404,11 +404,11 @@ export default function DeviceAssignments() {
             <p className="text-slate-600 text-sm">ניהול הקצאת משקפות</p>
             {viewMode === "list" && (
               <div className="flex gap-2 justify-start">
-                <BackHomeButtons backLabel="לעמוד הקודם" showHomeButton={false} />
                 <Button onClick={createNewSilshuch} className="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 gap-2">
                   <Plus className="w-5 h-5" />
                   צור שיבוץ חדש
                 </Button>
+                <BackHomeButtons backLabel="לעמוד הקודם" showHomeButton={false} />
               </div>
             )}
             {viewMode === "form" && (
@@ -416,7 +416,6 @@ export default function DeviceAssignments() {
                 <Button onClick={() => setViewMode("list")} variant="outline" className="gap-2">
                   <ArrowRight className="w-4 h-4" /> חזור לרשימה
                 </Button>
-                <BackHomeButtons backLabel="לעמוד הקודם" showHomeButton={false} />
                 {isReadOnly && (
                   <Button onClick={() => setIsReadOnly(false)} className="gap-2" variant="outline">
                     <Edit className="w-4 h-4" /> ערוך
@@ -443,7 +442,7 @@ export default function DeviceAssignments() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {allSilshuchim.map(silshuch => (
                   <motion.div
                     key={silshuch.id}

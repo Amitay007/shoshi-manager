@@ -36,6 +36,14 @@ export default function GeneralInfo() {
   const [appsModalOpen, setAppsModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState("cards");
   const [activeTab, setActiveTab] = useState("all");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get("tab");
+    if (tab) {
+      setActiveTab(tab);
+    }
+  }, []);
   const [selectedDevices, setSelectedDevices] = useState(new Set());
   const [statusFilter, setStatusFilter] = useState([]);
 

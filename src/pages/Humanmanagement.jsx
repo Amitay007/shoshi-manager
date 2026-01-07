@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { Search, Building2, Users, FileText, Calendar, Plus, Trash2, Eye, Mail, Phone, MapPin, BookOpen, BrainCircuit, Clock, Stamp, Hourglass, Rocket } from "lucide-react";
+import { Search, Building2, Users, FileText, Calendar, Plus, Trash2, Eye, Mail, Phone, MapPin, BookOpen, BrainCircuit, Clock, Stamp, Hourglass, Rocket, Brain } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useLoading } from "@/components/common/LoadingContext";
@@ -177,7 +177,7 @@ export default function Humanmanagement() {
         {/* Header */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           <div className="flex items-center gap-3">
-            <BrainCircuit className="w-10 h-10 text-purple-600" />
+            <Brain className="w-10 h-10 text-purple-600" />
             <div>
               <h1 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-2">מרכז יחסי אנוש</h1>
               <p className="text-slate-600">מעקב וניהול למורה הנחוש</p>
@@ -189,43 +189,53 @@ export default function Humanmanagement() {
 
         {/* Info Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="bg-white shadow-md rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center hover:shadow-lg transition-shadow cursor-pointer">
-            <Users className="w-10 h-10 text-blue-600" />
-            <CardTitle className="text-lg font-semibold text-slate-900">קשרי לקוחות</CardTitle>
-            <p className="text-sm text-slate-500">נהל אנשי קשר</p>
-          </Card>
+          <Link to={createPageUrl("CRMHub")}>
+            <Card className="bg-white shadow-md rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center hover:shadow-lg transition-shadow cursor-pointer h-full">
+              <Users className="w-10 h-10 text-blue-600" />
+              <CardTitle className="text-lg font-semibold text-slate-900">קשרי לקוחות</CardTitle>
+              <p className="text-sm text-slate-500">נהל אנשי קשר</p>
+            </Card>
+          </Link>
 
-          <Card className="bg-white shadow-md rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center hover:shadow-lg transition-shadow cursor-pointer">
-            <Calendar className="w-10 h-10 text-green-600" />
-            <CardTitle className="text-lg font-semibold text-slate-900">יומן</CardTitle>
-            <p className="text-sm text-blue-600 font-medium">הבא: פגישת צוות 10:00</p>
-          </Card>
+          <Link to={createPageUrl("MasterSchedule")}>
+            <Card className="bg-white shadow-md rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center hover:shadow-lg transition-shadow cursor-pointer h-full">
+              <Calendar className="w-10 h-10 text-green-600" />
+              <CardTitle className="text-lg font-semibold text-slate-900">יומן</CardTitle>
+              <p className="text-sm text-blue-600 font-medium">הבא: פגישת צוות 10:00</p>
+            </Card>
+          </Link>
 
           <Link to={createPageUrl("HoursReport")}>
-            <Card className="bg-white shadow-md rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center hover:shadow-lg transition-shadow cursor-pointer">
+            <Card className="bg-white shadow-md rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center hover:shadow-lg transition-shadow cursor-pointer h-full">
               <Clock className="w-10 h-10 text-purple-600" />
               <CardTitle className="text-lg font-semibold text-slate-900">שעות</CardTitle>
               <p className="text-sm text-purple-600 font-bold">נוכחי: 142 שעות</p>
             </Card>
           </Link>
 
-          <Card className="bg-white shadow-md rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center hover:shadow-lg transition-shadow cursor-pointer">
-            <FileText className="w-10 h-10 text-orange-600" />
-            <CardTitle className="text-lg font-semibold text-slate-900">שיבוצים</CardTitle>
-            <p className="text-sm text-slate-500">תכנון ושיבוץ</p>
-          </Card>
+          <Link to={createPageUrl("DeviceAssignments")}>
+            <Card className="bg-white shadow-md rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center hover:shadow-lg transition-shadow cursor-pointer h-full">
+              <FileText className="w-10 h-10 text-orange-600" />
+              <CardTitle className="text-lg font-semibold text-slate-900">שיבוצים</CardTitle>
+              <p className="text-sm text-slate-500">תכנון ושיבוץ</p>
+            </Card>
+          </Link>
 
-          <Card className="bg-white shadow-md rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center hover:shadow-lg transition-shadow cursor-pointer">
-            <Building2 className="w-10 h-10 text-indigo-600" />
-            <CardTitle className="text-lg font-semibold text-slate-900">בתי ספר</CardTitle>
-            <p className="text-sm text-slate-500">ניהול מוסדות</p>
-          </Card>
+          <Link to={createPageUrl("Schools")}>
+            <Card className="bg-white shadow-md rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center hover:shadow-lg transition-shadow cursor-pointer h-full">
+              <Building2 className="w-10 h-10 text-indigo-600" />
+              <CardTitle className="text-lg font-semibold text-slate-900">בתי ספר</CardTitle>
+              <p className="text-sm text-slate-500">ניהול מוסדות</p>
+            </Card>
+          </Link>
 
-          <Card className="bg-white shadow-md rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center hover:shadow-lg transition-shadow cursor-pointer">
-            <Stamp className="w-10 h-10 text-pink-600" />
-            <CardTitle className="text-lg font-semibold text-slate-900">שלישוך</CardTitle>
-            <p className="text-sm text-red-600 font-bold">2 בקשות ממתינות</p>
-          </Card>
+          <Link to={createPageUrl("MySchedule")}>
+            <Card className="bg-white shadow-md rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center hover:shadow-lg transition-shadow cursor-pointer h-full">
+              <Stamp className="w-10 h-10 text-pink-600" />
+              <CardTitle className="text-lg font-semibold text-slate-900">שלישוך</CardTitle>
+              <p className="text-sm text-red-600 font-bold">2 בקשות ממתינות</p>
+            </Card>
+          </Link>
 
           <Card className="bg-white shadow-md rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center hover:shadow-lg transition-shadow cursor-pointer">
             <Rocket className="w-10 h-10 text-cyan-600" />
@@ -239,6 +249,32 @@ export default function Humanmanagement() {
             <p className="text-sm text-slate-400">בפיתוח</p>
           </Card>
         </div>
+
+        {/* Bottom Widget */}
+        <Card className="bg-gradient-to-r from-slate-50 to-white border-purple-100 border">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Rocket className="w-5 h-5 text-purple-600" />
+              הפעילות הבאה שלי
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-slate-100">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                  <Calendar className="w-6 h-6 text-purple-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-800">סדנת VR - כיתה ט'3</h3>
+                  <p className="text-sm text-slate-500">מחר, 10:00 - 11:30 • תיכון עירוני ד'</p>
+                </div>
+              </div>
+              <Button variant="outline" className="text-purple-600 border-purple-200 hover:bg-purple-50">
+                לפרטים מלאים
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Add/Edit Contact Dialog */}

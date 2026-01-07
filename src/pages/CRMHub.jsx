@@ -306,7 +306,10 @@ export default function CRMHub() {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-0 shadow-lg">
+          <Card 
+            className="bg-gradient-to-br from-green-50 to-emerald-50 border-0 shadow-lg cursor-pointer hover:shadow-xl hover:scale-105 active:scale-95 transition-all"
+            onClick={() => window.location.href = createPageUrl("Programs")}
+          >
             <CardContent className="p-3">
               <div className="flex flex-col items-center">
                 <Calendar className="w-8 h-8 text-green-600 mb-1" />
@@ -320,8 +323,11 @@ export default function CRMHub() {
             <CardContent className="p-3">
               <div className="flex flex-col items-center">
                 <VRIcon className="w-8 h-8 text-purple-600 mb-1" />
-                <p className="text-2xl font-bold text-purple-900">{stats.totalDevices}</p>
-                <p className="text-xs text-slate-600">משקפות</p>
+                <p className="text-2xl font-bold text-purple-900">
+                  {devices.filter(d => !d.is_disabled && d.status !== 'מושבת' && d.status !== 'בתיקון').length}
+                  <span className="text-sm font-normal text-purple-700"> / {stats.totalDevices}</span>
+                </p>
+                <p className="text-xs text-slate-600">משקפות פעילות</p>
               </div>
             </CardContent>
           </Card>
@@ -516,6 +522,9 @@ export default function CRMHub() {
                           </div>
                           <div>
                             <CardTitle className="text-lg">{contact.full_name}</CardTitle>
+                            {contact.role && (
+                              <p className="text-sm font-medium text-indigo-600">{contact.role}</p>
+                            )}
                             {contact.title && (
                               <p className="text-xs text-slate-500">{contact.title}</p>
                             )}

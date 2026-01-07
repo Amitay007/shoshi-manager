@@ -149,7 +149,7 @@ export default function Dashboard() {
             </Card>
           </Link>
 
-          <Link to={createPageUrl("GeneralInfo?tab=issues")}>
+          <Link to={createPageUrl("GeneralInfo") + "?tab=issues"}>
             <Card className="hover:shadow-lg transition-shadow cursor-pointer border-r-4 border-r-red-500">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">

@@ -125,6 +125,9 @@ export default function TeachersList() {
                         </Avatar>
                         <div className="flex-1">
                           <CardTitle className="text-lg">{teacher.name}</CardTitle>
+                          {teacher.role && (
+                            <p className="text-sm font-medium text-cyan-600">{teacher.role}</p>
+                          )}
                           {school && (
                             <p className="text-xs text-slate-500 mt-1">{school.name}</p>
                           )}

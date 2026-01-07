@@ -200,11 +200,6 @@ export default function DeviceInfo() {
               <Plus className="w-4 h-4" />
               הוסף אפליקציה
             </Button>
-            <Link to={createPageUrl(`EditHeadset?id=${device.id}`)}>
-              <Button variant="outline" className="gap-2">
-                ערוך 
-              </Button>
-            </Link>
             <Link to={createPageUrl(`GeneralInfo`)}>
               <Button variant="outline" className="gap-2">
                 חזרה לסקירה <ArrowLeft className="w-4 h-4" />
