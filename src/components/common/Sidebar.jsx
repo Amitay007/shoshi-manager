@@ -11,14 +11,14 @@ export default function Sidebar() {
   
   const menuItems = [
     { id: "dashboard", label: "שושי 2.1", icon: Home, page: "Dashboard" },
-    { id: "devices", label: "מכשירי VR", icon: VRIcon, page: "GeneralInfo" },
-    { id: "silshuch", label: "שיוך משקפות", icon: Stamp, page: "DeviceAssignments" },
-    { id: "apps", label: "אפליקציות", icon: Code, page: "GeneralApps" },
     { id: "syllabus", label: "סילבוסים", icon: BookOpen, page: "SyllabusHub" },
     { id: "programs", label: "תוכניות", icon: GraduationCap, page: "Programs" },
+    { id: "silshuch", label: "שיוך משקפות", icon: Stamp, page: "DeviceAssignments" },
+    { id: "calculator", label: "מחשבון", icon: Calculator, page: "BinocularCalculator" },
+    { id: "devices", label: "מכשירי VR", icon: VRIcon, page: "GeneralInfo" },
+    { id: "apps", label: "אפליקציות", icon: Code, page: "GeneralApps" },
     { id: "schools", label: "יחסי אנוש", icon: School, page: "Humanmanagement" },
     { id: "teachers", label: "ניהול", icon: Users, page: "CRMHub" },
-    { id: "calculator", label: "מחשבון", icon: Calculator, page: "BinocularCalculator" },
     { id: "accounts", label: "חשבונות", icon: KeyRound, page: "AccountsAndUsers" },
     { id: "version2", label: "שושי 2.0 - היסטוריה", icon: Layers, page: "Version2" },
   ];

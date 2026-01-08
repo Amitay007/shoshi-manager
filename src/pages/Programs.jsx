@@ -19,7 +19,7 @@ export default function Programs() {
   const [instPrograms, setInstPrograms] = useState([]);
   const [schools, setSchools] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState("active"); // active, inactive, shelf, all
+  const [statusFilter, setStatusFilter] = useState("all"); // active, inactive, shelf, all
   const [filters, setFilters] = useState({
     search: "",
     activity_types: [],
@@ -261,26 +261,6 @@ export default function Programs() {
 
         {/* Status Toggle & Actions */}
         <div className="flex justify-start items-center mb-2 gap-4">
-           <div className="bg-white p-1 rounded-lg border shadow-sm inline-flex gap-1" dir="rtl">
-              {[
-            { id: "active", label: "פעיל" },
-            { id: "inactive", label: "לא פעיל" },
-            { id: "all", label: "כולם" }].
-            map((opt) =>
-            <button
-              key={opt.id}
-              onClick={() => setStatusFilter(opt.id)}
-              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
-              statusFilter === opt.id ?
-              "bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-sm" :
-              "text-red-600 hover:bg-red-50"}`
-              }>
-
-                  {opt.label}
-                </button>
-            )}
-           </div>
-
            <Link to={createPageUrl("CreateProgram")}>
               <Button className="bg-gradient-to-r text-primary-foreground px-3 py-2 text-sm font-medium rounded-md inline-flex items-center justify-center whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-primary/90 h-9 from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg gap-2">
                 <Plus className="w-4 h-4" />

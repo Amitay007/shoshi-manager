@@ -9,6 +9,7 @@ import BinocularCalculator from './pages/BinocularCalculator';
 import BulkDataLoader from './pages/BulkDataLoader';
 import CRMHub from './pages/CRMHub';
 import CashFlow from './pages/CashFlow';
+import CreateProgram from './pages/CreateProgram';
 import Dashboard from './pages/Dashboard';
 import DataImport from './pages/DataImport';
 import DataRepositories from './pages/DataRepositories';
@@ -25,6 +26,8 @@ import HoursReport from './pages/HoursReport';
 import Humanmanagement from './pages/Humanmanagement';
 import MasterSchedule from './pages/MasterSchedule';
 import MySchedule from './pages/MySchedule';
+import ProgramView from './pages/ProgramView';
+import Programs from './pages/Programs';
 import ResearchPage from './pages/ResearchPage';
 import SchoolDetails from './pages/SchoolDetails';
 import Schools from './pages/Schools';
@@ -37,9 +40,6 @@ import UpdateAppStatus from './pages/UpdateAppStatus';
 import UpdateAppsFromPDF from './pages/UpdateAppsFromPDF';
 import UploadLogo from './pages/UploadLogo';
 import Version2 from './pages/Version2';
-import CreateProgram from './pages/CreateProgram';
-import ProgramView from './pages/ProgramView';
-import Programs from './pages/Programs';
 import __Layout from './Layout.jsx';
 
 
@@ -55,6 +55,7 @@ export const PAGES = {
     "BulkDataLoader": BulkDataLoader,
     "CRMHub": CRMHub,
     "CashFlow": CashFlow,
+    "CreateProgram": CreateProgram,
     "Dashboard": Dashboard,
     "DataImport": DataImport,
     "DataRepositories": DataRepositories,
@@ -71,6 +72,8 @@ export const PAGES = {
     "Humanmanagement": Humanmanagement,
     "MasterSchedule": MasterSchedule,
     "MySchedule": MySchedule,
+    "ProgramView": ProgramView,
+    "Programs": Programs,
     "ResearchPage": ResearchPage,
     "SchoolDetails": SchoolDetails,
     "Schools": Schools,
@@ -83,9 +86,6 @@ export const PAGES = {
     "UpdateAppsFromPDF": UpdateAppsFromPDF,
     "UploadLogo": UploadLogo,
     "Version2": Version2,
-    "CreateProgram": CreateProgram,
-    "ProgramView": ProgramView,
-    "Programs": Programs,
 }
 
 export const pagesConfig = {
