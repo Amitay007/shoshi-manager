@@ -1029,16 +1029,25 @@ export default function ProgramView() {
                       const sessionAppIds = [...(session.app_ids || []), ...(session.experience_ids || [])];
                       const sessionApps = apps.filter(app => sessionAppIds.includes(app.id));
                       
-                      // For each app, find which devices have it
+                      // For each app, find which devices have it (from general inventory)
                       const appDeviceMapping = {};
                       sessionApps.forEach(app => {
                         const devicesWithThisAppIds = appToDeviceMap.get(app.id) || new Set();
-                        // Filter these device IDs to only include those devices already selected for the program
-                        const relevantDevicesWithAppNumbers = selectedDeviceNumbers.filter(num => {
-                            const deviceId = deviceIdByNumber[num]; // Get deviceId from number
-                            return deviceId && devicesWithThisAppIds.has(deviceId); // Check if this specific deviceId has the app
+
+                        // Get ALL devices that have this app from general inventory
+                        const allDevicesWithAppNumbers = [];
+
+                        Object.keys(deviceDataByNumber).forEach(numStr => {
+                          const num = Number(numStr);
+                          const device = deviceDataByNumber[num];
+                          if (device && devicesWithThisAppIds.has(device.id)) {
+                            allDevicesWithAppNumbers.push(num);
+                          }
                         });
-                        appDeviceMapping[app.id] = relevantDevicesWithAppNumbers;
+
+                        // Sort numbers
+                        allDevicesWithAppNumbers.sort((a, b) => a - b);
+                        appDeviceMapping[app.id] = allDevicesWithAppNumbers;
                       });
 
                       return (
@@ -1075,25 +1084,27 @@ export default function ProgramView() {
                                         {app.name}:
                                       </span>
                                       <div className="flex flex-wrap gap-1">
-                                        {selectedDeviceNumbers.length === 0 ? (
-                                          <span className="text-amber-500 text-xs italic">אין משקפות משויכות לתוכנית</span>
-                                        ) : devicesWithApp.length > 0 ? (
+                                        {devicesWithApp.length > 0 ? (
                                           devicesWithApp.map(num => {
                                             const device = deviceDataByNumber[num];
                                             const isDisabled = device?.is_disabled || false;
+                                            // Highlight devices that are assigned to the program
+                                            const isAssigned = selectedDeviceNumbers.includes(num);
 
                                             return (
                                               <Link 
                                                 key={num}
-                                                to={createPageUrl(`DeviceInfo?id=${deviceIdByNumber[num]}`)}
+                                                to={createPageUrl(`DeviceInfo?id=${device?.id}`)}
                                               >
                                                 <Badge 
                                                   className={`${
                                                     isDisabled 
                                                       ? 'bg-slate-200 text-slate-600 hover:bg-slate-300 border border-slate-400' 
-                                                      : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border border-emerald-300'
+                                                      : isAssigned
+                                                        ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border border-emerald-300'
+                                                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300'
                                                   } cursor-pointer transition-colors text-xs`}
-                                                  title={isDisabled ? `משקפת ${num} - מושבת${device?.disable_reason ? `: ${device.disable_reason}` : ''}` : `משקפת ${num}`}
+                                                  title={isDisabled ? `משקפת ${num} - מושבת${device?.disable_reason ? `: ${device.disable_reason}` : ''}` : `משקפת ${num}${isAssigned ? ' (משויכת)' : ''}`}
                                                 >
                                                   #{String(num).padStart(3, '0')}
                                                 </Badge>
@@ -1101,7 +1112,7 @@ export default function ProgramView() {
                                             );
                                           })
                                         ) : (
-                                          <span className="text-red-400 text-xs font-medium">חסר במשקפות המשויכות</span>
+                                          <span className="text-slate-400 text-xs italic">לא מותקן על אף משקפת</span>
                                         )}
                                       </div>
                                     </div>
