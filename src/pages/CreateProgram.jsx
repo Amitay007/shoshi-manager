@@ -6,7 +6,6 @@ import { VRDevice } from "@/entities/VRDevice";
 import { VRApp } from "@/entities/VRApp";
 import { DeviceApp } from "@/entities/DeviceApp";
 import { InstitutionProgram } from "@/entities/InstitutionProgram";
-import { Program } from "@/entities/Program";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -246,29 +245,31 @@ export default function CreateProgram() {
       const syllabusSource = syllabi.find(s => s.id === selectedSyllabusId);
       const teacher = teachers.find(t => t.id === selectedTeacherId);
 
-      // 1. Create new Program Entity (Instance)
-      // This separates the Syllabus (Content) from the Program (Execution)
-      const newProgramData = {
-        name: programTitle,
-        syllabus_id: selectedSyllabusId,
-        institution_id: selectedInstitutionId,
-        teacher_id: selectedTeacherId || undefined, // Optional
-        status: "active",
-        start_date: startDate ? startDate.toISOString() : new Date().toISOString(),
+      // 1. Update existing Syllabus instead of creating a duplicate
+      const updateData = {
+        title: programTitle,
+        teacher_name: teacher ? teacher.name : syllabusSource.teacher_name,
         assigned_device_ids: Array.from(selectedDeviceIds),
-        program_number: Math.floor(1000 + Math.random() * 9000).toString(),
-        notes: ""
+        program_status: "פעילה",
+        status: "final"
       };
 
-      const newProgram = await with429Retry(() => Program.create(newProgramData));
+      await with429Retry(() => Syllabus.update(selectedSyllabusId, updateData));
 
-      // 2. Update InstitutionProgram (Legacy support / Link table) - Optional but good for backward compat if needed
-      // Actually, we are moving to Program entity, so we might not need InstitutionProgram anymore 
-      // but let's keep it if other parts use it, or just rely on the new Program entity.
-      // Given the request to separate, we rely on Program.
-      
-      // 3. Navigate to ProgramView with the NEW Program ID
-      navigate(createPageUrl(`ProgramView?id=${newProgram.id}`));
+      // 2. Link to Institution (if selected)
+      if (selectedInstitutionId) {
+        // Create new link (Note: logic in ProgramView handles cleaning up duplicates if needed)
+        await with429Retry(() => InstitutionProgram.create({
+          program_id: selectedSyllabusId,
+          institution_id: selectedInstitutionId,
+          start_date: startDate ? startDate.toISOString() : new Date().toISOString(),
+          status: "פעילה",
+          assigned_device_ids: Array.from(selectedDeviceIds)
+        }));
+      }
+
+      // 3. Navigate
+      navigate(createPageUrl(`ProgramView?id=${selectedSyllabusId}`));
 
     } catch (err) {
       console.error("Error saving program:", err);
