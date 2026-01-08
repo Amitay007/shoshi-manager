@@ -297,6 +297,16 @@ export default function Programs() {
               ? program.content_areas.split(',').map(s => s.trim()).filter(Boolean)
               : (Array.isArray(program.content_areas) ? program.content_areas : []);
 
+            const currentStatus = instPrograms.find(ip => ip.program_id === program.id)?.status || 
+                                  program.program_status || 
+                                  "פעילה";
+
+            const statusColors = {
+              "פעילה": "bg-emerald-100 text-emerald-800 border-emerald-200",
+              "לא פעילה": "bg-slate-100 text-slate-600 border-slate-200",
+              "מדף": "bg-amber-100 text-amber-800 border-amber-200"
+            };
+
             return (
               <Card 
                 key={program.id} 
@@ -322,6 +332,9 @@ export default function Programs() {
                       {program.activity_type}
                     </Badge>
                   )}
+                  <Badge className={`border w-fit text-[10px] px-2 py-0 mt-1 ${statusColors[currentStatus] || statusColors["פעילה"]}`}>
+                    {currentStatus}
+                  </Badge>
                 </CardHeader>
 
                 <CardContent className="space-y-2 text-xs flex-1 px-4 pb-3">
@@ -416,11 +429,7 @@ export default function Programs() {
                   <div className="flex items-center gap-2">
                     <div className="w-28 shrink-0" onClick={e => e.stopPropagation()}>
                        <Select 
-                         value={
-                           instPrograms.find(ip => ip.program_id === program.id)?.status || 
-                           program.program_status || 
-                           "פעילה"
-                         } 
+                         value={currentStatus} 
                          onValueChange={(v) => handleStatusChange(program, v)}
                        >
                           <SelectTrigger className="h-8 text-xs px-2">
