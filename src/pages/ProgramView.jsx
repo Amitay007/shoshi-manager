@@ -112,7 +112,8 @@ export default function ProgramView() {
 
       const [allDevicesData, allDeviceApps] = await Promise.all([
         with429Retry(() => VRDevice.list()),
-        with429Retry(() => DeviceApp.list())
+        // Optimize fetch: Only get installations for apps in this program, with a high limit to ensure we get all
+        with429Retry(() => DeviceApp.filter({ app_id: { $in: Array.from(appIds) } }, null, 10000))
       ]);
       
       setAllDevices(allDevicesData || []);
@@ -1073,11 +1074,13 @@ export default function ProgramView() {
                                         {app.name}:
                                       </span>
                                       <div className="flex flex-wrap gap-1">
-                                        {devicesWithApp.length > 0 ? (
+                                        {selectedDeviceNumbers.length === 0 ? (
+                                          <span className="text-amber-500 text-xs italic">אין משקפות משויכות לתוכנית</span>
+                                        ) : devicesWithApp.length > 0 ? (
                                           devicesWithApp.map(num => {
                                             const device = deviceDataByNumber[num];
                                             const isDisabled = device?.is_disabled || false;
-                                            
+
                                             return (
                                               <Link 
                                                 key={num}
@@ -1097,7 +1100,7 @@ export default function ProgramView() {
                                             );
                                           })
                                         ) : (
-                                          <span className="text-slate-400 text-xs">לא זמין במשקפות</span>
+                                          <span className="text-red-400 text-xs font-medium">חסר במשקפות המשויכות</span>
                                         )}
                                       </div>
                                     </div>
