@@ -1126,7 +1126,7 @@ export default function ProgramView() {
           <div className="space-y-4 max-h-[60vh] overflow-y-auto">
             <div className="grid grid-cols-8 gap-2">
               {allDevices
-                .filter(d => !selectedDeviceIds.includes(d.id))
+                .filter(d => !assignedDeviceIds.includes(d.id))
                 .map(device => {
                   const num = Number(device.binocular_number);
                   const isSelected = tempSelectedDeviceIds.includes(device.id);

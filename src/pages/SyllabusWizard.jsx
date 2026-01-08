@@ -161,10 +161,16 @@ export default function SyllabusWizard() {
     setSaving(true);
     try {
       // Ensure content_areas and purposes are strings
+      const generateProgramNumber = () => {
+        const digits = Math.floor(1000 + Math.random() * 9000);
+        const letter = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+        return `${digits}${letter}`;
+      };
+
       const dataToSave = {
         ...data,
         status: "draft",
-        program_number: data.program_number || Math.floor(1000 + Math.random() * 9000).toString(),
+        program_number: data.program_number || generateProgramNumber(),
         meetings_count: (data.sessions || []).length,
         content_areas: typeof data.content_areas === 'string' ? data.content_areas : (Array.isArray(data.content_areas) ? data.content_areas.join(", ") : ""),
         purposes: typeof data.purposes === 'string' ? data.purposes : (Array.isArray(data.purposes) ? data.purposes.join(", ") : "")
@@ -189,10 +195,16 @@ export default function SyllabusWizard() {
     setSaving(true);
     try {
       // Ensure content_areas and purposes are strings
+      const generateProgramNumber = () => {
+        const digits = Math.floor(1000 + Math.random() * 9000);
+        const letter = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+        return `${digits}${letter}`;
+      };
+
       const payload = {
         ...data,
         status: "final",
-        program_number: data.program_number || Math.floor(1000 + Math.random() * 9000).toString(),
+        program_number: data.program_number || generateProgramNumber(),
         meetings_count: (data.sessions || []).length,
         content_areas: typeof data.content_areas === 'string' ? data.content_areas : (Array.isArray(data.content_areas) ? data.content_areas.join(", ") : ""),
         purposes: typeof data.purposes === 'string' ? data.purposes : (Array.isArray(data.purposes) ? data.purposes.join(", ") : "")
