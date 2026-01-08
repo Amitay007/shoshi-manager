@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Syllabus } from "@/entities/Syllabus";
-import { InstitutionProgram } from "@/entities/InstitutionProgram";
+import { Program } from "@/entities/Program"; // New Entity
 import { EducationInstitution } from "@/entities/EducationInstitution";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -35,15 +35,23 @@ export default function Programs() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      // Load data in parallel for better performance
-      const [allPrograms, allInstPrograms, allSchools] = await Promise.all([
-      with429Retry(() => Syllabus.list()),
-      with429Retry(() => InstitutionProgram.list()),
-      with429Retry(() => EducationInstitution.list())]
-      );
+      // Load Programs (Instances) instead of Syllabi
+      const [allPrograms, allSchools, allSyllabi] = await Promise.all([
+        with429Retry(() => Program.list()),
+        with429Retry(() => EducationInstitution.list()),
+        with429Retry(() => Syllabus.list()) // Needed to show syllabus details
+      ]);
 
-      setPrograms(allPrograms || []);
-      setInstPrograms(allInstPrograms || []);
+      // Enrich programs with syllabus data
+      const enrichedPrograms = (allPrograms || []).map(p => {
+        const syllabus = (allSyllabi || []).find(s => s.id === p.syllabus_id);
+        return {
+          ...p,
+          _syllabus: syllabus // Helper property
+        };
+      });
+
+      setPrograms(enrichedPrograms || []);
       setSchools(allSchools || []);
     } catch (error) {
       console.error("Error loading programs:", error);
@@ -55,28 +63,14 @@ export default function Programs() {
   const handleStatusChange = async (program, newStatus, e) => {
     if (e) e.stopPropagation();
 
-    const associatedIPs = instPrograms.filter((ip) => ip.program_id === program.id);
-
     try {
-      if (associatedIPs.length > 0) {
-        // Update associated InstitutionPrograms
-        await Promise.all(associatedIPs.map((ip) =>
-        with429Retry(() => InstitutionProgram.update(ip.id, { status: newStatus }))
-        ));
+      // Update Program Status
+      await with429Retry(() => Program.update(program.id, { status: newStatus }));
 
-        // Update local state for instPrograms
-        setInstPrograms((prev) => prev.map((ip) =>
-        ip.program_id === program.id ? { ...ip, status: newStatus } : ip
-        ));
-      } else {
-        // Update Syllabus directly
-        await with429Retry(() => Syllabus.update(program.id, { program_status: newStatus }));
-
-        // Update local state for programs
-        setPrograms((prev) => prev.map((p) =>
-        p.id === program.id ? { ...p, program_status: newStatus } : p
-        ));
-      }
+      // Update local state
+      setPrograms((prev) => prev.map((p) =>
+        p.id === program.id ? { ...p, status: newStatus } : p
+      ));
 
       toast({ title: "הסטטוס עודכן בהצלחה" });
     } catch (err) {
@@ -87,27 +81,25 @@ export default function Programs() {
 
   const handleDuplicate = async (program, e) => {
     e.stopPropagation();
-
-    if (!confirm(`האם לשכפל את "${program.title || program.course_topic || program.subject}"?`)) return;
+    
+    // Duplicate the Program Instance
+    if (!confirm(`האם לשכפל את "${program.name}"?`)) return;
 
     try {
-      // Create a copy without system fields
-      const { id, created_date, updated_date, created_by_id, created_by, is_sample, ...programData } = program;
+      const { id, created_date, updated_date, created_by_id, created_by, _syllabus, ...programData } = program;
 
-      // Generate a random 4-digit number for the duplicate
       const randomNum = Math.floor(1000 + Math.random() * 9000).toString();
 
       const duplicateData = {
         ...programData,
-        title: `${program.title || program.course_topic || program.subject || "תוכנית"} - עותק`,
-        status: "draft",
-        program_number: randomNum
+        name: `${program.name} - עותק`,
+        program_number: randomNum,
+        status: "active"
       };
 
-      const newProgram = await with429Retry(() => Syllabus.create(duplicateData));
+      const newProgram = await with429Retry(() => Program.create(duplicateData));
 
       if (newProgram && newProgram.id) {
-        // Reload the list to show the new program
         await loadData();
         alert("התוכנית שוכפלה בהצלחה!");
       }
@@ -119,21 +111,13 @@ export default function Programs() {
 
   const handleDelete = async (program, e) => {
     e.stopPropagation();
-    if (!confirm(`האם למחוק את התוכנית "${program.title || program.course_topic || program.subject}"? פעולה זו אינה הפיכה.`)) return;
+    if (!confirm(`האם למחוק את התוכנית "${program.name}"? פעולה זו תמחק רק את השיוך ולא את הסילבוס.`)) return;
 
     try {
-      // 1. Delete associated InstitutionPrograms
-      const associatedIPs = instPrograms.filter((ip) => ip.program_id === program.id);
-      await Promise.all(associatedIPs.map((ip) =>
-      with429Retry(() => InstitutionProgram.delete(ip.id))
-      ));
+      // Only delete the Program entity
+      await with429Retry(() => Program.delete(program.id));
 
-      // 2. Delete the Syllabus
-      await with429Retry(() => Syllabus.delete(program.id));
-
-      // 3. Update state
       setPrograms((prev) => prev.filter((p) => p.id !== program.id));
-      setInstPrograms((prev) => prev.filter((ip) => ip.program_id !== program.id));
 
       toast({ title: "התוכנית נמחקה בהצלחה" });
     } catch (error) {
@@ -143,70 +127,55 @@ export default function Programs() {
   };
 
   const filteredPrograms = useMemo(() => {
-    let result = [...(programs || [])]; // Fix: ensure programs is array
+    let result = [...(programs || [])];
     const term = (filters.search || "").toLowerCase().trim();
 
-    // Status Filter Logic (Combined InstitutionProgram and Syllabus status)
+    // Status Filter
     result = result.filter((p) => {
       if (statusFilter === 'all') return true;
-
-      // 1. Check associated InstitutionPrograms
-      const associatedInstProgs = instPrograms.filter((ip) => ip.program_id === p.id);
-
-      if (associatedInstProgs.length > 0) {
-        const statuses = associatedInstProgs.map((ip) => ip.status || "פעילה");
-        if (statusFilter === 'active') return statuses.includes("פעילה");
-        if (statusFilter === 'inactive') return statuses.includes("לא פעילה");
-        if (statusFilter === 'shelf') return statuses.includes("מדף");
-      } else {
-        // 2. Fallback to Syllabus status
-        const status = p.program_status || "פעילה";
-        if (statusFilter === 'active') return status === "פעילה";
-        if (statusFilter === 'inactive') return status === "לא פעילה";
-        if (statusFilter === 'shelf') return status === "מדף";
-      }
-
+      const status = p.status || "active";
+      if (statusFilter === 'active') return status === "active" || status === "פעילה";
+      if (statusFilter === 'inactive') return status === "inactive" || status === "לא פעילה";
+      if (statusFilter === 'shelf') return status === "shelf" || status === "מדף";
       return false;
     });
 
+    // Search
     if (term) {
       result = result.filter((p) => {
-        const title = p.title || p.course_topic || p.subject || "";
+        const title = p.name || "";
         const notes = p.notes || "";
         return title.toLowerCase().includes(term) || notes.toLowerCase().includes(term);
       });
     }
 
+    // Filter by Syllabus Properties
     if ((filters.activity_types || []).length > 0) {
-      result = result.filter((p) => (filters.activity_types || []).includes(p.activity_type));
+      result = result.filter((p) => p._syllabus && (filters.activity_types || []).includes(p._syllabus.activity_type));
     }
 
     if ((filters.content_areas || []).length > 0) {
       result = result.filter((p) => {
-        const programContentAreas = typeof p.content_areas === 'string' ?
-        p.content_areas.split(',').map((s) => s.trim()).filter(Boolean) :
-        Array.isArray(p.content_areas) ? p.content_areas : [];
+        if (!p._syllabus) return false;
+        const programContentAreas = typeof p._syllabus.content_areas === 'string' ?
+          p._syllabus.content_areas.split(',').map((s) => s.trim()).filter(Boolean) :
+          Array.isArray(p._syllabus.content_areas) ? p._syllabus.content_areas : [];
         return programContentAreas.some((ca) => (filters.content_areas || []).includes(ca));
       });
     }
 
     if ((filters.target_audiences || []).length > 0) {
       result = result.filter((p) =>
-      (p.target_audience || []).some((ta) => (filters.target_audiences || []).includes(ta))
+        p._syllabus && (p._syllabus.target_audience || []).some((ta) => (filters.target_audiences || []).includes(ta))
       );
     }
 
     if ((filters.schools || []).length > 0) {
-      const programIdsInSchools = new Set(
-        (instPrograms || []).
-        filter((ip) => (filters.schools || []).includes(ip.institution_id)).
-        map((ip) => ip.program_id)
-      );
-      result = result.filter((p) => programIdsInSchools.has(p.id));
+      result = result.filter((p) => (filters.schools || []).includes(p.institution_id));
     }
 
     return result;
-  }, [programs, filters, instPrograms]);
+  }, [programs, filters]);
 
   if (isLoading) {
     return (
@@ -276,185 +245,185 @@ export default function Programs() {
 
         {/* Programs Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filteredPrograms.map((program) => {
-            const title = program.title || program.course_topic || program.subject || "תוכנית ללא שם";
-            const schoolsForProgram = instPrograms.
-            filter((ip) => ip.program_id === program.id).
-            map((ip) => schools.find((s) => s.id === ip.institution_id)).
-            filter(Boolean);
+        {filteredPrograms.map((program) => {
+          const syllabus = program._syllabus || {};
+          const school = schools.find(s => s.id === program.institution_id);
+          const title = program.name || "תוכנית ללא שם";
 
-            // FIX: Handle content_areas as string
-            const contentAreasArray = typeof program.content_areas === 'string' ?
-            program.content_areas.split(',').map((s) => s.trim()).filter(Boolean) :
-            Array.isArray(program.content_areas) ? program.content_areas : [];
+          // Get content areas from syllabus
+          const contentAreasArray = typeof syllabus.content_areas === 'string' ?
+            syllabus.content_areas.split(',').map((s) => s.trim()).filter(Boolean) :
+            Array.isArray(syllabus.content_areas) ? syllabus.content_areas : [];
 
-            const currentStatus = instPrograms.find((ip) => ip.program_id === program.id)?.status ||
-            program.program_status ||
-            "פעילה";
+          const currentStatus = program.status === "active" ? "פעילה" : 
+                               program.status === "inactive" ? "לא פעילה" : 
+                               program.status === "shelf" ? "מדף" : 
+                               program.status || "פעילה";
 
-            const statusColors = {
-              "פעילה": "bg-emerald-100 text-emerald-800 border-emerald-200",
-              "לא פעילה": "bg-slate-100 text-slate-600 border-slate-200",
-              "מדף": "bg-amber-100 text-amber-800 border-amber-200"
-            };
+          const statusColors = {
+            "פעילה": "bg-emerald-100 text-emerald-800 border-emerald-200",
+            "לא פעילה": "bg-slate-100 text-slate-600 border-slate-200",
+            "מדף": "bg-amber-100 text-amber-800 border-amber-200"
+          };
 
-            return (
-              <Card
-                key={program.id}
-                className="bg-white hover:shadow-xl transition-all duration-300 border-0 overflow-hidden group cursor-pointer flex flex-col"
-                onClick={() => window.location.href = createPageUrl(`ProgramView?id=${program.id}`)}>
+          return (
+            <Card
+              key={program.id}
+              className="bg-white hover:shadow-xl transition-all duration-300 border-0 overflow-hidden group cursor-pointer flex flex-col"
+              onClick={() => window.location.href = createPageUrl(`ProgramView?id=${program.id}`)}>
 
-                {/* Colored Header */}
-                <div className="h-1.5 bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600"></div>
-                
-                <CardHeader className="pb-2 pt-3 px-4">
-                  <div className="h-12 flex items-start mb-1 justify-between gap-2">
-                    <CardTitle className="text-base leading-tight line-clamp-2 group-hover:text-cyan-700 transition-colors">
-                      {title}
-                    </CardTitle>
-                    {program.program_number &&
-                    <span className="text-[10px] text-slate-400 font-mono bg-slate-50 px-1 rounded border border-slate-100 shrink-0">
-                        #{program.program_number}
-                      </span>
-                    }
-                  </div>
-                  <div className="flex items-center gap-2 mt-2 flex-wrap">
-                      <Badge className={`border w-fit text-[10px] px-2 py-0 ${statusColors[currentStatus] || statusColors["פעילה"]}`}>
-                        {currentStatus}
-                      </Badge>
+              {/* Colored Header */}
+              <div className="h-1.5 bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600"></div>
 
-                    {schoolsForProgram.length > 0 ?
-                    <div className="flex items-center gap-1.5">
-                        {schoolsForProgram[0].logo_url ?
-                      <img
-                        src={schoolsForProgram[0].logo_url}
-                        alt={schoolsForProgram[0].name}
-                        className="w-5 h-5 object-contain rounded-full bg-slate-50 border border-slate-200" /> :
-                      <School className="w-4 h-4 text-indigo-600" />
-                      }
-                        <span className="text-xs font-medium text-slate-700 truncate">
-                          {schoolsForProgram.map((s) => s.name).join(", ")}
-                        </span>
-                      </div> :
-
-                    <div className="flex items-center gap-1.5">
-                        <School className="w-4 h-4 text-slate-400" />
-                        <span className="text-xs text-slate-400 italic">לא משוייך</span>
-                      </div>
-                    }
-                  </div>
-                  
-                  {program.activity_type &&
-                  <div className="mt-2">
-                    <Badge className="bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 border-0 w-fit text-xs px-2 py-0">
-                          {program.activity_type}
-                        </Badge>
-                  </div>
-                    }
-                  </CardHeader>
-
-                <CardContent className="space-y-2 text-xs flex-1 px-4 pb-3">
-                  {/* Teacher */}
-                  {program.teacher_name &&
-                  <div className="flex items-center gap-1.5 text-slate-600">
-                      <Users className="w-3.5 h-3.5 text-cyan-600 shrink-0" />
-                      <span className="font-medium">מורה:</span>
-                      <span className="truncate">{program.teacher_name}</span>
-                    </div>
+              <CardHeader className="pb-2 pt-3 px-4">
+                <div className="h-12 flex items-start mb-1 justify-between gap-2">
+                  <CardTitle className="text-base leading-tight line-clamp-2 group-hover:text-cyan-700 transition-colors">
+                    {title}
+                  </CardTitle>
+                  {program.program_number &&
+                  <span className="text-[10px] text-slate-400 font-mono bg-slate-50 px-1 rounded border border-slate-100 shrink-0">
+                      #{program.program_number}
+                    </span>
                   }
-
-                  {/* Meetings */}
-                  {(program.meetings_count || (program.sessions || []).length > 0) &&
-                  <div className="flex items-center gap-1.5 text-slate-600">
-                      <Calendar className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                      <span className="font-medium">מפגשים:</span>
-                      <span>{program.meetings_count || (program.sessions || []).length}</span>
-                    </div>
-                  }
-
-                  {/* Content Areas */}
-                  {contentAreasArray.length > 0 &&
-                  <div className="flex items-start gap-1.5 text-slate-600">
-                      <BookOpen className="w-3.5 h-3.5 text-amber-600 mt-0.5 shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <span className="font-medium">תחומי דעת:</span>
-                        <div className="flex flex-wrap gap-1 mt-0.5">
-                          {contentAreasArray.slice(0, 2).map((area, idx) =>
-                        <Badge key={idx} variant="secondary" className="text-[10px] bg-slate-100 px-1.5 py-0">
-                              {area}
-                            </Badge>
-                        )}
-                          {contentAreasArray.length > 2 &&
-                        <Badge variant="secondary" className="text-[10px] bg-slate-100 px-1.5 py-0">
-                              +{contentAreasArray.length - 2}
-                            </Badge>
-                        }
-                        </div>
-                      </div>
-                    </div>
-                  }
-
-
-
-                  {/* Target Audience */}
-                  {(program.target_audience || []).length > 0 &&
-                  <div className="flex flex-wrap gap-1 pt-1.5 border-t border-slate-100">
-                      {program.target_audience.slice(0, 3).map((aud, idx) =>
-                    <Badge key={idx} className="bg-cyan-100 text-cyan-800 text-[10px] border-0 px-1.5 py-0">
-                          {aud}
-                        </Badge>
-                    )}
-                      {(program.target_audience || []).length > 3 &&
-                    <Badge className="bg-cyan-100 text-cyan-800 text-[10px] border-0 px-1.5 py-0">
-                          +{(program.target_audience || []).length - 3}
-                        </Badge>
-                    }
-                    </div>
-                  }
-                </CardContent>
-
-                {/* Footer with Actions */}
-                <div className="px-4 pb-3 mt-auto border-t border-slate-100 pt-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-24 shrink-0" onClick={(e) => e.stopPropagation()}>
-                       <Select
-                        value={currentStatus}
-                        onValueChange={(v) => handleStatusChange(program, v)}>
-
-                          <SelectTrigger className="h-8 text-xs px-2">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="פעילה">פעילה</SelectItem>
-                            <SelectItem value="לא פעילה">לא פעילה</SelectItem>
-                            <SelectItem value="מדף">מדף</SelectItem>
-                          </SelectContent>
-                       </Select>
-                    </div>
-
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-8 w-8 shrink-0 border border-blue-200"
-                      onClick={(e) => handleDuplicate(program, e)}
-                      title="שכפל">
-
-                      <Copy className="w-3 h-3" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-8 w-8 shrink-0 border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 hover:text-red-700"
-                      onClick={(e) => handleDelete(program, e)}
-                      title="מחק">
-
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
-                    </div>
                 </div>
-              </Card>);
+                <div className="flex items-center gap-2 mt-2 flex-wrap">
+                    <Badge className={`border w-fit text-[10px] px-2 py-0 ${statusColors[currentStatus] || statusColors["פעילה"]}`}>
+                      {currentStatus}
+                    </Badge>
 
-          })}
+                  {school ?
+                  <div className="flex items-center gap-1.5">
+                      {school.logo_url ?
+                    <img
+                      src={school.logo_url}
+                      alt={school.name}
+                      className="w-5 h-5 object-contain rounded-full bg-slate-50 border border-slate-200" /> :
+                    <School className="w-4 h-4 text-indigo-600" />
+                    }
+                      <span className="text-xs font-medium text-slate-700 truncate">
+                        {school.name}
+                      </span>
+                    </div> :
+
+                  <div className="flex items-center gap-1.5">
+                      <School className="w-4 h-4 text-slate-400" />
+                      <span className="text-xs text-slate-400 italic">לא משוייך</span>
+                    </div>
+                  }
+                </div>
+
+                {syllabus.activity_type &&
+                <div className="mt-2">
+                  <Badge className="bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 border-0 w-fit text-xs px-2 py-0">
+                        {syllabus.activity_type}
+                      </Badge>
+                </div>
+                  }
+                </CardHeader>
+
+              <CardContent className="space-y-2 text-xs flex-1 px-4 pb-3">
+                {/* Syllabus Info */}
+                <div className="flex items-center gap-1.5 text-slate-600 mb-2">
+                  <div className="bg-slate-100 px-1.5 py-0.5 rounded text-[10px] text-slate-500 truncate max-w-full">
+                     סילבוס: {syllabus.title || syllabus.course_topic || "ללא שם"}
+                  </div>
+                </div>
+
+                {/* Meetings */}
+                {(syllabus.meetings_count || (syllabus.sessions || []).length > 0) &&
+                <div className="flex items-center gap-1.5 text-slate-600">
+                    <Calendar className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span className="font-medium">מפגשים:</span>
+                    <span>{syllabus.meetings_count || (syllabus.sessions || []).length}</span>
+                  </div>
+                }
+
+                {/* Content Areas */}
+                {contentAreasArray.length > 0 &&
+                <div className="flex items-start gap-1.5 text-slate-600">
+                    <BookOpen className="w-3.5 h-3.5 text-amber-600 mt-0.5 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <span className="font-medium">תחומי דעת:</span>
+                      <div className="flex flex-wrap gap-1 mt-0.5">
+                        {contentAreasArray.slice(0, 2).map((area, idx) =>
+                      <Badge key={idx} variant="secondary" className="text-[10px] bg-slate-100 px-1.5 py-0">
+                            {area}
+                          </Badge>
+                      )}
+                        {contentAreasArray.length > 2 &&
+                      <Badge variant="secondary" className="text-[10px] bg-slate-100 px-1.5 py-0">
+                            +{contentAreasArray.length - 2}
+                          </Badge>
+                      }
+                      </div>
+                    </div>
+                  </div>
+                }
+
+
+
+                {/* Target Audience */}
+                {(syllabus.target_audience || []).length > 0 &&
+                <div className="flex flex-wrap gap-1 pt-1.5 border-t border-slate-100">
+                    {syllabus.target_audience.slice(0, 3).map((aud, idx) =>
+                  <Badge key={idx} className="bg-cyan-100 text-cyan-800 text-[10px] border-0 px-1.5 py-0">
+                        {aud}
+                      </Badge>
+                  )}
+                    {(syllabus.target_audience || []).length > 3 &&
+                  <Badge className="bg-cyan-100 text-cyan-800 text-[10px] border-0 px-1.5 py-0">
+                        +{(syllabus.target_audience || []).length - 3}
+                      </Badge>
+                  }
+                  </div>
+                }
+              </CardContent>
+
+              {/* Footer with Actions */}
+              <div className="px-4 pb-3 mt-auto border-t border-slate-100 pt-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-24 shrink-0" onClick={(e) => e.stopPropagation()}>
+                     <Select
+                      value={currentStatus}
+                      onValueChange={(v) => {
+                         const statusMap = { "פעילה": "active", "לא פעילה": "inactive", "מדף": "shelf" };
+                         handleStatusChange(program, statusMap[v] || "active");
+                      }}>
+
+                        <SelectTrigger className="h-8 text-xs px-2">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="פעילה">פעילה</SelectItem>
+                          <SelectItem value="לא פעילה">לא פעילה</SelectItem>
+                          <SelectItem value="מדף">מדף</SelectItem>
+                        </SelectContent>
+                     </Select>
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8 shrink-0 border border-blue-200"
+                    onClick={(e) => handleDuplicate(program, e)}
+                    title="שכפל">
+
+                    <Copy className="w-3 h-3" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8 shrink-0 border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 hover:text-red-700"
+                    onClick={(e) => handleDelete(program, e)}
+                    title="מחק">
+
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                  </div>
+              </div>
+            </Card>);
+
+        })}
         </div>
 
         {filteredPrograms.length === 0 &&
