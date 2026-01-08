@@ -427,7 +427,7 @@ export default function Programs() {
                 {/* Footer with Actions */}
                 <div className="px-4 pb-3 mt-auto border-t border-slate-100 pt-2">
                   <div className="flex items-center gap-2">
-                    <div className="w-28 shrink-0" onClick={e => e.stopPropagation()}>
+                    <div className="w-24 shrink-0" onClick={e => e.stopPropagation()}>
                        <Select 
                          value={currentStatus} 
                          onValueChange={(v) => handleStatusChange(program, v)}
@@ -443,17 +443,6 @@ export default function Programs() {
                        </Select>
                     </div>
 
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className="flex-1 border border-cyan-200 hover:bg-gradient-to-r hover:from-cyan-50 hover:to-blue-50 hover:border-cyan-400 transition-all text-xs h-8"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        window.location.href = createPageUrl(`ProgramView?id=${program.id}`);
-                      }}
-                    >
-                      <Eye className="w-3 h-3 mr-1" /> פרטים
-                    </Button>
                     <Button 
                       variant="outline" 
                       size="icon"
