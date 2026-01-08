@@ -376,8 +376,12 @@ export default function DeviceAssignments() {
               <Stamp className="text-white" size={28} />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-purple-900">שיוך משקפות</h1>
-              <p className="text-slate-600 text-xs">ניהול הקצאת משקפות</p>
+              <h1 className="text-2xl font-bold text-purple-900">
+                {viewMode === "form" ? (editingSilshuch ? "עריכת שיבוץ" : "יצירת שיבוץ חדש") : "שיוך משקפות"}
+              </h1>
+              <p className="text-slate-600 text-xs">
+                {viewMode === "form" ? "אנא מלא את פרטי השיבוץ" : "ניהול הקצאת משקפות"}
+              </p>
             </div>
           </div>
           <div className="flex items-center justify-between gap-2 mb-4">
@@ -407,10 +411,14 @@ export default function DeviceAssignments() {
             <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-xl flex items-center justify-center shadow-lg">
               <Stamp className="text-white" size={28} />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-purple-900">שיוך משקפות</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-purple-900">
+              {viewMode === "form" ? (editingSilshuch ? "עריכת שיבוץ" : "יצירת שיבוץ חדש") : "שיוך משקפות"}
+            </h1>
           </div>
           <div className="mb-4 space-y-4">
-            <p className="text-slate-600 text-sm">ניהול הקצאת משקפות</p>
+            <p className="text-slate-600 text-sm">
+              {viewMode === "form" ? "אנא מלא את פרטי השיבוץ" : "ניהול הקצאת משקפות"}
+            </p>
             {viewMode === "list" && (
               <div className="flex gap-2 justify-start">
                 <Button onClick={createNewSilshuch} className="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 gap-2">
