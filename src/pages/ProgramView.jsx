@@ -13,6 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Pencil, FileText, Save, X, Plus, Trash2, Glasses, Calendar, School } from "lucide-react";
+import VRIcon from "@/components/icons/VRIcon";
 import { createPageUrl } from "@/utils";
 import { Link } from "react-router-dom";
 import { with429Retry } from "@/components/utils/retry";
@@ -914,8 +915,8 @@ export default function ProgramView() {
               <CardHeader className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-t-lg">
                 <div className="flex justify-between items-center">
                   <CardTitle className="flex items-center gap-2 text-xl">
-                    <Glasses className="w-5 h-5" />
-                    משקפות ({selectedDeviceNumbers.length})
+                    <VRIcon className="w-6 h-6 text-white" />
+                    משקפות משוייכות ({selectedDeviceNumbers.length})
                   </CardTitle>
                   {editMode && (
                     <div className="flex gap-2">
@@ -969,8 +970,8 @@ export default function ProgramView() {
                                     : 'bg-emerald-50 hover:bg-emerald-100 border-emerald-200 hover:border-emerald-300'
                                 }`}
                                 title={isDisabled ? `משקפת ${num} - מושבת${device?.disable_reason ? `: ${device.disable_reason}` : ''}` : `משקפת ${num}`}
-                              >
-                                <Glasses className={`w-6 h-6 mb-1 ${isDisabled ? 'text-slate-500' : 'text-emerald-600'}`} />
+                                >
+                                <VRIcon className={`w-8 h-8 mb-1 ${isDisabled ? 'text-slate-500' : 'text-emerald-600'}`} />
                                 <p className={`text-xs font-bold ${isDisabled ? 'text-slate-600' : 'text-slate-800'}`}>
                                   #{String(num).padStart(3, '0')}
                                 </p>
