@@ -46,9 +46,6 @@ export default function ProgramView() {
   const [selectedAppIds, setSelectedAppIds] = React.useState([]);
   const [selectedAppsForRemoval, setSelectedAppsForRemoval] = React.useState(new Set());
 
-  const [showImportPrograms, setShowImportPrograms] = React.useState(false);
-  const [importablePrograms, setImportablePrograms] = React.useState([]);
-
   const [instPrograms, setInstPrograms] = React.useState([]);
   const [schools, setSchools] = React.useState([]);
   const [selectedSchoolId, setSelectedSchoolId] = React.useState("none");
@@ -401,51 +398,6 @@ export default function ProgramView() {
 
   const handleAddApps = () => {
     setShowAddApps(true);
-  };
-
-  const handleOpenImportPrograms = async () => {
-    try {
-      const [allSy, allIp] = await Promise.all([
-        with429Retry(() => Syllabus.list()),
-        with429Retry(() => InstitutionProgram.list())
-      ]);
-      
-      const validPrograms = [];
-      const seenIds = new Set();
-
-      (allSy || []).forEach(p => {
-         // Exclude current program
-         if (p.id === programId) return;
-
-         const directDevices = p.assigned_device_ids || [];
-         const linkedIps = (allIp || []).filter(ip => ip.program_id === p.id);
-         const linkedDevices = linkedIps.flatMap(ip => ip.assigned_device_ids || []);
-         
-         if (directDevices.length > 0 || linkedDevices.length > 0) {
-            if (!seenIds.has(p.id)) {
-               const uniqueDevices = new Set([...directDevices, ...linkedDevices]);
-               validPrograms.push({
-                   ...p,
-                   totalDevices: uniqueDevices.size,
-                   allDeviceIds: Array.from(uniqueDevices)
-               });
-               seenIds.add(p.id);
-            }
-         }
-      });
-      
-      setImportablePrograms(validPrograms);
-      setShowImportPrograms(true);
-    } catch (e) {
-      console.error("Error loading programs for import", e);
-      alert("שגיאה בטעינת תוכניות");
-    }
-  };
-
-  const handleImportProgramSelection = (prog) => {
-     const idsToAdd = prog.allDeviceIds || [];
-     setTempSelectedDeviceIds(prev => [...new Set([...prev, ...idsToAdd])]);
-     setShowImportPrograms(false);
   };
 
   const confirmAppSelection = async (newAppIds) => {
@@ -1207,10 +1159,6 @@ export default function ProgramView() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="secondary" onClick={handleOpenImportPrograms} className="gap-2">
-               <Plus className="w-4 h-4" />
-               הוסף מתוכנית
-            </Button>
             <Button variant="outline" onClick={() => setShowAddDevices(false)}>ביטול</Button>
             <Button 
               onClick={confirmDeviceSelection}
@@ -1256,45 +1204,6 @@ export default function ProgramView() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Import from Program Dialog */}
-      <Dialog open={showImportPrograms} onOpenChange={setShowImportPrograms}>
-        <DialogContent className="max-w-2xl" dir="rtl">
-          <DialogHeader>
-            <DialogTitle>ייבוא משקפות מתוכנית קיימת</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-2 max-h-[60vh] overflow-y-auto p-1">
-             {importablePrograms.length === 0 ? (
-                <div className="text-center py-8 text-slate-500">לא נמצאו תוכניות עם משקפות משויכות</div>
-             ) : (
-                <div className="grid grid-cols-1 gap-2">
-                   {importablePrograms.map(prog => (
-                      <button
-                        key={prog.id}
-                        onClick={() => handleImportProgramSelection(prog)}
-                        className="flex justify-between items-center p-3 rounded-lg border hover:bg-slate-50 hover:border-cyan-400 transition-all text-right w-full"
-                      >
-                         <div>
-                            <div className="font-semibold text-slate-800">{prog.title || prog.course_topic || prog.subject || "תוכנית ללא שם"}</div>
-                            <div className="text-xs text-slate-500">
-                               {prog.program_number ? `#${prog.program_number} | ` : ""}
-                               {prog.teacher_name ? `מורה: ${prog.teacher_name}` : ""}
-                            </div>
-                         </div>
-                         <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
-                            {prog.totalDevices} משקפות
-                         </Badge>
-                      </button>
-                   ))}
-                </div>
-             )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowImportPrograms(false)}>ביטול</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
     </div>
   );
 }
