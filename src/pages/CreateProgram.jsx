@@ -9,13 +9,15 @@ import { InstitutionProgram } from "@/entities/InstitutionProgram";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useToast } from "@/components/ui/use-toast";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, CheckSquare, Square, Save, ArrowRight, LayoutGrid, List } from "lucide-react";
+import { Calendar as CalendarIcon, CheckSquare, Square, Save, ArrowRight, LayoutGrid, List, ClipboardPaste } from "lucide-react";
 import { with429Retry } from "@/components/utils/retry";
 import { createPageUrl } from "@/utils";
 import { Link, useNavigate } from "react-router-dom";
@@ -24,8 +26,13 @@ import BackHomeButtons from "@/components/common/BackHomeButtons";
 
 export default function CreateProgram() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  // Bulk Import State
+  const [showPasteModal, setShowPasteModal] = useState(false);
+  const [pasteInput, setPasteInput] = useState("");
 
   // Data Sources
   const [syllabi, setSyllabi] = useState([]);
@@ -172,6 +179,65 @@ export default function CreateProgram() {
       setSelectedDeviceIds(new Set()); // Deselect all
     } else {
       setSelectedDeviceIds(new Set(availableDevices.map(d => d.id))); // Select all
+    }
+  };
+
+  const handleBulkPaste = () => {
+    if (!pasteInput.trim()) return;
+
+    // 1. Parse input (extract numbers)
+    // Matches sequences of digits, ignores everything else
+    const matches = pasteInput.match(/\d+/g);
+    
+    if (!matches || matches.length === 0) {
+      toast({
+        title: "לא נמצאו מספרים",
+        description: "אנא וודא שהטקסט שהדבקת מכיל מספרי משקפות.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const inputNumbers = matches.map(Number);
+    
+    // 2. Match against AVAILABLE devices (filtered by syllabus)
+    const idsToSelect = [];
+    const notFoundNumbers = [];
+    
+    inputNumbers.forEach(num => {
+      // Find in availableDevices (which are already filtered by app requirements & not disabled)
+      const device = availableDevices.find(d => Number(d.binocular_number) === num);
+      if (device) {
+        idsToSelect.push(device.id);
+      } else {
+        notFoundNumbers.push(num);
+      }
+    });
+
+    // 3. Update Selection
+    if (idsToSelect.length > 0) {
+      const next = new Set(selectedDeviceIds);
+      idsToSelect.forEach(id => next.add(id));
+      setSelectedDeviceIds(next);
+    }
+
+    // 4. Feedback
+    setShowPasteModal(false);
+    setPasteInput("");
+
+    if (notFoundNumbers.length > 0) {
+      toast({
+        title: `סומנו ${idsToSelect.length} משקפות`,
+        description: `שים לב: המשקפות הבאות לא נמצאו או שאינן מתאימות לתוכנית: ${notFoundNumbers.join(", ")}`,
+        variant: "warning", // or default with styling
+        duration: 6000,
+      });
+    } else {
+      toast({
+        title: "הייבוא הושלם בהצלחה",
+        description: `סומנו ${idsToSelect.length} משקפות מתוך הרשימה.`,
+        className: "bg-green-50 border-green-200 text-green-800"
+      });
     }
   };
 
@@ -424,6 +490,16 @@ export default function CreateProgram() {
                         )}
                      </div>
                      <div className="flex gap-2">
+                        <Button
+                           variant="outline"
+                           size="sm"
+                           onClick={() => setShowPasteModal(true)}
+                           disabled={!selectedSyllabusId}
+                           className="text-purple-700 border-purple-200 hover:bg-purple-50 gap-2"
+                        >
+                           <ClipboardPaste className="w-4 h-4" />
+                           ייבוא רשימה
+                        </Button>
                         <Button 
                            variant="outline" 
                            size="sm" 
@@ -493,6 +569,36 @@ export default function CreateProgram() {
       <div className="fixed bottom-6 left-6 z-50">
          <BackHomeButtons showHomeButton={true} />
       </div>
+
+      {/* Bulk Paste Modal */}
+      <Dialog open={showPasteModal} onOpenChange={setShowPasteModal}>
+        <DialogContent className="sm:max-w-[500px]" dir="rtl">
+          <DialogHeader>
+            <DialogTitle>ייבוא משקפות מרשימה</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <p className="text-sm text-slate-600">
+                הדבק כאן את רשימת מספרי המשקפות (ניתן להעתיק עמודה מאקסל).
+                <br />
+                המערכת תסמן אוטומטית רק את המשקפות שמתאימות לתוכנית הנבחרת.
+              </p>
+              <Textarea 
+                value={pasteInput}
+                onChange={(e) => setPasteInput(e.target.value)}
+                placeholder={"100\n101\n102\n..."}
+                className="min-h-[200px] font-mono text-lg"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowPasteModal(false)}>ביטול</Button>
+            <Button onClick={handleBulkPaste} className="bg-purple-600 hover:bg-purple-700">
+              בצע ייבוא וסימון
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
     </div>
   );
