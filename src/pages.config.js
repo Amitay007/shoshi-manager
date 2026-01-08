@@ -25,7 +25,7 @@ import HoursReport from './pages/HoursReport';
 import Humanmanagement from './pages/Humanmanagement';
 import MasterSchedule from './pages/MasterSchedule';
 import MySchedule from './pages/MySchedule';
-import ProgramView from './pages/ProgramView';
+import Programs from './pages/Programs';
 import ResearchPage from './pages/ResearchPage';
 import SchoolDetails from './pages/SchoolDetails';
 import Schools from './pages/Schools';
@@ -38,7 +38,7 @@ import UpdateAppStatus from './pages/UpdateAppStatus';
 import UpdateAppsFromPDF from './pages/UpdateAppsFromPDF';
 import UploadLogo from './pages/UploadLogo';
 import Version2 from './pages/Version2';
-import Programs from './pages/Programs';
+import ProgramView from './pages/ProgramView';
 import __Layout from './Layout.jsx';
 
 
@@ -70,7 +70,7 @@ export const PAGES = {
     "Humanmanagement": Humanmanagement,
     "MasterSchedule": MasterSchedule,
     "MySchedule": MySchedule,
-    "ProgramView": ProgramView,
+    "Programs": Programs,
     "ResearchPage": ResearchPage,
     "SchoolDetails": SchoolDetails,
     "Schools": Schools,
@@ -83,7 +83,7 @@ export const PAGES = {
     "UpdateAppsFromPDF": UpdateAppsFromPDF,
     "UploadLogo": UploadLogo,
     "Version2": Version2,
-    "Programs": Programs,
+    "ProgramView": ProgramView,
 }
 
 export const pagesConfig = {

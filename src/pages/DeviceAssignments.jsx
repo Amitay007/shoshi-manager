@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { VRDevice } from "@/entities/VRDevice";
 import { Silshuch } from "@/entities/Silshuch";
+import { Syllabus } from "@/entities/Syllabus";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,6 +41,9 @@ export default function DeviceAssignments() {
   const [isHeadsetModalOpen, setIsHeadsetModalOpen] = useState(false);
   const [currentSessionIndex, setCurrentSessionIndex] = useState(null);
   const [tempSelection, setTempSelection] = useState(new Set());
+
+  const [showProgramsModal, setShowProgramsModal] = useState(false);
+  const [programsWithDevices, setProgramsWithDevices] = useState([]);
   
   // Summary state
   const [summaryText, setSummaryText] = useState("");
@@ -66,9 +70,10 @@ export default function DeviceAssignments() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [devices, silshuchim] = await Promise.all([
+      const [devices, silshuchim, programs] = await Promise.all([
         with429Retry(() => VRDevice.list()),
-        with429Retry(() => Silshuch.list())
+        with429Retry(() => Silshuch.list()),
+        with429Retry(() => Syllabus.list())
       ]);
       
       const sortedDevices = (devices || [])
@@ -76,6 +81,10 @@ export default function DeviceAssignments() {
         .sort((a, b) => a.binocular_number - b.binocular_number);
       setAllHeadsets(sortedDevices);
       setAllSilshuchim(silshuchim || []);
+      
+      // Filter programs with assigned devices
+      const progs = (programs || []).filter(p => p.assigned_device_ids && p.assigned_device_ids.length > 0);
+      setProgramsWithDevices(progs);
     } catch (error) {
       console.error("Error loading data:", error);
       toast({
@@ -576,9 +585,14 @@ export default function DeviceAssignments() {
                 <CardHeader>
                   <CardTitle>משקפות משוייכות</CardTitle>
                   {!isReadOnly && (
-                    <Button onClick={() => openHeadsetModal(null)} className="bg-gradient-to-r from-purple-600 to-purple-700 gap-2 mt-4 w-fit">
-                      <Plus className="w-4 h-4" /> הוסף משקפות
-                    </Button>
+                    <div className="flex gap-2 mt-4">
+                      <Button onClick={() => openHeadsetModal(null)} className="bg-gradient-to-r from-purple-600 to-purple-700 gap-2 w-fit">
+                        <Plus className="w-4 h-4" /> הוסף משקפות
+                      </Button>
+                      <Button onClick={() => setShowProgramsModal(true)} variant="outline" className="border-purple-200 hover:bg-purple-50 text-purple-700 gap-2 w-fit">
+                        <Plus className="w-4 h-4" /> הוסף מתוכנית
+                      </Button>
+                    </div>
                   )}
                 </CardHeader>
                 <CardContent>
@@ -645,9 +659,14 @@ export default function DeviceAssignments() {
                             <Calendar className="w-5 h-5 text-cyan-600" /> מפגש {idx + 1}
                           </CardTitle>
                           {!isReadOnly && (
-                            <Button onClick={() => openHeadsetModal(idx)} size="sm" className="bg-gradient-to-r from-cyan-600 to-cyan-700 gap-2">
-                              <Plus className="w-4 h-4" /> הוסף משקפות
-                            </Button>
+                            <div className="flex gap-2">
+                              <Button onClick={() => openHeadsetModal(idx)} size="sm" className="bg-gradient-to-r from-cyan-600 to-cyan-700 gap-2">
+                                <Plus className="w-4 h-4" /> הוסף משקפות
+                              </Button>
+                              <Button onClick={() => { setCurrentSessionIndex(idx); setShowProgramsModal(true); }} size="sm" variant="outline" className="border-cyan-200 hover:bg-cyan-50 text-cyan-700 gap-2">
+                                <Plus className="w-4 h-4" /> הוסף מתוכנית
+                              </Button>
+                            </div>
                           )}
                         </div>
                       </div>
