@@ -115,9 +115,7 @@ export default function CreateProgram() {
     if (!syllabus) return;
 
     // 1. Auto-fill Title (if empty or default)
-    // We update it when Institution changes too, but let's set a base here
-    const schoolName = institutions.find(i => i.id === selectedInstitutionId)?.name || "מוסד כללי";
-    setProgramTitle(`${syllabus.title || syllabus.course_topic} - ${schoolName}`);
+    setProgramTitle(syllabus.title || syllabus.course_topic || "");
 
     // 2. Identify Apps in Syllabus
     const appIds = new Set();
@@ -159,13 +157,7 @@ export default function CreateProgram() {
 
   // Update Title when Institution Changes
   useEffect(() => {
-    if (selectedSyllabusId && selectedInstitutionId) {
-       const syllabus = syllabi.find(s => s.id === selectedSyllabusId);
-       const school = institutions.find(i => i.id === selectedInstitutionId);
-       if (syllabus && school) {
-          setProgramTitle(`${syllabus.title || syllabus.course_topic} - ${school.name}`);
-       }
-    }
+    // Logic removed to prevent auto-renaming of existing syllabus
   }, [selectedInstitutionId]);
 
   const toggleDevice = (deviceId) => {
@@ -253,25 +245,22 @@ export default function CreateProgram() {
       const syllabusSource = syllabi.find(s => s.id === selectedSyllabusId);
       const teacher = teachers.find(t => t.id === selectedTeacherId);
 
-      // 1. Create new Syllabus (Program instance)
-      const { id, created_date, updated_date, created_by, created_by_id, is_sample, ...syllabusData } = syllabusSource;
-      
-      const newSyllabusData = {
-        ...syllabusData,
+      // 1. Update existing Syllabus instead of creating a duplicate
+      const updateData = {
         title: programTitle,
-        teacher_name: teacher ? teacher.name : syllabusData.teacher_name,
+        teacher_name: teacher ? teacher.name : syllabusSource.teacher_name,
         assigned_device_ids: Array.from(selectedDeviceIds),
         program_status: "פעילה",
-        program_number: Math.floor(1000 + Math.random() * 9000).toString(), // Temporary random number
-        status: "final" // Assuming live program
+        status: "final"
       };
 
-      const newSyllabus = await with429Retry(() => Syllabus.create(newSyllabusData));
+      await with429Retry(() => Syllabus.update(selectedSyllabusId, updateData));
 
       // 2. Link to Institution (if selected)
-      if (selectedInstitutionId && newSyllabus?.id) {
+      if (selectedInstitutionId) {
+        // Create new link (Note: logic in ProgramView handles cleaning up duplicates if needed)
         await with429Retry(() => InstitutionProgram.create({
-          program_id: newSyllabus.id,
+          program_id: selectedSyllabusId,
           institution_id: selectedInstitutionId,
           start_date: startDate ? startDate.toISOString() : new Date().toISOString(),
           status: "פעילה",
@@ -280,7 +269,7 @@ export default function CreateProgram() {
       }
 
       // 3. Navigate
-      navigate(createPageUrl(`ProgramView?id=${newSyllabus.id}`));
+      navigate(createPageUrl(`ProgramView?id=${selectedSyllabusId}`));
 
     } catch (err) {
       console.error("Error saving program:", err);
