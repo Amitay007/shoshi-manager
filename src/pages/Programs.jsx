@@ -230,30 +230,14 @@ export default function Programs() {
               <p className="text-slate-500 text-sm">ניהול תוכניות לימוד וסילבוסים</p>
             </div>
           </div>
-          <div className="flex gap-2">
-            <Link to={createPageUrl("BinocularCalculator")}>
-              <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg gap-2">
-                <Calculator className="w-4 h-4" />
-                מחשבון משקפות
-              </Button>
-            </Link>
-            <Link to={createPageUrl("SyllabusWizard")}>
-              <Button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg gap-2">
-                <Plus className="w-4 h-4" />
-                תוכנית חדשה
-              </Button>
-            </Link>
-            <BackHomeButtons />
-          </div>
         </div>
 
-        {/* Status Toggle */}
-        <div className="flex justify-center mb-6">
+        {/* Status Toggle & Actions */}
+        <div className="flex justify-between items-center mb-6">
            <div className="bg-white p-1 rounded-lg border shadow-sm inline-flex gap-1" dir="rtl">
               {[
                 { id: "active", label: "פעיל" },
                 { id: "inactive", label: "לא פעיל" },
-                { id: "shelf", label: "מדף" },
                 { id: "all", label: "כולם" }
               ].map(opt => (
                 <button
@@ -262,13 +246,20 @@ export default function Programs() {
                   className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
                     statusFilter === opt.id
                       ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-sm"
-                      : "text-slate-600 hover:bg-slate-50"
+                      : "text-red-600 hover:bg-red-50"
                   }`}
                 >
                   {opt.label}
                 </button>
               ))}
            </div>
+
+           <Link to={createPageUrl("SyllabusWizard")}>
+              <Button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg gap-2">
+                <Plus className="w-4 h-4" />
+                תוכנית חדשה
+              </Button>
+            </Link>
         </div>
 
         {/* Filters */}
@@ -327,15 +318,40 @@ export default function Programs() {
                       </span>
                     )}
                   </div>
-                  {program.activity_type && (
-                    <Badge className="bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 border-0 w-fit text-xs px-2 py-0">
-                      {program.activity_type}
-                    </Badge>
-                  )}
-                  <Badge className={`border w-fit text-[10px] px-2 py-0 mt-1 ${statusColors[currentStatus] || statusColors["פעילה"]}`}>
-                    {currentStatus}
-                  </Badge>
-                </CardHeader>
+                  <div className="flex items-center gap-2 mt-1">
+                    {schoolsForProgram.length > 0 ? (
+                      <>
+                        {schoolsForProgram[0].logo_url ? (
+                          <img 
+                            src={schoolsForProgram[0].logo_url} 
+                            alt={schoolsForProgram[0].name} 
+                            className="w-5 h-5 object-contain rounded-full bg-slate-50 border border-slate-200"
+                          />
+                        ) : (
+                          <School className="w-4 h-4 text-indigo-600" />
+                        )}
+                        <span className="text-xs font-medium text-slate-700 truncate">
+                          {schoolsForProgram.map(s => s.name).join(", ")}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <School className="w-4 h-4 text-slate-400" />
+                        <span className="text-xs text-slate-400 italic">לא משוייך</span>
+                      </>
+                    )}
+                  </div>
+                  <div className="flex gap-2 mt-2">
+                      {program.activity_type && (
+                        <Badge className="bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 border-0 w-fit text-xs px-2 py-0">
+                          {program.activity_type}
+                        </Badge>
+                      )}
+                      <Badge className={`border w-fit text-[10px] px-2 py-0 ${statusColors[currentStatus] || statusColors["פעילה"]}`}>
+                        {currentStatus}
+                      </Badge>
+                  </div>
+                  </CardHeader>
 
                 <CardContent className="space-y-2 text-xs flex-1 px-4 pb-3">
                   {/* Teacher */}
@@ -378,34 +394,7 @@ export default function Programs() {
                     </div>
                   )}
 
-                  {/* Schools / Logo */}
-                  <div className="flex items-center gap-2 pt-2 border-t border-slate-100 mt-auto">
-                    {schoolsForProgram.length > 0 ? (
-                      <>
-                        {schoolsForProgram[0].logo_url ? (
-                          <img 
-                            src={schoolsForProgram[0].logo_url} 
-                            alt={schoolsForProgram[0].name} 
-                            className="w-6 h-6 object-contain rounded-full bg-slate-50 border border-slate-200"
-                          />
-                        ) : (
-                          <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center border border-indigo-200">
-                            <School className="w-3.5 h-3.5 text-indigo-600" />
-                          </div>
-                        )}
-                        <span className="text-xs font-medium text-slate-700 truncate">
-                          {schoolsForProgram.map(s => s.name).join(", ")}
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200">
-                          <School className="w-3.5 h-3.5 text-slate-400" />
-                        </div>
-                        <span className="text-xs text-slate-400 italic">לא משוייך</span>
-                      </>
-                    )}
-                  </div>
+
 
                   {/* Target Audience */}
                   {(program.target_audience || []).length > 0 && (
