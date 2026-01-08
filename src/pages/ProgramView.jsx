@@ -65,13 +65,16 @@ export default function ProgramView() {
       const loadedInstPrograms = await with429Retry(() => InstitutionProgram.filter({ program_id: programId }));
       setInstPrograms(loadedInstPrograms || []);
       // Initialize selected school from loaded instPrograms
+      let currentAssignedIds = [];
       if (loadedInstPrograms && loadedInstPrograms.length > 0) {
         setSelectedSchoolId(loadedInstPrograms[0].institution_id);
-        setAssignedDeviceIds(loadedInstPrograms[0].assigned_device_ids || []);
+        currentAssignedIds = loadedInstPrograms[0].assigned_device_ids || [];
+        setAssignedDeviceIds(currentAssignedIds);
       } else {
         setSelectedSchoolId("none");
         // Fallback to Syllabus assigned devices if no institution link
-        setAssignedDeviceIds(currentProg.assigned_device_ids || []);
+        currentAssignedIds = currentProg.assigned_device_ids || [];
+        setAssignedDeviceIds(currentAssignedIds);
       }
 
       const allSchools = await with429Retry(() => EducationInstitution.list());
@@ -124,17 +127,11 @@ export default function ProgramView() {
       });
       setAppToDeviceMap(tempAppToDeviceMap);
       
-      const deviceIdsWithApps = new Set();
-      (allDeviceApps || []).forEach(da => {
-        if (appIds.has(da.app_id)) {
-          deviceIdsWithApps.add(da.device_id);
-        }
-      });
-      
-      const relevantDevices = (allDevicesData || []).filter(d => deviceIdsWithApps.has(d.id));
+      // Calculate devices based on ASSIGNED devices, not just apps
+      const relevantDevices = (allDevicesData || []).filter(d => currentAssignedIds.includes(d.id));
       const numbers = relevantDevices.map(d => Number(d.binocular_number)).filter(n => Number.isFinite(n)).sort((a,b) => a-b);
       setSelectedDeviceNumbers(numbers);
-      setSelectedDeviceIds(Array.from(deviceIdsWithApps));
+      setSelectedDeviceIds(currentAssignedIds);
 
       const mapping = {};
       relevantDevices.forEach(d => {
