@@ -28,7 +28,9 @@ Deno.serve(async (req) => {
                 let randomNum;
                 let retries = 0;
                 do {
-                    randomNum = Math.floor(1000 + Math.random() * 9000).toString();
+                    const digits = Math.floor(1000 + Math.random() * 9000);
+                    const letter = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+                    randomNum = `${digits}${letter}`;
                     retries++;
                 } while (usedNumbers.has(randomNum) && retries < 100);
                 
