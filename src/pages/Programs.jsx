@@ -233,7 +233,7 @@ export default function Programs() {
         </div>
 
         {/* Status Toggle & Actions */}
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-center items-center mb-6 gap-4">
            <div className="bg-white p-1 rounded-lg border shadow-sm inline-flex gap-1" dir="rtl">
               {[
             { id: "active", label: "פעיל" },
@@ -255,7 +255,7 @@ export default function Programs() {
            </div>
 
            <Link to={createPageUrl("SyllabusWizard")}>
-              <Button className="bg-gradient-to-r text-primary-foreground mx-64 px-3 py-2 text-sm font-medium rounded-md inline-flex items-center justify-center whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-primary/90 h-9 from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg gap-2">
+              <Button className="bg-gradient-to-r text-primary-foreground px-3 py-2 text-sm font-medium rounded-md inline-flex items-center justify-center whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-primary/90 h-9 from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg gap-2">
                 <Plus className="w-4 h-4" />
                 תוכנית חדשה
               </Button>
@@ -318,39 +318,39 @@ export default function Programs() {
                       </span>
                     }
                   </div>
-                  <div className="flex items-center gap-2 mt-1">
+                  <div className="flex items-center gap-2 mt-2 flex-wrap">
+                      <Badge className={`border w-fit text-[10px] px-2 py-0 ${statusColors[currentStatus] || statusColors["פעילה"]}`}>
+                        {currentStatus}
+                      </Badge>
+
                     {schoolsForProgram.length > 0 ?
-                    <>
+                    <div className="flex items-center gap-1.5">
                         {schoolsForProgram[0].logo_url ?
                       <img
                         src={schoolsForProgram[0].logo_url}
                         alt={schoolsForProgram[0].name}
                         className="w-5 h-5 object-contain rounded-full bg-slate-50 border border-slate-200" /> :
-
-
                       <School className="w-4 h-4 text-indigo-600" />
                       }
                         <span className="text-xs font-medium text-slate-700 truncate">
                           {schoolsForProgram.map((s) => s.name).join(", ")}
                         </span>
-                      </> :
+                      </div> :
 
-                    <>
+                    <div className="flex items-center gap-1.5">
                         <School className="w-4 h-4 text-slate-400" />
                         <span className="text-xs text-slate-400 italic">לא משוייך</span>
-                      </>
+                      </div>
                     }
                   </div>
-                  <div className="flex gap-2 mt-2">
-                      {program.activity_type &&
+                  
+                  {program.activity_type &&
+                  <div className="mt-2">
                     <Badge className="bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 border-0 w-fit text-xs px-2 py-0">
                           {program.activity_type}
                         </Badge>
-                    }
-                      <Badge className={`border w-fit text-[10px] px-2 py-0 ${statusColors[currentStatus] || statusColors["פעילה"]}`}>
-                        {currentStatus}
-                      </Badge>
                   </div>
+                    }
                   </CardHeader>
 
                 <CardContent className="space-y-2 text-xs flex-1 px-4 pb-3">
