@@ -119,26 +119,53 @@ export default function Programs() {
 
   const handleDelete = async (program, e) => {
     e.stopPropagation();
-    if (!confirm(`האם למחוק את התוכנית "${program.title || program.course_topic || program.subject}"? פעולה זו אינה הפיכה.`)) return;
+    
+    // Check if there are active programs (InstitutionPrograms) linked to this syllabus
+    const associatedIPs = instPrograms.filter((ip) => ip.program_id === program.id);
+    const hasActivePrograms = associatedIPs.length > 0;
+    
+    let deleteSyllabus = false;
+    let deleteActivePrograms = false;
+
+    if (hasActivePrograms) {
+      // If there are active programs, ask the user what to delete
+      if (confirm(`לסילבוס זה יש ${associatedIPs.length} תוכניות פעילות במוסדות.\n\nהאם למחוק רק את השיוך למוסדות (הסילבוס יישאר)?\n\nאישור = מחיקת שיוך למוסדות בלבד\nביטול = ביטול פעולה`)) {
+        deleteActivePrograms = true;
+      } else {
+        return; // User cancelled
+      }
+    } else {
+      // No active programs, confirm deletion of syllabus
+      if (confirm(`האם למחוק את הסילבוס "${program.title || program.course_topic || program.subject}"?`)) {
+        deleteSyllabus = true;
+      } else {
+        return;
+      }
+    }
 
     try {
-      // 1. Delete associated InstitutionPrograms
-      const associatedIPs = instPrograms.filter((ip) => ip.program_id === program.id);
-      await Promise.all(associatedIPs.map((ip) =>
-      with429Retry(() => InstitutionProgram.delete(ip.id))
-      ));
-
-      // 2. Delete the Syllabus
-      await with429Retry(() => Syllabus.delete(program.id));
-
-      // 3. Update state
-      setPrograms((prev) => prev.filter((p) => p.id !== program.id));
-      setInstPrograms((prev) => prev.filter((ip) => ip.program_id !== program.id));
-
-      toast({ title: "התוכנית נמחקה בהצלחה" });
+      if (deleteActivePrograms) {
+        // Delete only associated InstitutionPrograms
+        await Promise.all(associatedIPs.map((ip) =>
+          with429Retry(() => InstitutionProgram.delete(ip.id))
+        ));
+        
+        // Update state: Remove IPs but keep Program (Syllabus)
+        setInstPrograms((prev) => prev.filter((ip) => ip.program_id !== program.id));
+        toast({ title: "השיוך למוסד נמחק בהצלחה (הסילבוס נשמר)" });
+      } 
+      
+      if (deleteSyllabus) {
+        // Delete the Syllabus
+        await with429Retry(() => Syllabus.delete(program.id));
+        
+        // Update state: Remove Program (Syllabus)
+        setPrograms((prev) => prev.filter((p) => p.id !== program.id));
+        toast({ title: "הסילבוס נמחק בהצלחה" });
+      }
     } catch (error) {
-      console.error("Error deleting program:", error);
-      toast({ title: "שגיאה במחיקת התוכנית", variant: "destructive" });
+      console.error("Error deleting:", error);
+      toast({ title: "שגיאה במחיקה", variant: "destructive" });
     }
   };
 

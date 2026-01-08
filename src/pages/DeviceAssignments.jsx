@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
-import { Plus, Copy, Save, Repeat, Calendar, FileText, Search, CheckCircle, Stamp, MessageSquare, Trash2, X, Edit, ArrowRight, ArrowLeft } from "lucide-react";
+import { Plus, Copy, Save, Repeat, Calendar, FileText, Search, CheckCircle, Stamp, MessageSquare, Trash2, X, Edit, ArrowRight, ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -44,6 +44,7 @@ export default function DeviceAssignments() {
 
   const [showProgramsModal, setShowProgramsModal] = useState(false);
   const [programsWithDevices, setProgramsWithDevices] = useState([]);
+  const [expandedProgramId, setExpandedProgramId] = useState(null); // For expanding program sessions
   
   // Summary state
   const [summaryText, setSummaryText] = useState("");
@@ -807,44 +808,143 @@ export default function DeviceAssignments() {
                     programsWithDevices.map(program => {
                       const deviceCount = (program.assigned_device_ids || []).length;
                       const title = program.title || program.course_topic || program.subject || "ללא שם";
+                      const isExpanded = expandedProgramId === program.id;
+                      const hasSessions = program.sessions && program.sessions.length > 0;
                       
                       return (
-                        <div 
-                          key={program.id} 
-                          onClick={() => {
-                            const deviceIds = program.assigned_device_ids || [];
-                            if (currentSessionIndex === null) {
-                              // Static mode
-                              const newSet = new Set(selectedStaticHeadsets);
-                              deviceIds.forEach(id => newSet.add(id));
-                              setSelectedStaticHeadsets(newSet);
-                            } else {
-                              // Dynamic mode
-                              const newDynamic = [...selectedDynamicHeadsets];
-                              const newSet = new Set(newDynamic[currentSessionIndex]);
-                              deviceIds.forEach(id => newSet.add(id));
-                              newDynamic[currentSessionIndex] = newSet;
-                              setSelectedDynamicHeadsets(newDynamic);
-                            }
-                            setShowProgramsModal(false);
-                            toast({
-                              title: "המשקפות נוספו",
-                              description: `נוספו ${deviceCount} משקפות מהתוכנית "${title}"`
-                            });
-                          }}
-                          className="border rounded-lg p-4 hover:bg-slate-50 cursor-pointer transition-colors flex justify-between items-center group"
-                        >
-                          <div>
-                            <h4 className="font-semibold text-lg text-slate-800 group-hover:text-purple-700 transition-colors">{title}</h4>
-                            <div className="flex items-center gap-2 text-sm text-slate-500 mt-1">
-                              <VRIcon className="w-4 h-4" />
-                              <span>{deviceCount} משקפות משויכות</span>
-                              {program.program_number && <Badge variant="outline" className="text-xs">#{program.program_number}</Badge>}
+                        <div key={program.id} className="border rounded-lg transition-colors bg-white overflow-hidden">
+                          <div 
+                            className="p-4 flex justify-between items-center cursor-pointer hover:bg-slate-50"
+                            onClick={() => {
+                              if (hasSessions) {
+                                setExpandedProgramId(isExpanded ? null : program.id);
+                              } else {
+                                // Direct selection if no sessions
+                                const deviceIds = program.assigned_device_ids || [];
+                                if (currentSessionIndex === null) {
+                                  // Static mode
+                                  const newSet = new Set(selectedStaticHeadsets);
+                                  deviceIds.forEach(id => newSet.add(id));
+                                  setSelectedStaticHeadsets(newSet);
+                                } else {
+                                  // Dynamic mode
+                                  const newDynamic = [...selectedDynamicHeadsets];
+                                  const newSet = new Set(newDynamic[currentSessionIndex]);
+                                  deviceIds.forEach(id => newSet.add(id));
+                                  newDynamic[currentSessionIndex] = newSet;
+                                  setSelectedDynamicHeadsets(newDynamic);
+                                }
+                                setShowProgramsModal(false);
+                                toast({
+                                  title: "המשקפות נוספו",
+                                  description: `נוספו ${deviceCount} משקפות מהתוכנית "${title}"`
+                                });
+                              }
+                            }}
+                          >
+                            <div>
+                              <h4 className="font-semibold text-lg text-slate-800">{title}</h4>
+                              <div className="flex items-center gap-2 text-sm text-slate-500 mt-1">
+                                <VRIcon className="w-4 h-4" />
+                                <span>{deviceCount} משקפות משויכות</span>
+                                {program.program_number && <Badge variant="outline" className="text-xs">#{program.program_number}</Badge>}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {hasSessions ? (
+                                <Button size="sm" variant="ghost" className="text-slate-500">
+                                  {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                                </Button>
+                              ) : (
+                                <Button size="sm" variant="ghost" className="text-purple-600">
+                                  <Plus className="w-5 h-5" />
+                                </Button>
+                              )}
                             </div>
                           </div>
-                          <Button size="sm" variant="ghost" className="text-purple-600">
-                            <Plus className="w-5 h-5" />
-                          </Button>
+                          
+                          {/* Sessions List */}
+                          <AnimatePresence>
+                            {isExpanded && hasSessions && (
+                              <motion.div 
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                className="bg-slate-50 border-t"
+                              >
+                                <div className="p-2 space-y-2">
+                                  {/* Option to add all devices regardless of session */}
+                                  <div 
+                                    onClick={() => {
+                                      const deviceIds = program.assigned_device_ids || [];
+                                      if (currentSessionIndex === null) {
+                                        const newSet = new Set(selectedStaticHeadsets);
+                                        deviceIds.forEach(id => newSet.add(id));
+                                        setSelectedStaticHeadsets(newSet);
+                                      } else {
+                                        const newDynamic = [...selectedDynamicHeadsets];
+                                        const newSet = new Set(newDynamic[currentSessionIndex]);
+                                        deviceIds.forEach(id => newSet.add(id));
+                                        newDynamic[currentSessionIndex] = newSet;
+                                        setSelectedDynamicHeadsets(newDynamic);
+                                      }
+                                      setShowProgramsModal(false);
+                                      toast({ title: "נוספו כל משקפות התוכנית" });
+                                    }}
+                                    className="p-3 bg-white border rounded hover:bg-purple-50 hover:border-purple-200 cursor-pointer flex justify-between items-center"
+                                  >
+                                    <span className="font-medium text-slate-700">כל המשקפות בתוכנית ({deviceCount})</span>
+                                    <Plus className="w-4 h-4 text-purple-600" />
+                                  </div>
+                                  
+                                  {/* Individual Sessions */}
+                                  {program.sessions.map((session, idx) => {
+                                    // Calculate matching devices
+                                    const sessionAppIds = [...(session.app_ids || []), ...(session.experience_ids || [])];
+                                    // Find devices in program that have ANY of these apps
+                                    // Note: We need device installedApps. Using allHeadsets
+                                    const matchingDeviceIds = (program.assigned_device_ids || []).filter(devId => {
+                                      const device = allHeadsets.find(d => d.id === devId);
+                                      if (!device || !device.installedApps) return false;
+                                      return sessionAppIds.some(appId => device.installedApps.includes(appId));
+                                    });
+                                    
+                                    return (
+                                      <div 
+                                        key={idx}
+                                        onClick={() => {
+                                          if (matchingDeviceIds.length === 0) {
+                                            toast({ title: "אין משקפות מתאימות למפגש זה", variant: "secondary" });
+                                            return;
+                                          }
+                                          if (currentSessionIndex === null) {
+                                            const newSet = new Set(selectedStaticHeadsets);
+                                            matchingDeviceIds.forEach(id => newSet.add(id));
+                                            setSelectedStaticHeadsets(newSet);
+                                          } else {
+                                            const newDynamic = [...selectedDynamicHeadsets];
+                                            const newSet = new Set(newDynamic[currentSessionIndex]);
+                                            matchingDeviceIds.forEach(id => newSet.add(id));
+                                            newDynamic[currentSessionIndex] = newSet;
+                                            setSelectedDynamicHeadsets(newDynamic);
+                                          }
+                                          setShowProgramsModal(false);
+                                          toast({ title: `נוספו ${matchingDeviceIds.length} משקפות למפגש ${session.number}` });
+                                        }}
+                                        className="p-3 bg-white border rounded hover:bg-cyan-50 hover:border-cyan-200 cursor-pointer flex justify-between items-center ml-4"
+                                      >
+                                        <div className="flex flex-col">
+                                          <span className="font-medium text-slate-700">מפגש {session.number}: {session.topic || "ללא נושא"}</span>
+                                          <span className="text-xs text-slate-500">{matchingDeviceIds.length} משקפות מתאימות (מתוך {deviceCount})</span>
+                                        </div>
+                                        <Plus className="w-4 h-4 text-cyan-600" />
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
                         </div>
                       );
                     })
