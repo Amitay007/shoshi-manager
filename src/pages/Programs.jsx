@@ -232,8 +232,18 @@ export default function Programs() {
           </div>
         </div>
 
-        {/* Status Toggle & Actions */}
-        <div className="flex justify-between items-center mb-6">
+        {/* Actions */}
+        <div className="flex justify-end mb-4">
+            <Link to={createPageUrl("SyllabusWizard")}>
+              <Button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg gap-2">
+                <Plus className="w-4 h-4" />
+                תוכנית חדשה
+              </Button>
+            </Link>
+        </div>
+
+        {/* Status Toggle */}
+        <div className="flex justify-center mb-6">
            <div className="bg-white p-1 rounded-lg border shadow-sm inline-flex gap-1" dir="rtl">
               {[
                 { id: "active", label: "פעיל" },
@@ -253,13 +263,6 @@ export default function Programs() {
                 </button>
               ))}
            </div>
-
-           <Link to={createPageUrl("SyllabusWizard")}>
-              <Button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg gap-2">
-                <Plus className="w-4 h-4" />
-                תוכנית חדשה
-              </Button>
-            </Link>
         </div>
 
         {/* Filters */}
