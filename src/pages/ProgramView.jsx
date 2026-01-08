@@ -306,17 +306,18 @@ export default function ProgramView() {
       }
     }
     
-    // Update the InstitutionProgram or Syllabus immediately with the new devices
+    // Update the InstitutionProgram AND Syllabus immediately with the new devices
     if (instPrograms.length > 0) {
        await with429Retry(() => InstitutionProgram.update(instPrograms[0].id, {
           assigned_device_ids: newAssignedIds
        }));
-    } else {
-       await with429Retry(() => Syllabus.update(programId, {
-          assigned_device_ids: newAssignedIds
-       }));
-       setProgram(prev => ({ ...prev, assigned_device_ids: newAssignedIds }));
     }
+    
+    // Always update the Syllabus entity's assigned_device_ids for consistency
+    await with429Retry(() => Syllabus.update(programId, {
+       assigned_device_ids: newAssignedIds
+    }));
+    setProgram(prev => ({ ...prev, assigned_device_ids: newAssignedIds }));
 
     setShowAddDevices(false);
     setTempSelectedDeviceIds([]); 
@@ -356,12 +357,13 @@ export default function ProgramView() {
        await with429Retry(() => InstitutionProgram.update(instPrograms[0].id, {
           assigned_device_ids: newAssigned
        }));
-    } else {
-       await with429Retry(() => Syllabus.update(programId, {
-          assigned_device_ids: newAssigned
-       }));
-       setProgram(prev => ({ ...prev, assigned_device_ids: newAssigned }));
     }
+    
+    // Always update the Syllabus entity's assigned_device_ids for consistency
+    await with429Retry(() => Syllabus.update(programId, {
+       assigned_device_ids: newAssigned
+    }));
+    setProgram(prev => ({ ...prev, assigned_device_ids: newAssigned }));
 
     // 2. Clean up DeviceApps (apps installed on these devices for this program)
     for (const deviceNumber of selectedDevicesForRemoval) {
