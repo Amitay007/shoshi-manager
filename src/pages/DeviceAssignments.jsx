@@ -785,6 +785,72 @@ export default function DeviceAssignments() {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
+
+            {/* Programs Selection Modal */}
+            <Dialog open={showProgramsModal} onOpenChange={setShowProgramsModal}>
+              <DialogContent className="max-w-3xl max-h-[80vh] overflow-hidden" dir="rtl">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <FileText className="w-6 h-6 text-purple-600" /> בחר תוכנית להוספת משקפות
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="overflow-y-auto max-h-[50vh] p-4 space-y-3">
+                  {programsWithDevices.length > 0 ? (
+                    programsWithDevices.map(program => {
+                      const deviceCount = (program.assigned_device_ids || []).length;
+                      const title = program.title || program.course_topic || program.subject || "ללא שם";
+                      
+                      return (
+                        <div 
+                          key={program.id} 
+                          onClick={() => {
+                            const deviceIds = program.assigned_device_ids || [];
+                            if (currentSessionIndex === null) {
+                              // Static mode
+                              const newSet = new Set(selectedStaticHeadsets);
+                              deviceIds.forEach(id => newSet.add(id));
+                              setSelectedStaticHeadsets(newSet);
+                            } else {
+                              // Dynamic mode
+                              const newDynamic = [...selectedDynamicHeadsets];
+                              const newSet = new Set(newDynamic[currentSessionIndex]);
+                              deviceIds.forEach(id => newSet.add(id));
+                              newDynamic[currentSessionIndex] = newSet;
+                              setSelectedDynamicHeadsets(newDynamic);
+                            }
+                            setShowProgramsModal(false);
+                            toast({
+                              title: "המשקפות נוספו",
+                              description: `נוספו ${deviceCount} משקפות מהתוכנית "${title}"`
+                            });
+                          }}
+                          className="border rounded-lg p-4 hover:bg-slate-50 cursor-pointer transition-colors flex justify-between items-center group"
+                        >
+                          <div>
+                            <h4 className="font-semibold text-lg text-slate-800 group-hover:text-purple-700 transition-colors">{title}</h4>
+                            <div className="flex items-center gap-2 text-sm text-slate-500 mt-1">
+                              <VRIcon className="w-4 h-4" />
+                              <span>{deviceCount} משקפות משויכות</span>
+                              {program.program_number && <Badge variant="outline" className="text-xs">#{program.program_number}</Badge>}
+                            </div>
+                          </div>
+                          <Button size="sm" variant="ghost" className="text-purple-600">
+                            <Plus className="w-5 h-5" />
+                          </Button>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="text-center py-12 text-slate-500">
+                      <p>לא נמצאו תוכניות עם משקפות משויכות</p>
+                    </div>
+                  )}
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setShowProgramsModal(false)}>ביטול</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </>
         )}
       </div>
