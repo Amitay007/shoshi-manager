@@ -233,7 +233,7 @@ export default function Programs() {
         </div>
 
         {/* Status Toggle & Actions */}
-        <div className="flex justify-center items-center mb-6 gap-4">
+        <div className="flex justify-start items-center mb-2 gap-4">
            <div className="bg-white p-1 rounded-lg border shadow-sm inline-flex gap-1" dir="rtl">
               {[
             { id: "active", label: "פעיל" },
