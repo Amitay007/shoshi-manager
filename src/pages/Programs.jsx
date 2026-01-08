@@ -37,11 +37,11 @@ export default function Programs() {
     try {
       // Load data in parallel for better performance
       const [allPrograms, allInstPrograms, allSchools] = await Promise.all([
-        with429Retry(() => Syllabus.list()),
-        with429Retry(() => InstitutionProgram.list()),
-        with429Retry(() => EducationInstitution.list())
-      ]);
-      
+      with429Retry(() => Syllabus.list()),
+      with429Retry(() => InstitutionProgram.list()),
+      with429Retry(() => EducationInstitution.list())]
+      );
+
       setPrograms(allPrograms || []);
       setInstPrograms(allInstPrograms || []);
       setSchools(allSchools || []);
@@ -54,30 +54,30 @@ export default function Programs() {
 
   const handleStatusChange = async (program, newStatus, e) => {
     if (e) e.stopPropagation();
-    
-    const associatedIPs = instPrograms.filter(ip => ip.program_id === program.id);
-    
+
+    const associatedIPs = instPrograms.filter((ip) => ip.program_id === program.id);
+
     try {
       if (associatedIPs.length > 0) {
         // Update associated InstitutionPrograms
-        await Promise.all(associatedIPs.map(ip => 
-          with429Retry(() => InstitutionProgram.update(ip.id, { status: newStatus }))
+        await Promise.all(associatedIPs.map((ip) =>
+        with429Retry(() => InstitutionProgram.update(ip.id, { status: newStatus }))
         ));
-        
+
         // Update local state for instPrograms
-        setInstPrograms(prev => prev.map(ip => 
-          ip.program_id === program.id ? { ...ip, status: newStatus } : ip
+        setInstPrograms((prev) => prev.map((ip) =>
+        ip.program_id === program.id ? { ...ip, status: newStatus } : ip
         ));
       } else {
         // Update Syllabus directly
         await with429Retry(() => Syllabus.update(program.id, { program_status: newStatus }));
-        
+
         // Update local state for programs
-        setPrograms(prev => prev.map(p => 
-          p.id === program.id ? { ...p, program_status: newStatus } : p
+        setPrograms((prev) => prev.map((p) =>
+        p.id === program.id ? { ...p, program_status: newStatus } : p
         ));
       }
-      
+
       toast({ title: "הסטטוס עודכן בהצלחה" });
     } catch (err) {
       console.error("Failed to update status", err);
@@ -87,13 +87,13 @@ export default function Programs() {
 
   const handleDuplicate = async (program, e) => {
     e.stopPropagation();
-    
+
     if (!confirm(`האם לשכפל את "${program.title || program.course_topic || program.subject}"?`)) return;
-    
+
     try {
       // Create a copy without system fields
       const { id, created_date, updated_date, created_by_id, created_by, is_sample, ...programData } = program;
-      
+
       // Generate a random 4-digit number for the duplicate
       const randomNum = Math.floor(1000 + Math.random() * 9000).toString();
 
@@ -103,9 +103,9 @@ export default function Programs() {
         status: "draft",
         program_number: randomNum
       };
-      
+
       const newProgram = await with429Retry(() => Syllabus.create(duplicateData));
-      
+
       if (newProgram && newProgram.id) {
         // Reload the list to show the new program
         await loadData();
@@ -115,62 +115,62 @@ export default function Programs() {
       console.error("Error duplicating program:", error);
       alert("שגיאה בשכפול התוכנית");
     }
-    };
+  };
 
-    const handleDelete = async (program, e) => {
+  const handleDelete = async (program, e) => {
     e.stopPropagation();
     if (!confirm(`האם למחוק את התוכנית "${program.title || program.course_topic || program.subject}"? פעולה זו אינה הפיכה.`)) return;
 
     try {
       // 1. Delete associated InstitutionPrograms
-      const associatedIPs = instPrograms.filter(ip => ip.program_id === program.id);
-      await Promise.all(associatedIPs.map(ip => 
-        with429Retry(() => InstitutionProgram.delete(ip.id))
+      const associatedIPs = instPrograms.filter((ip) => ip.program_id === program.id);
+      await Promise.all(associatedIPs.map((ip) =>
+      with429Retry(() => InstitutionProgram.delete(ip.id))
       ));
 
       // 2. Delete the Syllabus
       await with429Retry(() => Syllabus.delete(program.id));
 
       // 3. Update state
-      setPrograms(prev => prev.filter(p => p.id !== program.id));
-      setInstPrograms(prev => prev.filter(ip => ip.program_id !== program.id));
+      setPrograms((prev) => prev.filter((p) => p.id !== program.id));
+      setInstPrograms((prev) => prev.filter((ip) => ip.program_id !== program.id));
 
       toast({ title: "התוכנית נמחקה בהצלחה" });
     } catch (error) {
       console.error("Error deleting program:", error);
       toast({ title: "שגיאה במחיקת התוכנית", variant: "destructive" });
     }
-    };
+  };
 
   const filteredPrograms = useMemo(() => {
     let result = [...(programs || [])]; // Fix: ensure programs is array
     const term = (filters.search || "").toLowerCase().trim();
-    
-    // Status Filter Logic (Combined InstitutionProgram and Syllabus status)
-    result = result.filter(p => {
-       if (statusFilter === 'all') return true;
 
-       // 1. Check associated InstitutionPrograms
-       const associatedInstProgs = instPrograms.filter(ip => ip.program_id === p.id);
-       
-       if (associatedInstProgs.length > 0) {
-          const statuses = associatedInstProgs.map(ip => ip.status || "פעילה");
-          if (statusFilter === 'active') return statuses.includes("פעילה");
-          if (statusFilter === 'inactive') return statuses.includes("לא פעילה");
-          if (statusFilter === 'shelf') return statuses.includes("מדף");
-       } else {
-          // 2. Fallback to Syllabus status
-          const status = p.program_status || "פעילה";
-          if (statusFilter === 'active') return status === "פעילה";
-          if (statusFilter === 'inactive') return status === "לא פעילה";
-          if (statusFilter === 'shelf') return status === "מדף";
-       }
-       
-       return false;
+    // Status Filter Logic (Combined InstitutionProgram and Syllabus status)
+    result = result.filter((p) => {
+      if (statusFilter === 'all') return true;
+
+      // 1. Check associated InstitutionPrograms
+      const associatedInstProgs = instPrograms.filter((ip) => ip.program_id === p.id);
+
+      if (associatedInstProgs.length > 0) {
+        const statuses = associatedInstProgs.map((ip) => ip.status || "פעילה");
+        if (statusFilter === 'active') return statuses.includes("פעילה");
+        if (statusFilter === 'inactive') return statuses.includes("לא פעילה");
+        if (statusFilter === 'shelf') return statuses.includes("מדף");
+      } else {
+        // 2. Fallback to Syllabus status
+        const status = p.program_status || "פעילה";
+        if (statusFilter === 'active') return status === "פעילה";
+        if (statusFilter === 'inactive') return status === "לא פעילה";
+        if (statusFilter === 'shelf') return status === "מדף";
+      }
+
+      return false;
     });
 
     if (term) {
-      result = result.filter(p => {
+      result = result.filter((p) => {
         const title = p.title || p.course_topic || p.subject || "";
         const notes = p.notes || "";
         return title.toLowerCase().includes(term) || notes.toLowerCase().includes(term);
@@ -178,31 +178,31 @@ export default function Programs() {
     }
 
     if ((filters.activity_types || []).length > 0) {
-      result = result.filter(p => (filters.activity_types || []).includes(p.activity_type));
+      result = result.filter((p) => (filters.activity_types || []).includes(p.activity_type));
     }
 
     if ((filters.content_areas || []).length > 0) {
-      result = result.filter(p => {
-        const programContentAreas = typeof p.content_areas === 'string'
-          ? p.content_areas.split(',').map(s => s.trim()).filter(Boolean)
-          : (Array.isArray(p.content_areas) ? p.content_areas : []);
-        return programContentAreas.some(ca => (filters.content_areas || []).includes(ca));
+      result = result.filter((p) => {
+        const programContentAreas = typeof p.content_areas === 'string' ?
+        p.content_areas.split(',').map((s) => s.trim()).filter(Boolean) :
+        Array.isArray(p.content_areas) ? p.content_areas : [];
+        return programContentAreas.some((ca) => (filters.content_areas || []).includes(ca));
       });
     }
 
     if ((filters.target_audiences || []).length > 0) {
-      result = result.filter(p => 
-        (p.target_audience || []).some(ta => (filters.target_audiences || []).includes(ta))
+      result = result.filter((p) =>
+      (p.target_audience || []).some((ta) => (filters.target_audiences || []).includes(ta))
       );
     }
 
     if ((filters.schools || []).length > 0) {
       const programIdsInSchools = new Set(
-        (instPrograms || [])
-          .filter(ip => (filters.schools || []).includes(ip.institution_id))
-          .map(ip => ip.program_id)
+        (instPrograms || []).
+        filter((ip) => (filters.schools || []).includes(ip.institution_id)).
+        map((ip) => ip.program_id)
       );
-      result = result.filter(p => programIdsInSchools.has(p.id));
+      result = result.filter((p) => programIdsInSchools.has(p.id));
     }
 
     return result;
@@ -212,8 +212,8 @@ export default function Programs() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50 p-6" dir="rtl">
         <div className="text-center py-12 text-lg">טוען תוכניות...</div>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -236,26 +236,26 @@ export default function Programs() {
         <div className="flex justify-between items-center mb-6">
            <div className="bg-white p-1 rounded-lg border shadow-sm inline-flex gap-1" dir="rtl">
               {[
-                { id: "active", label: "פעיל" },
-                { id: "inactive", label: "לא פעיל" },
-                { id: "all", label: "כולם" }
-              ].map(opt => (
-                <button
-                  key={opt.id}
-                  onClick={() => setStatusFilter(opt.id)}
-                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
-                    statusFilter === opt.id
-                      ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-sm"
-                      : "text-red-600 hover:bg-red-50"
-                  }`}
-                >
+            { id: "active", label: "פעיל" },
+            { id: "inactive", label: "לא פעיל" },
+            { id: "all", label: "כולם" }].
+            map((opt) =>
+            <button
+              key={opt.id}
+              onClick={() => setStatusFilter(opt.id)}
+              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+              statusFilter === opt.id ?
+              "bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-sm" :
+              "text-red-600 hover:bg-red-50"}`
+              }>
+
                   {opt.label}
                 </button>
-              ))}
+            )}
            </div>
 
            <Link to={createPageUrl("SyllabusWizard")}>
-              <Button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg gap-2">
+              <Button className="bg-gradient-to-r text-primary-foreground mx-64 px-3 py-2 text-sm font-medium rounded-md inline-flex items-center justify-center whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-primary/90 h-9 from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg gap-2">
                 <Plus className="w-4 h-4" />
                 תוכנית חדשה
               </Button>
@@ -269,8 +269,8 @@ export default function Programs() {
               allPrograms={programs}
               schools={schools}
               instPrograms={instPrograms}
-              onChange={setFilters}
-            />
+              onChange={setFilters} />
+
           </CardContent>
         </Card>
 
@@ -278,19 +278,19 @@ export default function Programs() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filteredPrograms.map((program) => {
             const title = program.title || program.course_topic || program.subject || "תוכנית ללא שם";
-            const schoolsForProgram = instPrograms
-              .filter(ip => ip.program_id === program.id)
-              .map(ip => schools.find(s => s.id === ip.institution_id))
-              .filter(Boolean);
+            const schoolsForProgram = instPrograms.
+            filter((ip) => ip.program_id === program.id).
+            map((ip) => schools.find((s) => s.id === ip.institution_id)).
+            filter(Boolean);
 
             // FIX: Handle content_areas as string
-            const contentAreasArray = typeof program.content_areas === 'string' 
-              ? program.content_areas.split(',').map(s => s.trim()).filter(Boolean)
-              : (Array.isArray(program.content_areas) ? program.content_areas : []);
+            const contentAreasArray = typeof program.content_areas === 'string' ?
+            program.content_areas.split(',').map((s) => s.trim()).filter(Boolean) :
+            Array.isArray(program.content_areas) ? program.content_areas : [];
 
-            const currentStatus = instPrograms.find(ip => ip.program_id === program.id)?.status || 
-                                  program.program_status || 
-                                  "פעילה";
+            const currentStatus = instPrograms.find((ip) => ip.program_id === program.id)?.status ||
+            program.program_status ||
+            "פעילה";
 
             const statusColors = {
               "פעילה": "bg-emerald-100 text-emerald-800 border-emerald-200",
@@ -299,11 +299,11 @@ export default function Programs() {
             };
 
             return (
-              <Card 
-                key={program.id} 
+              <Card
+                key={program.id}
                 className="bg-white hover:shadow-xl transition-all duration-300 border-0 overflow-hidden group cursor-pointer flex flex-col"
-                onClick={() => window.location.href = createPageUrl(`ProgramView?id=${program.id}`)}
-              >
+                onClick={() => window.location.href = createPageUrl(`ProgramView?id=${program.id}`)}>
+
                 {/* Colored Header */}
                 <div className="h-1.5 bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600"></div>
                 
@@ -312,41 +312,41 @@ export default function Programs() {
                     <CardTitle className="text-base leading-tight line-clamp-2 group-hover:text-cyan-700 transition-colors">
                       {title}
                     </CardTitle>
-                    {program.program_number && (
-                      <span className="text-[10px] text-slate-400 font-mono bg-slate-50 px-1 rounded border border-slate-100 shrink-0">
+                    {program.program_number &&
+                    <span className="text-[10px] text-slate-400 font-mono bg-slate-50 px-1 rounded border border-slate-100 shrink-0">
                         #{program.program_number}
                       </span>
-                    )}
+                    }
                   </div>
                   <div className="flex items-center gap-2 mt-1">
-                    {schoolsForProgram.length > 0 ? (
-                      <>
-                        {schoolsForProgram[0].logo_url ? (
-                          <img 
-                            src={schoolsForProgram[0].logo_url} 
-                            alt={schoolsForProgram[0].name} 
-                            className="w-5 h-5 object-contain rounded-full bg-slate-50 border border-slate-200"
-                          />
-                        ) : (
-                          <School className="w-4 h-4 text-indigo-600" />
-                        )}
+                    {schoolsForProgram.length > 0 ?
+                    <>
+                        {schoolsForProgram[0].logo_url ?
+                      <img
+                        src={schoolsForProgram[0].logo_url}
+                        alt={schoolsForProgram[0].name}
+                        className="w-5 h-5 object-contain rounded-full bg-slate-50 border border-slate-200" /> :
+
+
+                      <School className="w-4 h-4 text-indigo-600" />
+                      }
                         <span className="text-xs font-medium text-slate-700 truncate">
-                          {schoolsForProgram.map(s => s.name).join(", ")}
+                          {schoolsForProgram.map((s) => s.name).join(", ")}
                         </span>
-                      </>
-                    ) : (
-                      <>
+                      </> :
+
+                    <>
                         <School className="w-4 h-4 text-slate-400" />
                         <span className="text-xs text-slate-400 italic">לא משוייך</span>
                       </>
-                    )}
+                    }
                   </div>
                   <div className="flex gap-2 mt-2">
-                      {program.activity_type && (
-                        <Badge className="bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 border-0 w-fit text-xs px-2 py-0">
+                      {program.activity_type &&
+                    <Badge className="bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 border-0 w-fit text-xs px-2 py-0">
                           {program.activity_type}
                         </Badge>
-                      )}
+                    }
                       <Badge className={`border w-fit text-[10px] px-2 py-0 ${statusColors[currentStatus] || statusColors["פעילה"]}`}>
                         {currentStatus}
                       </Badge>
@@ -355,72 +355,72 @@ export default function Programs() {
 
                 <CardContent className="space-y-2 text-xs flex-1 px-4 pb-3">
                   {/* Teacher */}
-                  {program.teacher_name && (
-                    <div className="flex items-center gap-1.5 text-slate-600">
+                  {program.teacher_name &&
+                  <div className="flex items-center gap-1.5 text-slate-600">
                       <Users className="w-3.5 h-3.5 text-cyan-600 shrink-0" />
                       <span className="font-medium">מורה:</span>
                       <span className="truncate">{program.teacher_name}</span>
                     </div>
-                  )}
+                  }
 
                   {/* Meetings */}
-                  {(program.meetings_count || (program.sessions || []).length > 0) && (
-                    <div className="flex items-center gap-1.5 text-slate-600">
+                  {(program.meetings_count || (program.sessions || []).length > 0) &&
+                  <div className="flex items-center gap-1.5 text-slate-600">
                       <Calendar className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                       <span className="font-medium">מפגשים:</span>
                       <span>{program.meetings_count || (program.sessions || []).length}</span>
                     </div>
-                  )}
+                  }
 
                   {/* Content Areas */}
-                  {contentAreasArray.length > 0 && (
-                    <div className="flex items-start gap-1.5 text-slate-600">
+                  {contentAreasArray.length > 0 &&
+                  <div className="flex items-start gap-1.5 text-slate-600">
                       <BookOpen className="w-3.5 h-3.5 text-amber-600 mt-0.5 shrink-0" />
                       <div className="flex-1 min-w-0">
                         <span className="font-medium">תחומי דעת:</span>
                         <div className="flex flex-wrap gap-1 mt-0.5">
-                          {contentAreasArray.slice(0, 2).map((area, idx) => (
-                            <Badge key={idx} variant="secondary" className="text-[10px] bg-slate-100 px-1.5 py-0">
+                          {contentAreasArray.slice(0, 2).map((area, idx) =>
+                        <Badge key={idx} variant="secondary" className="text-[10px] bg-slate-100 px-1.5 py-0">
                               {area}
                             </Badge>
-                          ))}
-                          {contentAreasArray.length > 2 && (
-                            <Badge variant="secondary" className="text-[10px] bg-slate-100 px-1.5 py-0">
+                        )}
+                          {contentAreasArray.length > 2 &&
+                        <Badge variant="secondary" className="text-[10px] bg-slate-100 px-1.5 py-0">
                               +{contentAreasArray.length - 2}
                             </Badge>
-                          )}
+                        }
                         </div>
                       </div>
                     </div>
-                  )}
+                  }
 
 
 
                   {/* Target Audience */}
-                  {(program.target_audience || []).length > 0 && (
-                    <div className="flex flex-wrap gap-1 pt-1.5 border-t border-slate-100">
-                      {program.target_audience.slice(0, 3).map((aud, idx) => (
-                        <Badge key={idx} className="bg-cyan-100 text-cyan-800 text-[10px] border-0 px-1.5 py-0">
+                  {(program.target_audience || []).length > 0 &&
+                  <div className="flex flex-wrap gap-1 pt-1.5 border-t border-slate-100">
+                      {program.target_audience.slice(0, 3).map((aud, idx) =>
+                    <Badge key={idx} className="bg-cyan-100 text-cyan-800 text-[10px] border-0 px-1.5 py-0">
                           {aud}
                         </Badge>
-                      ))}
-                      {(program.target_audience || []).length > 3 && (
-                        <Badge className="bg-cyan-100 text-cyan-800 text-[10px] border-0 px-1.5 py-0">
+                    )}
+                      {(program.target_audience || []).length > 3 &&
+                    <Badge className="bg-cyan-100 text-cyan-800 text-[10px] border-0 px-1.5 py-0">
                           +{(program.target_audience || []).length - 3}
                         </Badge>
-                      )}
+                    }
                     </div>
-                  )}
+                  }
                 </CardContent>
 
                 {/* Footer with Actions */}
                 <div className="px-4 pb-3 mt-auto border-t border-slate-100 pt-2">
                   <div className="flex items-center gap-2">
-                    <div className="w-24 shrink-0" onClick={e => e.stopPropagation()}>
-                       <Select 
-                         value={currentStatus} 
-                         onValueChange={(v) => handleStatusChange(program, v)}
-                       >
+                    <div className="w-24 shrink-0" onClick={(e) => e.stopPropagation()}>
+                       <Select
+                        value={currentStatus}
+                        onValueChange={(v) => handleStatusChange(program, v)}>
+
                           <SelectTrigger className="h-8 text-xs px-2">
                             <SelectValue />
                           </SelectTrigger>
@@ -432,40 +432,40 @@ export default function Programs() {
                        </Select>
                     </div>
 
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="icon"
                       className="h-8 w-8 shrink-0 border border-blue-200"
                       onClick={(e) => handleDuplicate(program, e)}
-                      title="שכפל"
-                    >
+                      title="שכפל">
+
                       <Copy className="w-3 h-3" />
                     </Button>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="icon"
                       className="h-8 w-8 shrink-0 border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 hover:text-red-700"
                       onClick={(e) => handleDelete(program, e)}
-                      title="מחק"
-                    >
+                      title="מחק">
+
                       <Trash2 className="w-3 h-3" />
                     </Button>
                     </div>
                 </div>
-              </Card>
-            );
+              </Card>);
+
           })}
         </div>
 
-        {filteredPrograms.length === 0 && (
-          <Card className="shadow-lg border-0">
+        {filteredPrograms.length === 0 &&
+        <Card className="shadow-lg border-0">
             <CardContent className="text-center py-12">
               <GraduationCap className="w-16 h-16 text-slate-300 mx-auto mb-4" />
               <p className="text-slate-500 text-lg">לא נמצאו תוכניות התואמות לחיפוש</p>
             </CardContent>
           </Card>
-        )}
+        }
       </div>
-    </div>
-  );
+    </div>);
+
 }
