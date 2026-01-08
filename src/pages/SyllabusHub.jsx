@@ -9,7 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { BookOpen, Plus, Filter, Search, Calendar, Users, GraduationCap } from "lucide-react";
+import { BookOpen, Plus, Filter, Search, Calendar, Users, GraduationCap, Trash2 } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
 import BackHomeButtons from "@/components/common/BackHomeButtons";
 import { with429Retry } from "@/components/utils/retry";
 import { format } from "date-fns";
@@ -46,6 +47,20 @@ export default function SyllabusHub() {
       console.error("Error loading data:", error);
     }
     setLoading(false);
+  };
+
+  const handleDelete = async (syllabus, e) => {
+    e.stopPropagation();
+    if (!confirm(`האם למחוק את הסילבוס "${syllabus.title || syllabus.course_topic || syllabus.subject}"? פעולה זו אינה הפיכה.`)) return;
+
+    try {
+      await with429Retry(() => Syllabus.delete(syllabus.id));
+      setSyllabi(prev => prev.filter(s => s.id !== syllabus.id));
+      toast({ title: "הסילבוס נמחק בהצלחה" });
+    } catch (error) {
+      console.error("Error deleting syllabus:", error);
+      toast({ title: "שגיאה במחיקת הסילבוס", variant: "destructive" });
+    }
   };
 
   const filteredSyllabi = useMemo(() => 
@@ -314,17 +329,26 @@ export default function SyllabusHub() {
                     )}
                   </CardContent>
 
-                  <div className="px-4 pb-3 mt-auto border-t border-slate-100 pt-2">
+                  <div className="px-4 pb-3 mt-auto border-t border-slate-100 pt-2 flex gap-2">
                     <Button 
                       variant="outline" 
                       size="sm"
-                      className="w-full border border-purple-200 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 hover:border-purple-400 transition-all text-xs h-7"
+                      className="flex-1 border border-purple-200 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 hover:border-purple-400 transition-all text-xs h-7"
                       onClick={(e) => {
                         e.stopPropagation();
                         window.location.href = createPageUrl(`SyllabusWizard?id=${syllabus.id}&viewOnly=true`);
                       }}
                     >
                       צפה בסילבוס
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-7 w-7 shrink-0 border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 hover:text-red-700"
+                      onClick={(e) => handleDelete(syllabus, e)}
+                      title="מחק"
+                    >
+                      <Trash2 className="w-3 h-3" />
                     </Button>
                   </div>
                 </Card>
