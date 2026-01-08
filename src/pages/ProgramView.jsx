@@ -342,6 +342,29 @@ export default function ProgramView() {
     const count = selectedDevicesForRemoval.size;
     if (!confirm(`האם להסיר ${count} משקפות מהתוכנית?`)) return;
 
+    // Collect IDs to remove
+    const idsToRemove = [];
+    for (const deviceNumber of selectedDevicesForRemoval) {
+       const deviceId = deviceIdByNumber[deviceNumber];
+       if (deviceId) idsToRemove.push(deviceId);
+    }
+
+    // 1. Remove from assigned list in DB
+    const newAssigned = assignedDeviceIds.filter(id => !idsToRemove.includes(id));
+    setAssignedDeviceIds(newAssigned);
+
+    if (instPrograms.length > 0) {
+       await with429Retry(() => InstitutionProgram.update(instPrograms[0].id, {
+          assigned_device_ids: newAssigned
+       }));
+    } else {
+       await with429Retry(() => Syllabus.update(programId, {
+          assigned_device_ids: newAssigned
+       }));
+       setProgram(prev => ({ ...prev, assigned_device_ids: newAssigned }));
+    }
+
+    // 2. Clean up DeviceApps (apps installed on these devices for this program)
     for (const deviceNumber of selectedDevicesForRemoval) {
       const device = allDevices.find(d => Number(d.binocular_number) === deviceNumber);
       if (!device) continue;
@@ -354,22 +377,16 @@ export default function ProgramView() {
             try {
               await with429Retry(() => DeviceApp.delete(da.id));
             } catch (deleteErr) {
-              // Improved 404 detection
               const statusCode = deleteErr?.response?.status;
               const errorMsg = deleteErr?.message || "";
               const responseMsg = deleteErr?.response?.data?.message || "";
-              
-              // Check if it's a 404 or "not found" error
               const is404 = statusCode === 404 || 
                            errorMsg.toLowerCase().includes("not found") || 
                            responseMsg.toLowerCase().includes("not found");
               
-              if (is404) {
-                // Silently skip already deleted records
-                continue;
+              if (!is404) {
+                console.error("Error deleting DeviceApp:", deleteErr);
               }
-              
-              console.error("Error deleting DeviceApp:", deleteErr);
             }
           }
         }
@@ -963,30 +980,22 @@ export default function ProgramView() {
                             </Link>
                             {editMode && (
                               <div className="absolute -top-1 -right-1 z-10">
-                                <button
-                                  onClick={async (e) => {
-                                     e.stopPropagation();
-                                     if(!confirm("להסיר משקפת זו?")) return;
-                                     // Remove from assigned list
-                                     const deviceId = deviceIdByNumber[num];
-                                     const newAssigned = assignedDeviceIds.filter(id => id !== deviceId);
-                                     setAssignedDeviceIds(newAssigned);
-                                     if (instPrograms.length > 0) {
-                                        await with429Retry(() => InstitutionProgram.update(instPrograms[0].id, {
-                                           assigned_device_ids: newAssigned
-                                        }));
-                                     } else {
-                                        await with429Retry(() => Syllabus.update(programId, {
-                                           assigned_device_ids: newAssigned
-                                        }));
-                                        setProgram(prev => ({ ...prev, assigned_device_ids: newAssigned }));
-                                     }
-                                     await loadData();
+                                <Checkbox
+                                  checked={selectedDevicesForRemoval.has(num)}
+                                  onCheckedChange={(checked) => {
+                                    setSelectedDevicesForRemoval(prev => {
+                                      const next = new Set(prev);
+                                      if (checked) {
+                                        next.add(num);
+                                      } else {
+                                        next.delete(num);
+                                      }
+                                      return next;
+                                    });
                                   }}
-                                  className="bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600"
-                                >
-                                   <X className="w-3 h-3" />
-                                </button>
+                                  className="bg-white border-2 border-emerald-600"
+                                  onClick={(e) => e.stopPropagation()}
+                                />
                               </div>
                             )}
                           </div>
