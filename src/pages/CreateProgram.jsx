@@ -137,15 +137,18 @@ export default function CreateProgram() {
     setSyllabusApps(relevantApps);
 
     // 3. Filter Devices (The Logic)
-    // Show devices that have ALL required apps installed
+    // Show devices that have AT LEAST ONE required app installed
     // AND are not disabled
     const qualifiedDevices = allDevices.filter(d => {
       if (d.is_disabled) return false; // Filter out broken headsets
       
+      // If syllabus has no required apps, show all available devices
+      if (requiredAppIds.length === 0) return true;
+
       const installed = deviceAppMap[d.id] || new Set();
-      // Check if EVERY required app is in the installed set
-      const hasAllApps = requiredAppIds.every(reqId => installed.has(reqId));
-      return hasAllApps;
+      // Check if AT LEAST ONE required app is in the installed set
+      const hasAnyApp = requiredAppIds.some(reqId => installed.has(reqId));
+      return hasAnyApp;
     });
 
     // Sort by binocular number
@@ -473,9 +476,9 @@ export default function CreateProgram() {
                   <CardHeader className="flex flex-row items-center justify-between pb-2 bg-slate-50/50">
                      <div className="flex items-center gap-3">
                         <CardTitle className="text-emerald-900">מאגר משקפות זמינות לתוכנית</CardTitle>
-                        {selectedSyllabusId && (
+                        {selectedSyllabusId && syllabusApps.length > 0 && (
                            <Badge variant="outline" className="bg-white text-slate-500 font-normal">
-                              מציג רק משקפות המכילות את כל {syllabusApps.length} האפליקציות הנדרשות
+                              מציג משקפות המכילות לפחות אחת מתוך {syllabusApps.length} האפליקציות הנדרשות
                            </Badge>
                         )}
                      </div>
@@ -539,7 +542,7 @@ export default function CreateProgram() {
                            <div className="flex flex-col items-center justify-center h-full text-slate-400">
                               <VRIcon className="w-16 h-16 mb-4 text-slate-200" />
                               <p className="text-lg font-medium text-slate-500">לא נמצאו משקפות מתאימות</p>
-                              <p className="text-sm">אף משקפת במאגר לא מכילה את כל האפליקציות הנדרשות לסילבוס זה.</p>
+                              <p className="text-sm">אף משקפת במאגר לא מכילה אף אחת מהאפליקציות הנדרשות לסילבוס זה.</p>
                            </div>
                         )
                      ) : (
