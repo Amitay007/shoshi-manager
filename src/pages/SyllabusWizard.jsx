@@ -1,10 +1,8 @@
 import React from "react";
 import { Syllabus } from "@/entities/Syllabus";
-import { EducationInstitution } from "@/entities/EducationInstitution";
 import { VRApp } from "@/entities/VRApp";
 import { CourseTopicOption } from "@/entities/CourseTopicOption";
 import { SubjectOption } from "@/entities/SubjectOption";
-import { Teacher } from "@/entities/Teacher";
 import { TargetAudienceOption } from "@/entities/TargetAudienceOption";
 import { ActivityTypeOption } from "@/entities/ActivityTypeOption";
 // Removed ContentAreaOption and EducationalPurposeOption imports
@@ -32,11 +30,9 @@ export default function SyllabusWizard() {
   const [saving, setSaving] = React.useState(false);
   const [printOpen, setPrintOpen] = React.useState(false);
 
-  const [schools, setSchools] = React.useState([]);
   const [apps, setApps] = React.useState([]);
   const [topics, setTopics] = React.useState([]);
   const [subjects, setSubjects] = React.useState([]);
-  const [teachers, setTeachers] = React.useState([]);
 
   // New state for option entities (removed contentAreaOptions and purposeOptions)
   const [targetAudienceOptions, setTargetAudienceOptions] = React.useState([]);
@@ -45,9 +41,7 @@ export default function SyllabusWizard() {
 
   const [data, setData] = React.useState({
     title: "",
-    school_id: "",
     teacher_name: "",
-    classes_text: [],
     notes: "",
     meetings_count: 0,
     course_topic: "",
@@ -76,52 +70,27 @@ export default function SyllabusWizard() {
   React.useEffect(() => {
     const load = async () => {
       try {
-        // Removed caOpts, pOpts from Promise.all and destructuring
-        const [sch, ap, tp, sb, tc, taOpts, atOpts, ttOpts] = await Promise.all([
-          with429Retry(() => EducationInstitution.list()).catch(() => []),
+        const [ap, tp, sb, taOpts, atOpts, ttOpts] = await Promise.all([
           with429Retry(() => VRApp.list()).catch(() => []),
           with429Retry(() => CourseTopicOption.list()).catch(() => []),
           with429Retry(() => SubjectOption.list()).catch(() => []),
-          with429Retry(() => Teacher.list()).catch(() => []),
           with429Retry(() => TargetAudienceOption.list()).catch(() => []),
           with429Retry(() => ActivityTypeOption.list()).catch(() => []),
           with429Retry(() => TechnologyToolOption.list()).catch(() => []),
         ]);
-        setSchools(sch || []);
         setApps(ap || []);
         setTopics(tp || []);
         setSubjects(sb || []);
-        setTeachers(tc || []);
         setTargetAudienceOptions(taOpts || []);
         setActivityTypeOptions(atOpts || []);
-        // Removed setContentAreaOptions and setPurposeOptions
         setTechnologyToolOptions(ttOpts || []);
 
         if (syllabusIdParam) {
           const existing = await with429Retry(() => Syllabus.get(syllabusIdParam));
           if (existing) {
-            let validSchoolId = existing.school_id || "";
-
-            if (validSchoolId) {
-              try {
-                await with429Retry(() => EducationInstitution.get(validSchoolId));
-              } catch (err) {
-                console.warn(`School ID ${validSchoolId} not found, clearing invalid reference`);
-                validSchoolId = "";
-                try {
-                  const { id, created_date, updated_date, created_by_id, created_by, is_sample, ...updateData } = existing;
-                  await with429Retry(() => Syllabus.update(syllabusIdParam, { ...updateData, school_id: "" }));
-                } catch (updateErr) {
-                  console.error("Failed to update syllabus with cleared school_id:", updateErr);
-                }
-              }
-            }
-
             setData({
               title: existing.title || "",
-              school_id: validSchoolId,
               teacher_name: existing.teacher_name || "",
-              classes_text: Array.isArray(existing.classes_text) ? existing.classes_text : existing.classes_text ? [existing.classes_text] : [],
               notes: existing.notes || "",
               meetings_count: existing.meetings_count || 0,
               course_topic: existing.course_topic || "",
@@ -222,7 +191,7 @@ export default function SyllabusWizard() {
   };
 
   const exportWord = () => {
-    const html = renderPrintableHTML(data, schools, apps);
+    const html = renderPrintableHTML(data, apps);
     const blob = new Blob(
       [`<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' dir="rtl"><head><meta charset="utf-8"></head><body>${html}</body></html>`],
       { type: "application/msword;charset=utf-8" }
@@ -364,7 +333,7 @@ export default function SyllabusWizard() {
     }
   };
 
-  const CLASS_OPTIONS = ["כיתה א'", "כיתה ב'", "כיתה ג'", "כיתה ד'", "כיתה ה'", "כיתה ו'", "כיתה ז'", "כיתה ח'", "כיתה ט'", "כיתה י'", "כיתה י\"א", "כיתה י\"ב", "בוגרים"];
+  // CLASS_OPTIONS removed
 
   // Button style multi-select component (used for multi-select fields like technology_tools)
   const ButtonMultiSelect = ({ options, selected, onToggle, label }) => (
@@ -420,8 +389,6 @@ export default function SyllabusWizard() {
 
   // View-only mode
   if (viewOnly) {
-    const schoolName = (schools || []).find((s) => s.id === data.school_id)?.name || "—";
-    const classesDisplay = Array.isArray(data.classes_text) ? data.classes_text.join(", ") : data.classes_text ? [data.classes_text].join(", ") : "—";
     const targetAudienceDisplay = (data.target_audience || []).join(", ") || "—";
 
     return (
@@ -438,8 +405,7 @@ export default function SyllabusWizard() {
 
             <CardContent className="space-y-3 pt-4">
 
-              <div><strong>מורה:</strong> {data.teacher_name || "—"}</div>
-              <div><strong>כיתות:</strong> {classesDisplay}</div>
+              <div><strong>מחבר הסילבוס:</strong> {data.teacher_name || "—"}</div>
               {data.notes && <div><strong>הערות:</strong> {data.notes}</div>}
               <div><strong>מספר מפגשים:</strong> {data.sessions?.length || 0}</div>
               <div><strong>נושא הקורס:</strong> {data.course_topic || "—"}</div>
@@ -716,7 +682,7 @@ export default function SyllabusWizard() {
             <DialogHeader><DialogTitle>תצוגה להדפסה</DialogTitle></DialogHeader>
             <div className="max-h-[70vh] overflow-y-auto">
               <div id="printable" className="prose prose-slate max-w-none" dir="rtl">
-                <div dangerouslySetInnerHTML={{ __html: renderPrintableHTML(data, schools, apps) }} />
+                <div dangerouslySetInnerHTML={{ __html: renderPrintableHTML(data, apps) }} />
               </div>
             </div>
             <DialogFooter className="justify-between">
@@ -753,50 +719,15 @@ export default function SyllabusWizard() {
             <Input placeholder="כותרת סילבוס (אופציונלי)" value={data.title} onChange={(e) => setField("title", e.target.value)} className="text-right shadow-sm" />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-
               <div>
-                <Select value={data.teacher_name} onValueChange={(v) => setField("teacher_name", v)}>
-                  <SelectTrigger className="text-right shadow-sm"><SelectValue placeholder="שם מורה" /></SelectTrigger>
-                  <SelectContent>
-                    {(teachers || []).map((t) => (
-                      <SelectItem key={t.id} value={t.name}>
-                        {t.name}
-                        {t.institution_id && schools.find((s) => s.id === t.institution_id) &&
-                          ` - ${schools.find((s) => s.id === t.institution_id).name}`
-                        }
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                 <Input
+                    placeholder="מחבר הסילבוס"
+                    value={data.teacher_name}
+                    onChange={(e) => setField("teacher_name", e.target.value)}
+                    className="text-right shadow-sm"
+                  />
               </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <div className="text-sm text-slate-600 mb-2">כיתות (בחירה מרובה)</div>
-                <div className="border rounded-lg p-3 bg-white max-h-48 overflow-y-auto shadow-sm">
-                  {CLASS_OPTIONS.map((cls) => {
-                    const selected = (data.classes_text || []).includes(cls);
-                    return (
-                      <label key={cls} className="flex items-center gap-2 mb-2 cursor-pointer hover:bg-slate-50 p-1 rounded">
-                        <Checkbox
-                          checked={selected}
-                          onCheckedChange={() => {
-                            const current = data.classes_text || [];
-                            if (selected) {
-                              setField("classes_text", current.filter((c) => c !== cls));
-                            } else {
-                              setField("classes_text", [...current, cls]);
-                            }
-                          }}
-                        />
-                        <span className="text-sm">{cls}</span>
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
-              <Input placeholder="הערות" value={data.notes} onChange={(e) => setField("notes", e.target.value)} className="bg-background my-8 px-3 py-2 text-base text-right rounded-md flex h-10 w-full border border-input ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm shadow-sm" />
+              <Input placeholder="הערות" value={data.notes} onChange={(e) => setField("notes", e.target.value)} className="text-right shadow-sm" />
             </div>
 
             {/* Subject and Course Topic with dynamic options */}
@@ -1114,7 +1045,7 @@ export default function SyllabusWizard() {
           <DialogHeader><DialogTitle>תצוגה להדפסה</DialogTitle></DialogHeader>
           <div className="max-h-[70vh] overflow-y-auto">
             <div id="printable" className="prose prose-slate max-w-none" dir="rtl">
-              <div dangerouslySetInnerHTML={{ __html: renderPrintableHTML(data, schools, apps) }} />
+              <div dangerouslySetInnerHTML={{ __html: renderPrintableHTML(data, apps) }} />
             </div>
           </div>
           <DialogFooter className="justify-between">
@@ -1221,9 +1152,7 @@ function MultiSelectTeachingRefs({ options = [], value = [], onChange }) {
 
 }
 
-function renderPrintableHTML(data, schools, apps) {
-  const schoolName = (schools || []).find((s) => s.id === data.school_id)?.name || "—";
-  const classesDisplay = Array.isArray(data.classes_text) ? data.classes_text.join(", ") : data.classes_text ? [data.classes_text].join(", ") : "—";
+function renderPrintableHTML(data, apps) {
   const targetAudienceDisplay = (data.target_audience || []).join(", ") || "—";
 
   const appName = (id) => (apps || []).find((a) => a.id === id)?.name || id;
@@ -1267,9 +1196,7 @@ function renderPrintableHTML(data, schools, apps) {
   return `
     <div style="font-family:Arial; direction:rtl; text-align:right;">
       <h1>${escapeHtml(data.title || "סילבוס")}</h1>
-      <div><strong>בית ספר:</strong> ${escapeHtml(schoolName)}</div>
-      <div><strong>מורה:</strong> ${escapeHtml(data.teacher_name || "—")}</div>
-      <div><strong>כיתות:</strong> ${escapeHtml(classesDisplay)}</div>
+      <div><strong>מחבר הסילבוס:</strong> ${escapeHtml(data.teacher_name || "—")}</div>
       ${data.notes ? `<div><strong>הערות:</strong> ${escapeHtml(data.notes)}</div>` : ''}
       <div><strong>מספר מפגשים:</strong> ${(data.sessions || []).length}</div>
       <div><strong>נושא הקורס:</strong> ${escapeHtml(data.course_topic || "—")}</div>
