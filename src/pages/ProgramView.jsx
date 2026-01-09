@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Pencil, FileText, Save, X, Plus, Trash2, Glasses, Calendar, School } from "lucide-react";
+import { Pencil, FileText, Save, X, Plus, Trash2, Glasses, Calendar, School, CheckSquare } from "lucide-react";
 import VRIcon from "@/components/icons/VRIcon";
 import { createPageUrl } from "@/utils";
 import { Link } from "react-router-dom";
@@ -1090,27 +1090,51 @@ export default function ProgramView() {
                                           devicesWithApp.map(num => {
                                             const device = deviceDataByNumber[num];
                                             const isDisabled = device?.is_disabled || false;
-                                            // Highlight devices that are assigned to the program
-                                            const isAssigned = selectedDeviceNumbers.includes(num);
+                                            // Use assignedDeviceIds source of truth for immediate feedback
+                                            const isAssigned = assignedDeviceIds.includes(device?.id);
+
+                                            const handleToggleAssignedDevice = async () => {
+                                                if (!device?.id) return;
+                                                const newAssignedIds = isAssigned
+                                                    ? assignedDeviceIds.filter(id => id !== device.id)
+                                                    : [...assignedDeviceIds, device.id];
+
+                                                // Update local state immediately
+                                                setAssignedDeviceIds(newAssignedIds);
+                                                setProgram(prev => ({ ...prev, assigned_device_ids: newAssignedIds }));
+
+                                                // Update selectedDeviceNumbers for other views
+                                                const newNumbers = allDevices
+                                                    .filter(d => newAssignedIds.includes(d.id))
+                                                    .map(d => Number(d.binocular_number))
+                                                    .sort((a,b) => a-b);
+                                                setSelectedDeviceNumbers(newNumbers);
+
+                                                // Update Syllabus entity
+                                                await with429Retry(() => Syllabus.update(programId, { assigned_device_ids: newAssignedIds }));
+
+                                                // Update InstitutionProgram entity if exists
+                                                if (instPrograms.length > 0) {
+                                                    await with429Retry(() => InstitutionProgram.update(instPrograms[0].id, { assigned_device_ids: newAssignedIds }));
+                                                }
+                                            };
 
                                             return (
-                                              <Link 
+                                              <Badge 
                                                 key={num}
-                                                to={createPageUrl(`DeviceInfo?id=${device?.id}`)}
+                                                onClick={!isDisabled ? handleToggleAssignedDevice : undefined}
+                                                className={`flex items-center gap-1 ${
+                                                  isDisabled 
+                                                    ? 'bg-slate-200 text-slate-600 border border-slate-400 cursor-not-allowed' 
+                                                    : isAssigned
+                                                      ? 'bg-emerald-500 text-white border border-emerald-600 shadow-sm cursor-pointer hover:bg-emerald-600 hover:scale-105'
+                                                      : 'bg-white text-slate-600 border border-slate-200 cursor-pointer hover:border-emerald-400 hover:text-emerald-600 hover:bg-emerald-50'
+                                                } transition-all duration-200 text-xs px-2 py-1 select-none`}
+                                                title={isDisabled ? `משקפת ${num} - מושבת${device?.disable_reason ? `: ${device.disable_reason}` : ''}` : isAssigned ? 'לחץ להסרה מהתוכנית' : 'לחץ להוספה לתוכנית'}
                                               >
-                                                <Badge 
-                                                  className={`${
-                                                    isDisabled 
-                                                      ? 'bg-slate-200 text-slate-600 hover:bg-slate-300 border border-slate-400' 
-                                                      : isAssigned
-                                                        ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border border-emerald-300'
-                                                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300'
-                                                  } cursor-pointer transition-colors text-xs`}
-                                                  title={isDisabled ? `משקפת ${num} - מושבת${device?.disable_reason ? `: ${device.disable_reason}` : ''}` : `משקפת ${num}${isAssigned ? ' (משויכת)' : ''}`}
-                                                >
-                                                  #{String(num).padStart(3, '0')}
-                                                </Badge>
-                                              </Link>
+                                                {isAssigned && !isDisabled && <CheckSquare className="w-3 h-3" />}
+                                                #{String(num).padStart(3, '0')}
+                                              </Badge>
                                             );
                                           })
                                         ) : (
