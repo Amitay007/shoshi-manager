@@ -70,7 +70,7 @@ export default function CreateProgram() {
           devicesData,
           deviceAppsData
         ] = await Promise.all([
-          with429Retry(() => Syllabus.filter({ active: true })), // Only active syllabi
+          with429Retry(() => Syllabus.filter({ status: "final" })), // Only approved (final) syllabi
           with429Retry(() => Teacher.filter({ active: true })),
           with429Retry(() => EducationInstitution.list()),
           with429Retry(() => VRApp.list()),
@@ -250,7 +250,7 @@ export default function CreateProgram() {
         title: programTitle,
         teacher_name: teacher ? teacher.name : syllabusSource.teacher_name,
         assigned_device_ids: Array.from(selectedDeviceIds),
-        program_status: "פעילה",
+        // program_status removed from Syllabus entity
         status: "final"
       };
 
