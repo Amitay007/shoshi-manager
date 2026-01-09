@@ -119,50 +119,34 @@ export default function Programs() {
 
   const handleDelete = async (program, e) => {
     e.stopPropagation();
-    
+
     // Check if there are active programs (InstitutionPrograms) linked to this syllabus
     const associatedIPs = instPrograms.filter((ip) => ip.program_id === program.id);
-    const hasActivePrograms = associatedIPs.length > 0;
-    
-    let deleteSyllabus = false;
-    let deleteActivePrograms = false;
 
-    if (hasActivePrograms) {
-      // If there are active programs, ask the user what to delete
-      if (confirm(`לסילבוס זה יש ${associatedIPs.length} תוכניות פעילות במוסדות.\n\nהאם למחוק רק את השיוך למוסדות (הסילבוס יישאר)?\n\nאישור = מחיקת שיוך למוסדות בלבד\nביטול = ביטול פעולה`)) {
-        deleteActivePrograms = true;
-      } else {
-        return; // User cancelled
-      }
-    } else {
-      // No active programs, confirm deletion of syllabus
-      if (confirm(`האם למחוק את הסילבוס "${program.title || program.course_topic || program.subject}"?`)) {
-        deleteSyllabus = true;
-      } else {
-        return;
-      }
+    if (associatedIPs.length === 0) {
+      alert("תוכנית זו אינה משויכת לאף מוסד (היא סילבוס בלבד).\nכדי למחוק את הסילבוס, אנא השתמש ב'מרכז הסילבוסים'.");
+      return;
+    }
+
+    const schoolNames = associatedIPs.map(ip => {
+       const s = schools.find(sch => sch.id === ip.institution_id);
+       return s ? s.name : "מוסד לא ידוע";
+    }).join(", ");
+
+    if (!confirm(`האם אתה בטוח שברצונך להסיר את התוכנית מ-${schoolNames}?\n\nתוכן הסילבוס יישמר במערכת ולא יימחק.`)) {
+      return;
     }
 
     try {
-      if (deleteActivePrograms) {
-        // Delete only associated InstitutionPrograms
-        await Promise.all(associatedIPs.map((ip) =>
-          with429Retry(() => InstitutionProgram.delete(ip.id))
-        ));
-        
-        // Update state: Remove IPs but keep Program (Syllabus)
-        setInstPrograms((prev) => prev.filter((ip) => ip.program_id !== program.id));
-        toast({ title: "השיוך למוסד נמחק בהצלחה (הסילבוס נשמר)" });
-      } 
+      // Delete ONLY associated InstitutionPrograms
+      await Promise.all(associatedIPs.map((ip) =>
+        with429Retry(() => InstitutionProgram.delete(ip.id))
+      ));
       
-      if (deleteSyllabus) {
-        // Delete the Syllabus
-        await with429Retry(() => Syllabus.delete(program.id));
-        
-        // Update state: Remove Program (Syllabus)
-        setPrograms((prev) => prev.filter((p) => p.id !== program.id));
-        toast({ title: "הסילבוס נמחק בהצלחה" });
-      }
+      // Update state: Remove IPs but keep Program (Syllabus)
+      setInstPrograms((prev) => prev.filter((ip) => ip.program_id !== program.id));
+      toast({ title: "השיוך למוסד נמחק בהצלחה (הסילבוס נשמר)" });
+
     } catch (error) {
       console.error("Error deleting:", error);
       toast({ title: "שגיאה במחיקה", variant: "destructive" });

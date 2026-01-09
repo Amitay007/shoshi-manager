@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Syllabus } from "@/entities/Syllabus";
 import { EducationInstitution } from "@/entities/EducationInstitution";
+import { InstitutionProgram } from "@/entities/InstitutionProgram";
 import { Teacher } from "@/entities/Teacher";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ export default function SyllabusHub() {
   const [syllabi, setSyllabi] = useState([]);
   const [schools, setSchools] = useState([]);
   const [teachers, setTeachers] = useState([]);
+  const [instPrograms, setInstPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
   
   const [searchTerm, setSearchTerm] = useState("");
@@ -34,15 +36,17 @@ export default function SyllabusHub() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [syllabiData, schoolsData, teachersData] = await Promise.all([
+      const [syllabiData, schoolsData, teachersData, instProgramsData] = await Promise.all([
         with429Retry(() => Syllabus.list()),
         with429Retry(() => EducationInstitution.list()),
-        with429Retry(() => Teacher.list())
+        with429Retry(() => Teacher.list()),
+        with429Retry(() => InstitutionProgram.list())
       ]);
       
       setSyllabi(syllabiData || []);
       setSchools(schoolsData || []);
       setTeachers(teachersData || []);
+      setInstPrograms(instProgramsData || []);
     } catch (error) {
       console.error("Error loading data:", error);
     }
@@ -51,6 +55,19 @@ export default function SyllabusHub() {
 
   const handleDelete = async (syllabus, e) => {
     e.stopPropagation();
+
+    // Check for active assignments
+    const activeAssignments = instPrograms.filter(ip => ip.program_id === syllabus.id);
+
+    if (activeAssignments.length > 0) {
+        const schoolNames = activeAssignments.map(ip => {
+              const s = schools.find(sch => sch.id === ip.institution_id);
+              return s ? s.name : "מוסד לא ידוע";
+        }).join(", ");
+        alert(`לא ניתן למחוק את הסילבוס כיוון שהוא משויך ל-${activeAssignments.length} בתי ספר פעילים:\n${schoolNames}\n\nיש להסיר את השיוך ב'תוכניות' לפני המחיקה.`);
+        return;
+    }
+
     if (!confirm(`האם למחוק את הסילבוס "${syllabus.title || syllabus.course_topic || syllabus.subject}"? פעולה זו אינה הפיכה.`)) return;
 
     try {
