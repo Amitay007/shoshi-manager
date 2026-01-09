@@ -166,7 +166,7 @@ export default function SyllabusWizard() {
       } else {
         await with429Retry(() => Syllabus.create(payload));
       }
-      navigate(createPageUrl("Programs"));
+      navigate(createPageUrl("SyllabusHub"));
     } finally {
       setSaving(false);
     }

@@ -61,24 +61,16 @@ export default function Programs() {
       if (associatedIPs.length > 0) {
         // Update associated InstitutionPrograms
         await Promise.all(associatedIPs.map((ip) =>
-        with429Retry(() => InstitutionProgram.update(ip.id, { status: newStatus }))
+          with429Retry(() => InstitutionProgram.update(ip.id, { status: newStatus }))
         ));
 
         // Update local state for instPrograms
         setInstPrograms((prev) => prev.map((ip) =>
-        ip.program_id === program.id ? { ...ip, status: newStatus } : ip
+          ip.program_id === program.id ? { ...ip, status: newStatus } : ip
         ));
-      } else {
-        // Update Syllabus directly
-        await with429Retry(() => Syllabus.update(program.id, { program_status: newStatus }));
 
-        // Update local state for programs
-        setPrograms((prev) => prev.map((p) =>
-        p.id === program.id ? { ...p, program_status: newStatus } : p
-        ));
+        toast({ title: "הסטטוס עודכן בהצלחה" });
       }
-
-      toast({ title: "הסטטוס עודכן בהצלחה" });
     } catch (err) {
       console.error("Failed to update status", err);
       toast({ title: "שגיאה בעדכון הסטטוס", variant: "destructive" });
@@ -157,25 +149,17 @@ export default function Programs() {
     let result = [...(programs || [])]; // Fix: ensure programs is array
     const term = (filters.search || "").toLowerCase().trim();
 
-    // Status Filter Logic (Combined InstitutionProgram and Syllabus status)
+    // Show ONLY programs that have associated InstitutionPrograms
     result = result.filter((p) => {
+      const associatedInstProgs = instPrograms.filter((ip) => ip.program_id === p.id);
+      if (associatedInstProgs.length === 0) return false;
+
       if (statusFilter === 'all') return true;
 
-      // 1. Check associated InstitutionPrograms
-      const associatedInstProgs = instPrograms.filter((ip) => ip.program_id === p.id);
-
-      if (associatedInstProgs.length > 0) {
-        const statuses = associatedInstProgs.map((ip) => ip.status || "פעילה");
-        if (statusFilter === 'active') return statuses.includes("פעילה");
-        if (statusFilter === 'inactive') return statuses.includes("לא פעילה");
-        if (statusFilter === 'shelf') return statuses.includes("מדף");
-      } else {
-        // 2. Fallback to Syllabus status
-        const status = p.program_status || "פעילה";
-        if (statusFilter === 'active') return status === "פעילה";
-        if (statusFilter === 'inactive') return status === "לא פעילה";
-        if (statusFilter === 'shelf') return status === "מדף";
-      }
+      const statuses = associatedInstProgs.map((ip) => ip.status || "פעילה");
+      if (statusFilter === 'active') return statuses.includes("פעילה");
+      if (statusFilter === 'inactive') return statuses.includes("לא פעילה");
+      if (statusFilter === 'shelf') return statuses.includes("מדף");
 
       return false;
     });
