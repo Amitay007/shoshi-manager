@@ -73,9 +73,9 @@ export default function CreateProgram() {
           with429Retry(() => Syllabus.filter({ status: "final" })), // Only approved (final) syllabi
           with429Retry(() => Teacher.filter({ active: true })),
           with429Retry(() => EducationInstitution.list()),
-          with429Retry(() => VRApp.list()),
-          with429Retry(() => VRDevice.list()),
-          with429Retry(() => DeviceApp.list()) // Need all installations for filtering
+          with429Retry(() => VRApp.list(null, 1000)),
+          with429Retry(() => VRDevice.list(null, 1000)),
+          with429Retry(() => DeviceApp.list(null, 10000)) // Need all installations for filtering
         ]);
 
         setSyllabi(syllabiData || []);
