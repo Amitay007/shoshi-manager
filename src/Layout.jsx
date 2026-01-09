@@ -69,6 +69,33 @@ function LayoutContent({ children, currentPageName }) {
             button:hover, a:hover {
               transform: translateY(-1px);
             }
+
+            /* FORCE FIX FOR TRANSPARENT POPUPS */
+            [role="dialog"], 
+            [role="alertdialog"], 
+            [role="menu"],
+            [role="listbox"],
+            .bg-popover,
+            .bg-background,
+            .bg-card {
+                background-color: #ffffff !important;
+                opacity: 1 !important;
+            }
+
+            /* Toast specific fix */
+            li[role="status"], 
+            [data-radix-toast-announcer] + li {
+                background-color: #ffffff !important;
+                color: #020617 !important; /* slate-950 */
+                border: 1px solid #e2e8f0 !important; /* slate-200 */
+                opacity: 1 !important;
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+            }
+
+            /* Ensure text contrast */
+            [role="dialog"] *, [role="alertdialog"] * {
+                color: inherit;
+            }
           `}</style>
         
         {showSidebar && <Sidebar />}
