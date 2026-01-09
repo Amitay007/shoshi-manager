@@ -918,7 +918,7 @@ export default function ProgramView() {
                 <div className="flex justify-between items-center">
                   <CardTitle className="flex items-center gap-2 text-xl">
                     <VRIcon className="w-6 h-6 text-white" />
-                    משקפות משוייכות ({selectedDeviceNumbers.length})
+                    משקפות משובצות ({selectedDeviceNumbers.length})
                   </CardTitle>
                   {editMode && (
                     <div className="flex gap-2">

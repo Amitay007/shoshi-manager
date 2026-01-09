@@ -13,7 +13,7 @@ export default function Sidebar() {
     { id: "dashboard", label: "שושי 2.1", icon: Home, page: "Dashboard" },
     { id: "syllabus", label: "סילבוסים", icon: BookOpen, page: "SyllabusHub" },
     { id: "programs", label: "תוכניות", icon: GraduationCap, page: "Programs" },
-    { id: "silshuch", label: "שיוך משקפות", icon: Stamp, page: "DeviceAssignments" },
+    { id: "silshuch", label: "שיבוץ משקפות", icon: Stamp, page: "DeviceAssignments" },
     { id: "calculator", label: "מחשבון", icon: Calculator, page: "BinocularCalculator" },
     { id: "devices", label: "מכשירי VR", icon: VRIcon, page: "GeneralInfo" },
     { id: "apps", label: "אפליקציות", icon: Code, page: "GeneralApps" },

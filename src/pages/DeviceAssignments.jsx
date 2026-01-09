@@ -378,7 +378,7 @@ export default function DeviceAssignments() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-purple-900">
-                {viewMode === "form" ? (editingSilshuch ? "עריכת שיבוץ" : "יצירת שיבוץ חדש") : "שיוך משקפות"}
+                {viewMode === "form" ? (editingSilshuch ? "עריכת שיבוץ" : "יצירת שיבוץ חדש") : "שיבוץ משקפות"}
               </h1>
               <p className="text-slate-600 text-xs">
                 {viewMode === "form" ? "אנא מלא את פרטי השיבוץ" : "ניהול הקצאת משקפות"}
@@ -413,7 +413,7 @@ export default function DeviceAssignments() {
               <Stamp className="text-white" size={28} />
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold text-purple-900">
-              {viewMode === "form" ? (editingSilshuch ? "עריכת שיבוץ" : "יצירת שיבוץ חדש") : "שיוך משקפות"}
+              {viewMode === "form" ? (editingSilshuch ? "עריכת שיבוץ" : "יצירת שיבוץ חדש") : "שיבוץ משקפות"}
             </h1>
           </div>
           <div className="mb-4 space-y-4">
@@ -592,7 +592,7 @@ export default function DeviceAssignments() {
             {mode === "static" && (
               <Card className="mb-6">
                 <CardHeader>
-                  <CardTitle>משקפות משוייכות</CardTitle>
+                  <CardTitle>משקפות משובצות</CardTitle>
                   {!isReadOnly && (
                     <div className="flex gap-2 mt-4">
                       <Button onClick={() => openHeadsetModal(null)} className="bg-gradient-to-r from-purple-600 to-purple-700 gap-2 w-fit">
@@ -846,7 +846,7 @@ export default function DeviceAssignments() {
                               <h4 className="font-semibold text-lg text-slate-800">{title}</h4>
                               <div className="flex items-center gap-2 text-sm text-slate-500 mt-1">
                                 <VRIcon className="w-4 h-4" />
-                                <span>{deviceCount} משקפות משויכות</span>
+                                <span>{deviceCount} משקפות משובצות</span>
                                 {program.program_number && <Badge variant="outline" className="text-xs">#{program.program_number}</Badge>}
                               </div>
                             </div>
@@ -950,7 +950,7 @@ export default function DeviceAssignments() {
                     })
                   ) : (
                     <div className="text-center py-12 text-slate-500">
-                      <p>לא נמצאו תוכניות עם משקפות משויכות</p>
+                      <p>לא נמצאו תוכניות עם משקפות משובצות</p>
                     </div>
                   )}
                 </div>
