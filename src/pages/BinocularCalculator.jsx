@@ -26,7 +26,7 @@ export default function BinocularCalculator() {
   const [allDevices, setAllDevices] = useState([]);
   const [allDeviceApps, setAllDeviceApps] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [comparisonMode, setComparisonMode] = useState("programs"); // 'programs' or 'syllabi'
+  const [comparisonMode, setComparisonMode] = useState("programs"); // 'programs', 'syllabi', or 'sessions'
   const [programStatusFilter, setProgramStatusFilter] = useState("active"); // active, inactive, shelf, all
 
   // Selected IDs (Syllabus IDs or InstitutionProgram IDs depending on mode)
@@ -109,13 +109,12 @@ export default function BinocularCalculator() {
   const getDeviceNumbers = (selectedId) => {
     if (!selectedId) return [];
 
+    // --- CASE 3: SYLLABUS (Kit-based) ---
     if (comparisonMode === 'syllabi') {
-      // Logic: Devices ALREADY mapped to this Syllabus (Kit-based)
-      // The Syllabus entity acts as a pre-defined "Kit" with a specific list of compatible headsets.
       const program = programs.find(p => p.id === selectedId);
       if (!program) return [];
 
-      // Use the pre-defined kit (assigned_device_ids)
+      // Logic: Fetch the specific list of devices ALREADY mapped to this Syllabus.
       if (program.assigned_device_ids && program.assigned_device_ids.length > 0) {
          const deviceNumbers = [];
          allDevices.forEach(d => {
@@ -127,13 +126,81 @@ export default function BinocularCalculator() {
          return deviceNumbers.sort((a,b) => a - b);
       }
       return [];
+    }
+    
+    // --- CASE 2: SESSION ---
+    else if (comparisonMode === 'sessions') {
+      // selectedId format: "programId_sessionIndex" (e.g., "prog123_0")
+      const [progId, sessionIdxStr] = selectedId.split('_');
+      const sessionIdx = parseInt(sessionIdxStr);
+      
+      // 1. Fetch parent Program (InstitutionProgram)
+      // Note: In session mode, we listed InstitutionPrograms with session suffix
+      // But we need the actual InstitutionProgram entity to get assigned devices
+      const iprog = instPrograms.find(ip => ip.id === progId);
+      if (!iprog) return [];
 
-    } else {
-      // Logic: Devices explicitly assigned to the program (InstitutionProgram)
+      const assignedDeviceIds = iprog.assigned_device_ids || [];
+      if (assignedDeviceIds.length === 0) return [];
+
+      // 2. Identify Session Apps
+      const syllabus = programs.find(p => p.id === iprog.program_id);
+      if (!syllabus || !syllabus.sessions || !syllabus.sessions[sessionIdx]) return [];
+      
+      const session = syllabus.sessions[sessionIdx];
+      const sessionAppIds = [...(session.app_ids || []), ...(session.experience_ids || [])];
+      
+      if (sessionAppIds.length === 0) {
+        // If no apps required, maybe all assigned devices are valid? 
+        // Or none? Let's assume all assigned devices are available if no specific apps required.
+        const deviceNumbers = [];
+        allDevices.forEach(d => {
+           if (assignedDeviceIds.includes(d.id)) {
+              const num = Number(d.binocular_number);
+              if (Number.isFinite(num)) deviceNumbers.push(num);
+           }
+         });
+         return deviceNumbers.sort((a,b) => a - b);
+      }
+
+      // 3. Filter by Session Apps
+      // For each assigned device, check if it has ALL required apps (or ANY? strictly speaking, usually ALL for the lesson)
+      // Let's assume ANY for now to be permissive, or ALL? 
+      // The diagram said "Filter by Session Apps". 
+      // Let's check which devices have the apps.
+      
+      const deviceNumbers = [];
+      
+      assignedDeviceIds.forEach(deviceId => {
+        // Check installed apps for this device
+        // We have allDeviceApps. 
+        // Let's optimize this lookup outside loops if possible, but for now:
+        const installedAppIds = allDeviceApps
+          .filter(da => da.device_id === deviceId)
+          .map(da => da.app_id);
+          
+        // Check intersection. Does the device have the apps needed for the session?
+        // If the session needs apps A and B, does the device have A and B?
+        const hasRequiredApps = sessionAppIds.every(reqAppId => installedAppIds.includes(reqAppId));
+        
+        if (hasRequiredApps) {
+          const device = allDevices.find(d => d.id === deviceId);
+          if (device) {
+            const num = Number(device.binocular_number);
+            if (Number.isFinite(num)) deviceNumbers.push(num);
+          }
+        }
+      });
+      
+      return deviceNumbers.sort((a,b) => a - b);
+    }
+
+    // --- CASE 1: PROGRAM ---
+    else {
       const iprog = instPrograms.find(ip => ip.id === selectedId);
       if (!iprog) return [];
       
-      // If assigned_device_ids exists and has items, use it
+      // Return program.assigned_device_ids
       if (iprog.assigned_device_ids && iprog.assigned_device_ids.length > 0) {
          const deviceNumbers = [];
          allDevices.forEach(d => {
@@ -192,10 +259,18 @@ export default function BinocularCalculator() {
   // Get item title based on mode
   const getSelectionTitle = (id) => {
     if (!id) return "";
+    
     if (comparisonMode === 'syllabi') {
       const p = programs.find(x => x.id === id);
       return p ? (p.title || p.course_topic || p.subject || "סילבוס ללא שם") : "";
-    } else {
+    } 
+    else if (comparisonMode === 'sessions') {
+      // Find the option in availableOptions (since we generated them with titles)
+      // Or reconstruct it
+      const option = availableOptions.find(o => o.id === id);
+      return option ? option.title : "מפגש לא נמצא";
+    }
+    else {
       const ip = instPrograms.find(x => x.id === id);
       if (!ip) return "";
       const prog = programs.find(p => p.id === ip.program_id);
@@ -268,10 +343,44 @@ export default function BinocularCalculator() {
     { id: selectedProgram3, devices: program3Devices, setter: setSelectedProgram3, color: 'from-green-500 to-green-700', title: getSelectionTitle(selectedProgram3), bgCard: 'bg-gradient-to-br from-green-50 to-green-100', borderCard: 'border-green-400' }
   ];
 
-  const modeLabel = comparisonMode === 'syllabi' ? 'סילבוס' : 'תוכנית';
+  const modeLabel = comparisonMode === 'syllabi' ? 'סילבוס' : (comparisonMode === 'sessions' ? 'מפגש' : 'תוכנית');
+  
   const availableOptions = useMemo(() => {
     if (comparisonMode === 'syllabi') return programs;
     
+    if (comparisonMode === 'sessions') {
+      // Return a flat list of sessions from active programs
+      // Structure: { id: "programId_sessionIndex", title: "Program Name - Session X" }
+      const options = [];
+      instPrograms.forEach(ip => {
+        // Filter by status if needed, but maybe show all for sessions? Let's respect the filter
+        if (programStatusFilter !== 'all') {
+          const st = ip.status || 'פעילה';
+          if (programStatusFilter === 'active' && st !== 'פעילה') return;
+          if (programStatusFilter === 'inactive' && st !== 'לא פעילה') return;
+          if (programStatusFilter === 'shelf' && st !== 'מדף') return;
+        }
+
+        const syllabus = programs.find(p => p.id === ip.program_id);
+        if (syllabus && syllabus.sessions) {
+           const school = schools.find(s => s.id === ip.institution_id);
+           const progName = syllabus.title || syllabus.course_topic || "תוכנית";
+           const schoolName = school ? school.name : "";
+           
+           syllabus.sessions.forEach((session, idx) => {
+             options.push({
+               id: `${ip.id}_${idx}`, // Composite ID
+               title: `${progName} (${schoolName}) - מפגש ${session.number || idx + 1}: ${session.topic || "ללא נושא"}`,
+               // Helper props for selection display logic if needed (handled in getSelectionTitle usually)
+               original_program_id: ip.program_id,
+               original_institution_id: ip.institution_id
+             });
+           });
+        }
+      });
+      return options;
+    }
+
     // For programs (InstitutionProgram), apply status filter
     return instPrograms.filter(ip => {
       if (programStatusFilter === 'all') return true;
@@ -281,7 +390,7 @@ export default function BinocularCalculator() {
       if (programStatusFilter === 'shelf') return st === 'מדף';
       return true;
     });
-  }, [comparisonMode, programs, instPrograms, programStatusFilter]);
+  }, [comparisonMode, programs, instPrograms, programStatusFilter, schools]);
 
   if (loading) {
     return (
@@ -360,18 +469,25 @@ export default function BinocularCalculator() {
                </div>
             )}
 
-            <div className="flex items-center gap-2 bg-slate-100 p-1.5 rounded-lg border border-slate-200">
-              <span className={`text-sm font-bold px-2 cursor-pointer ${comparisonMode === 'programs' ? 'text-slate-400' : 'text-purple-600'}`} onClick={() => setComparisonMode('syllabi')}>סילבוסים</span>
-              <Switch 
-                checked={comparisonMode === 'programs'} 
-                onCheckedChange={(c) => {
-                  setComparisonMode(c ? 'programs' : 'syllabi');
-                  setSelectedProgram1("");
-                  setSelectedProgram2("");
-                  setSelectedProgram3("");
-                }} 
-              />
-              <span className={`text-sm font-bold px-2 cursor-pointer ${comparisonMode === 'programs' ? 'text-cyan-600' : 'text-slate-400'}`} onClick={() => setComparisonMode('programs')}>תוכניות</span>
+            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200">
+              <button
+                onClick={() => { setComparisonMode('syllabi'); setSelectedProgram1(""); setSelectedProgram2(""); setSelectedProgram3(""); }}
+                className={`px-3 py-1.5 text-sm font-bold rounded-md transition-all ${comparisonMode === 'syllabi' ? 'bg-white text-purple-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+              >
+                סילבוסים (Kits)
+              </button>
+              <button
+                onClick={() => { setComparisonMode('programs'); setSelectedProgram1(""); setSelectedProgram2(""); setSelectedProgram3(""); }}
+                className={`px-3 py-1.5 text-sm font-bold rounded-md transition-all ${comparisonMode === 'programs' ? 'bg-white text-cyan-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+              >
+                תוכניות
+              </button>
+              <button
+                onClick={() => { setComparisonMode('sessions'); setSelectedProgram1(""); setSelectedProgram2(""); setSelectedProgram3(""); }}
+                className={`px-3 py-1.5 text-sm font-bold rounded-md transition-all ${comparisonMode === 'sessions' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+              >
+                מפגשים
+              </button>
             </div>
             <BackHomeButtons backTo="Programs" />
           </div>
@@ -445,6 +561,8 @@ export default function BinocularCalculator() {
                         let title = "";
                         if (comparisonMode === 'syllabi') {
                           title = opt.title || opt.course_topic || opt.subject || "סילבוס ללא שם";
+                        } else if (comparisonMode === 'sessions') {
+                          title = opt.title; // Prepared in availableOptions
                         } else {
                           // For programs, find syllabus and school
                           const prog = programs.find(p => p.id === opt.program_id);
