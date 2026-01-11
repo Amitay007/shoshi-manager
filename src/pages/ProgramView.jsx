@@ -1158,6 +1158,12 @@ export default function ProgramView() {
                             ) : (
                               <span className="text-slate-400 text-sm">—</span>
                             )}
+                            <div className="mt-4 pt-3 border-t border-slate-200 flex justify-end items-center gap-2">
+                                <span className="text-xs font-bold text-slate-500">סה"כ משקפות במפגש:</span>
+                                <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 font-bold">
+                                    {totalAssignedForSession}
+                                </Badge>
+                            </div>
                           </td>
                         </tr>
                       );
