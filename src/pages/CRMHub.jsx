@@ -50,20 +50,7 @@ export default function CRMHub() {
     notes: ""
   });
 
-  // Activity dialog
-  const [showActivityDialog, setShowActivityDialog] = useState(false);
-  const [activityForm, setActivityForm] = useState({
-    contact_id: "",
-    institution_id: "",
-    activity_type: "שיחה",
-    subject: "",
-    description: "",
-    activity_date: new Date().toISOString().slice(0, 16), // Format for datetime-local
-    outcome: "",
-    priority: "בינונית",
-    next_action: "",
-    next_action_date: ""
-  });
+  // Activity dialog removed
 
   useEffect(() => {
     loadData();
@@ -126,23 +113,7 @@ export default function CRMHub() {
     }
   };
 
-  const handleSaveActivity = async () => {
-    if (!activityForm.subject && !activityForm.description) {
-      alert("יש לציין נושא או תיאור לפעילות.");
-      return;
-    }
-
-    try {
-      await with429Retry(() => ActivityLog.create(activityForm));
-      await loadData();
-      setShowActivityDialog(false);
-      resetActivityForm();
-      alert("הפעילות נוספה ליומן בהצלחה");
-    } catch (error) {
-      console.error("Error saving activity:", error);
-      alert("שגיאה בשמירת הפעילות");
-    }
-  };
+  // handleSaveActivity removed
 
   const resetContactForm = () => {
     setContactForm({
@@ -161,20 +132,7 @@ export default function CRMHub() {
     setEditingContact(null);
   };
 
-  const resetActivityForm = () => {
-    setActivityForm({
-      contact_id: "",
-      institution_id: "",
-      activity_type: "שיחה",
-      subject: "",
-      description: "",
-      activity_date: new Date().toISOString().slice(0, 16),
-      outcome: "",
-      priority: "בינונית",
-      next_action: "",
-      next_action_date: ""
-    });
-  };
+  // resetActivityForm removed
 
   const openEditContact = (contact) => {
     setEditingContact(contact);
@@ -207,19 +165,7 @@ export default function CRMHub() {
     return matchesSearch && matchesSchool;
   });
 
-  const recentActivities = activities
-    .sort((a, b) => new Date(b.activity_date) - new Date(a.activity_date))
-    .slice(0, 20); // Show only the 20 most recent activities
-
-  const stats = {
-    totalSchools: schools.length,
-    totalTeachers: 0,
-    totalPrograms: 0,
-    activePrograms: 0,
-    totalDevices: 0,
-    totalContacts: contacts.length,
-    totalActivities: 0
-  };
+  // Stats and recent activities removed as they are no longer displayed
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50 p-4 md:p-6 lg:p-8" dir="rtl">
@@ -439,147 +385,7 @@ export default function CRMHub() {
         </DialogContent>
       </Dialog>
 
-      {/* Activity Dialog */}
-      <Dialog open={showActivityDialog} onOpenChange={(open) => { if (!open) resetActivityForm(); setShowActivityDialog(open); }}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto" dir="rtl">
-          <DialogHeader>
-            <DialogTitle>הוספת פעילות ליומן</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-sm font-medium mb-1 block">סוג פעילות</label>
-                <Select value={activityForm.activity_type} onValueChange={(v) => setActivityForm({...activityForm, activity_type: v})}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="שיחה">שיחה</SelectItem>
-                    <SelectItem value="פגישה">פגישה</SelectItem>
-                    <SelectItem value="אימייל">אימייל</SelectItem>
-                    <SelectItem value="הודעת SMS">הודעת SMS</SelectItem>
-                    <SelectItem value="הודעת WhatsApp">הודעת WhatsApp</SelectItem>
-                    <SelectItem value="הערה">הערה</SelectItem>
-                    <SelectItem value="משימה">משימה</SelectItem>
-                    <SelectItem value="אחר">אחר</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-1 block">תאריך ושעה</label>
-                <Input
-                  type="datetime-local"
-                  value={activityForm.activity_date}
-                  onChange={(e) => setActivityForm({...activityForm, activity_date: e.target.value})}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-sm font-medium mb-1 block">איש קשר</label>
-                <Select value={activityForm.contact_id} onValueChange={(v) => setActivityForm({...activityForm, contact_id: v})}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="בחר איש קשר" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={null}>-- ללא --</SelectItem>
-                    {contacts.map(c => (
-                      <SelectItem key={c.id} value={c.id}>{c.full_name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-1 block">מוסד חינוך</label>
-                <Select value={activityForm.institution_id} onValueChange={(v) => setActivityForm({...activityForm, institution_id: v})}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="בחר מוסד" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={null}>-- ללא --</SelectItem>
-                    {schools.map(s => (
-                      <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-1 block">נושא</label>
-              <Input
-                value={activityForm.subject}
-                onChange={(e) => setActivityForm({...activityForm, subject: e.target.value})}
-                placeholder="נושא הפעילות"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-1 block">תיאור</label>
-              <Textarea
-                value={activityForm.description}
-                onChange={(e) => setActivityForm({...activityForm, description: e.target.value})}
-                placeholder="תיאור מפורט..."
-                rows={4}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-sm font-medium mb-1 block">תוצאה</label>
-                <Select value={activityForm.outcome} onValueChange={(v) => setActivityForm({...activityForm, outcome: v})}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="בחר תוצאה" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={null}>-- ללא --</SelectItem>
-                    <SelectItem value="מוצלח">מוצלח</SelectItem>
-                    <SelectItem value="לא מוצלח">לא מוצלח</SelectItem>
-                    <SelectItem value="דורש מעקב">דורש מעקב</SelectItem>
-                    <SelectItem value="ממתין לתשובה">ממתין לתשובה</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-1 block">עדיפות</label>
-                <Select value={activityForm.priority} onValueChange={(v) => setActivityForm({...activityForm, priority: v})}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="גבוהה">גבוהה</SelectItem>
-                    <SelectItem value="בינונית">בינונית</SelectItem>
-                    <SelectItem value="נמוכה">נמוכה</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-1 block">פעולה הבאה</label>
-              <Input
-                value={activityForm.next_action}
-                onChange={(e) => setActivityForm({...activityForm, next_action: e.target.value})}
-                placeholder="מה הפעולה הבאה?"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-1 block">תאריך לפעולה הבאה</label>
-              <Input
-                type="date"
-                value={activityForm.next_action_date}
-                onChange={(e) => setActivityForm({...activityForm, next_action_date: e.target.value})}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => { setShowActivityDialog(false); resetActivityForm(); }}>ביטול</Button>
-            <Button onClick={handleSaveActivity} className="bg-rose-600 hover:bg-rose-700">שמור ביומן</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Activity Dialog Removed */}
     </div>
   );
 }
