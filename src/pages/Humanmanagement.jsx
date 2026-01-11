@@ -326,7 +326,7 @@ export default function Humanmanagement() {
                        <div className="flex-1">
                          <div className="flex justify-between items-center">
                             <p className="text-sm font-semibold text-slate-800">{contact?.full_name || "לא ידוע"}</p>
-                            <Link to={createPageUrl(`ContactDetails?id=${contact?.id}`)}>
+                            <Link to={createPageUrl(`ContactDetails?id=${contact?.id}&mode=hr`)}>
                                 <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full hover:bg-cyan-100">
                                     <ArrowRight className="w-3 h-3 text-cyan-700" />
                                 </Button>

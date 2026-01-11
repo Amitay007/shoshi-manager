@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Building2, Save, ArrowRight, Plus, Trash2, Eye, Calendar, AlertCircle, MapPin, Navigation, UserCircle, Phone, Mail } from "lucide-react";
+import { Building2, Save, ArrowRight, Plus, Trash2, Eye, Calendar, AlertCircle, MapPin, Navigation, UserCircle, Phone, Mail, Wallet } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { createPageUrl } from "@/utils";
 import { Link, useNavigate } from "react-router-dom";
@@ -22,6 +22,8 @@ export default function SchoolDetails() {
   const urlParams = new URLSearchParams(window.location.search);
   const schoolId = urlParams.get("id");
   const isNew = urlParams.get("new") === "true";
+  const mode = urlParams.get("mode") || "manager"; // 'hr' or 'manager'
+  const isManager = mode === 'manager';
 
   const [loading, setLoading] = React.useState(!isNew);
   const [saving, setSaving] = React.useState(false);
@@ -200,7 +202,7 @@ export default function SchoolDetails() {
               <Save className="w-4 h-4" />
               {saving ? "שומר..." : "שמור"}
             </Button>
-            <Link to={createPageUrl("Schools")}>
+            <Link to={createPageUrl(isManager ? "CRMHub?mode=manager" : "CRMHub?mode=hr")}>
               <Button variant="outline" className="gap-2">
                 חזרה <ArrowRight className="w-4 h-4" />
               </Button>
@@ -322,6 +324,26 @@ export default function SchoolDetails() {
                   rows={3}
                 />
               </div>
+
+              {/* Financial Info - Manager Only */}
+              {isManager && (
+                  <div className="md:col-span-2 bg-green-50 p-4 rounded-lg border border-green-200 mt-2">
+                    <label className="text-sm font-bold text-green-800 mb-2 flex items-center gap-2">
+                      <Wallet className="w-4 h-4" />
+                      מידע פיננסי (מנהלים בלבד)
+                    </label>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="text-xs text-green-700 block">תקציב שנתי</label>
+                            <Input placeholder="₪0.00" className="bg-white border-green-200" />
+                        </div>
+                        <div>
+                            <label className="text-xs text-green-700 block">יתרה לתשלום</label>
+                            <Input placeholder="₪0.00" className="bg-white border-green-200" />
+                        </div>
+                    </div>
+                  </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -343,7 +365,7 @@ export default function SchoolDetails() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {contacts.map((contact) => (
-                    <Link key={contact.id} to={createPageUrl(`ContactDetails?id=${contact.id}`)}>
+                    <Link key={contact.id} to={createPageUrl(`ContactDetails?id=${contact.id}&mode=${mode}`)}>
                       <div className="flex items-center gap-3 p-3 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors bg-white cursor-pointer group">
                         <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 font-bold shrink-0">
                           {contact.full_name?.charAt(0)}

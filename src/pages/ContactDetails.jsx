@@ -19,6 +19,8 @@ import BackHomeButtons from "@/components/common/BackHomeButtons";
 export default function ContactDetails() {
   const urlParams = new URLSearchParams(window.location.search);
   const contactId = urlParams.get("id");
+  const mode = urlParams.get("mode") || "manager";
+  const isManager = mode === 'manager';
 
   const [contact, setContact] = useState(null);
   const [school, setSchool] = useState(null);
@@ -91,9 +93,9 @@ export default function ContactDetails() {
         
         {/* Top Navigation */}
         <div className="flex justify-between items-center">
-          <Link to={createPageUrl("CRMHub")}>
+          <Link to={createPageUrl(`CRMHub?mode=${mode}`)}>
             <Button variant="ghost" className="gap-2 text-slate-600">
-              <ArrowRight className="w-4 h-4" /> חזרה למרכז תקשורת
+              <ArrowRight className="w-4 h-4" /> חזרה ל{isManager ? "קשרי לקוחות" : "מרכז תקשורת"}
             </Button>
           </Link>
           <BackHomeButtons showBack={false} />
@@ -115,7 +117,7 @@ export default function ContactDetails() {
                   <p className="text-slate-500 font-medium text-lg">{contact.title || "ללא תפקיד"}</p>
                   
                   {school ? (
-                    <Link to={createPageUrl(`SchoolDetails?id=${school.id}`)}>
+                    <Link to={createPageUrl(`SchoolDetails?id=${school.id}&mode=${mode}`)}>
                       <Button variant="link" className="p-0 h-auto text-purple-600 gap-1 mt-1 font-semibold">
                         <Building2 className="w-4 h-4" />
                         {school.name}

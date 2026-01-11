@@ -247,7 +247,7 @@ export default function CRMHub() {
                 whileHover={{ scale: 1.02, y: -4 }}
                 transition={{ duration: 0.2 }}
               >
-                <Link to={createPageUrl(`ContactDetails?id=${contact.id}`)}>
+                <Link to={createPageUrl(`ContactDetails?id=${contact.id}&mode=${mode}`)}>
                   <Card className="bg-white hover:shadow-xl transition-all duration-300 border-0 cursor-pointer h-full">
                     <div className="h-1.5 bg-gradient-to-r from-indigo-600 to-purple-600"></div>
                     
