@@ -19,7 +19,7 @@ import { Link } from "react-router-dom";
 import { 
   Building2, Users, BookOpen, TrendingUp, 
   Phone, Mail, MapPin, Calendar, Plus,
-  UserCircle, ClipboardList, Edit, Trash2, MessageCircle, Wallet
+  UserCircle, ClipboardList, Edit, Trash2, MessageCircle, Wallet, ArrowRight
 } from "lucide-react";
 import VRIcon from "@/components/icons/VRIcon";
 import BackHomeButtons from "@/components/common/BackHomeButtons";
