@@ -3,6 +3,7 @@ import { VRDevice } from "@/entities/VRDevice";
 import { Silshuch } from "@/entities/Silshuch";
 import { Syllabus } from "@/entities/Syllabus";
 import { InstitutionProgram } from "@/entities/InstitutionProgram";
+import { DeviceApp } from "@/entities/DeviceApp";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,6 +47,7 @@ export default function DeviceAssignments() {
   const [showProgramsModal, setShowProgramsModal] = useState(false);
   const [programsWithDevices, setProgramsWithDevices] = useState([]);
   const [expandedProgramId, setExpandedProgramId] = useState(null); // For expanding program sessions
+  const [appToDeviceMap, setAppToDeviceMap] = useState(new Map());
   
   // Summary state
   const [summaryText, setSummaryText] = useState("");
@@ -72,11 +74,12 @@ export default function DeviceAssignments() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [devices, silshuchim, programs, instPrograms] = await Promise.all([
+      const [devices, silshuchim, programs, instPrograms, deviceApps] = await Promise.all([
         with429Retry(() => VRDevice.list()),
         with429Retry(() => Silshuch.list()),
         with429Retry(() => Syllabus.list()),
-        with429Retry(() => InstitutionProgram.list())
+        with429Retry(() => InstitutionProgram.list()),
+        with429Retry(() => DeviceApp.list(null, 10000))
       ]);
       
       const sortedDevices = (devices || [])
@@ -84,6 +87,16 @@ export default function DeviceAssignments() {
         .sort((a, b) => a.binocular_number - b.binocular_number);
       setAllHeadsets(sortedDevices);
       setAllSilshuchim(silshuchim || []);
+
+      // Build App -> Devices Map
+      const appMap = new Map();
+      (deviceApps || []).forEach(da => {
+        if (!appMap.has(da.app_id)) {
+            appMap.set(da.app_id, new Set());
+        }
+        appMap.get(da.app_id).add(da.device_id);
+      });
+      setAppToDeviceMap(appMap);
       
       // Create a map of program_id -> assigned_device_ids from InstitutionProgram
       const instProgramMap = {};
@@ -924,11 +937,12 @@ export default function DeviceAssignments() {
                                     // Calculate matching devices
                                     const sessionAppIds = [...(session.app_ids || []), ...(session.experience_ids || [])];
                                     // Find devices in program that have ANY of these apps
-                                    // Note: We need device installedApps. Using allHeadsets
+                                    // Logic: 
+                                    // 1. Pool: program.assigned_device_ids (The devices assigned to this program)
+                                    // 2. Validate: Must have the app installed (checked via DeviceApp map)
                                     const matchingDeviceIds = (program.assigned_device_ids || []).filter(devId => {
-                                      const device = allHeadsets.find(d => d.id === devId);
-                                      if (!device || !device.installedApps) return false;
-                                      return sessionAppIds.some(appId => device.installedApps.includes(appId));
+                                      // Check if device has at least one of the session apps
+                                      return sessionAppIds.some(appId => appToDeviceMap.get(appId)?.has(devId));
                                     });
                                     
                                     return (
