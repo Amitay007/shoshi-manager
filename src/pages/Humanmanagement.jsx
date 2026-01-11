@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { Search, Building2, Users, FileText, Calendar, Plus, Trash2, Eye, Mail, Phone, MapPin, BookOpen, Clock, Stamp, Hourglass, Rocket, Brain } from "lucide-react";
+import { Search, Building2, Users, FileText, Calendar, Plus, Trash2, Eye, Mail, Phone, MapPin, BookOpen, Clock, Stamp, Hourglass, Rocket, Brain, MessageCircle, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useLoading } from "@/components/common/LoadingContext";
@@ -125,11 +125,21 @@ export default function Humanmanagement() {
     );
   }, [contacts, searchTerm]);
 
-  const recentActivities = useMemo(() => {
-    return [...activities]
-      .sort((a, b) => new Date(b.activity_date || b.created_date) - new Date(a.activity_date || a.created_date))
-      .slice(0, 10);
-  }, [activities]);
+  const futureActivities = useMemo(() => {
+    const now = new Date();
+    return interactionLogs
+      .filter(log => new Date(log.date) > now)
+      .sort((a, b) => new Date(a.date) - new Date(b.date))
+      .slice(0, 5);
+  }, [interactionLogs]);
+
+  const followUps = useMemo(() => {
+    const now = new Date();
+    return interactionLogs
+      .filter(log => log.follow_up_date && new Date(log.follow_up_date) > now)
+      .sort((a, b) => new Date(a.follow_up_date) - new Date(b.follow_up_date))
+      .slice(0, 5);
+  }, [interactionLogs]);
 
   const handleSaveContact = async () => {
     try {
@@ -257,31 +267,87 @@ export default function Humanmanagement() {
           </Card>
         </div>
 
-        {/* Bottom Widget */}
-        <Card className="bg-gradient-to-r from-slate-50 to-white border-purple-100 border">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Rocket className="w-5 h-5 text-purple-600" />
-              הפעילות הבאה שלי
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-slate-100">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                  <Calendar className="w-6 h-6 text-purple-600" />
+        {/* Bottom Widget Split */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Future Activities */}
+          <Card className="bg-white border-purple-100 border shadow-sm h-full">
+            <CardHeader className="pb-2 border-b border-slate-50">
+              <CardTitle className="text-lg flex items-center gap-2 text-slate-800">
+                <Calendar className="w-5 h-5 text-purple-600" />
+                פעילויות עתידיות
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4 space-y-3">
+              {futureActivities.length > 0 ? (
+                futureActivities.map(log => {
+                   const contact = contacts.find(c => c.id === log.contact_id);
+                   return (
+                     <div key={log.id} className="flex items-start gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
+                       <div className="mt-1">
+                         {log.type === 'meeting' ? <Users className="w-4 h-4 text-blue-500" /> : 
+                          log.type === 'call' ? <Phone className="w-4 h-4 text-green-500" /> : 
+                          <FileText className="w-4 h-4 text-slate-400" />}
+                       </div>
+                       <div>
+                         <p className="text-sm font-semibold text-slate-800">{contact?.full_name || "לא ידוע"}</p>
+                         <p className="text-xs text-slate-500">
+                           {new Date(log.date).toLocaleDateString('he-IL')} {new Date(log.date).toLocaleTimeString('he-IL', {hour: '2-digit', minute:'2-digit'})}
+                         </p>
+                         <p className="text-xs text-slate-600 mt-1 line-clamp-1">{log.content}</p>
+                       </div>
+                     </div>
+                   );
+                })
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-sm text-slate-400">אין פעילויות עתידיות</p>
                 </div>
-                <div>
-                  <h3 className="font-bold text-slate-800">סדנת VR - כיתה ט'3</h3>
-                  <p className="text-sm text-slate-500">מחר, 10:00 - 11:30 • תיכון עירוני ד'</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Follow Ups */}
+          <Card className="bg-white border-cyan-100 border shadow-sm h-full">
+            <CardHeader className="pb-2 border-b border-slate-50">
+              <CardTitle className="text-lg flex items-center gap-2 text-slate-800">
+                <Clock className="w-5 h-5 text-cyan-600" />
+                אנשי קשר למעקב (עתידי)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4 space-y-3">
+              {followUps.length > 0 ? (
+                followUps.map(log => {
+                   const contact = contacts.find(c => c.id === log.contact_id);
+                   return (
+                     <div key={log.id} className="flex items-start gap-3 p-3 bg-cyan-50/50 rounded-lg border border-cyan-100 relative group">
+                       <div className="mt-1">
+                         <Clock className="w-4 h-4 text-cyan-500" />
+                       </div>
+                       <div className="flex-1">
+                         <div className="flex justify-between items-center">
+                            <p className="text-sm font-semibold text-slate-800">{contact?.full_name || "לא ידוע"}</p>
+                            <Link to={createPageUrl(`ContactDetails?id=${contact?.id}`)}>
+                                <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full hover:bg-cyan-100">
+                                    <ArrowRight className="w-3 h-3 text-cyan-700" />
+                                </Button>
+                            </Link>
+                         </div>
+                         <p className="text-xs text-slate-500">
+                           {new Date(log.follow_up_date).toLocaleDateString('he-IL')} {new Date(log.follow_up_date).toLocaleTimeString('he-IL', {hour: '2-digit', minute:'2-digit'})}
+                         </p>
+                         <p className="text-xs text-slate-600 mt-1 line-clamp-1">{log.content}</p>
+                       </div>
+                     </div>
+                   );
+                })
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-sm text-slate-400">אין אנשי קשר למעקב</p>
                 </div>
-              </div>
-              <Button variant="outline" className="text-purple-600 border-purple-200 hover:bg-purple-50">
-                לפרטים מלאים
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* Add/Edit Contact Dialog */}
