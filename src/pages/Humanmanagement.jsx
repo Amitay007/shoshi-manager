@@ -206,7 +206,7 @@ export default function Humanmanagement() {
 
         {/* Info Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <Link to={createPageUrl("CRMHub")}>
+          <Link to={createPageUrl("CRMHub") + "?mode=hr"}>
             <Card className="bg-white shadow-md rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center hover:shadow-lg transition-shadow cursor-pointer h-full">
               <Users className="w-10 h-10 text-blue-600" />
               <CardTitle className="text-lg font-semibold text-slate-900">מרכז תקשורת</CardTitle>
