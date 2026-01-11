@@ -1052,6 +1052,19 @@ export default function ProgramView() {
                         appDeviceMapping[app.id] = allDevicesWithAppNumbers;
                       });
 
+                      // Calculate unique assigned headsets for this session
+                      const uniqueAssignedDevicesForSession = new Set();
+                      sessionApps.forEach(app => {
+                        const devicesWithAppNumbers = appDeviceMapping[app.id] || [];
+                        devicesWithAppNumbers.forEach(num => {
+                            const device = deviceDataByNumber[num];
+                            if (device && assignedDeviceIds.includes(device.id)) {
+                                uniqueAssignedDevicesForSession.add(num);
+                            }
+                        });
+                      });
+                      const totalAssignedForSession = uniqueAssignedDevicesForSession.size;
+
                       return (
                         <tr key={idx} className="border-b border-slate-200 hover:bg-slate-50 transition-colors">
                           <td className="p-3 border-l border-slate-200 font-semibold text-slate-800">
@@ -1093,15 +1106,16 @@ export default function ProgramView() {
                                             // Use assignedDeviceIds source of truth for immediate feedback
                                             const isAssigned = assignedDeviceIds.includes(device?.id);
 
-                                            const handleToggleAssignedDevice = async () => {
+                                            const handleToggleAssignedDevice = () => {
                                                 if (!device?.id) return;
                                                 const newAssignedIds = isAssigned
                                                     ? assignedDeviceIds.filter(id => id !== device.id)
                                                     : [...assignedDeviceIds, device.id];
 
-                                                // Update local state immediately
+                                                // Update local state (save will happen on "Save" button)
                                                 setAssignedDeviceIds(newAssignedIds);
                                                 setProgram(prev => ({ ...prev, assigned_device_ids: newAssignedIds }));
+                                                setEditData(prev => ({ ...prev, assigned_device_ids: newAssignedIds })); // Ensure save picks it up
 
                                                 // Update selectedDeviceNumbers for other views
                                                 const newNumbers = allDevices
@@ -1109,28 +1123,24 @@ export default function ProgramView() {
                                                     .map(d => Number(d.binocular_number))
                                                     .sort((a,b) => a-b);
                                                 setSelectedDeviceNumbers(newNumbers);
-
-                                                // Update Syllabus entity
-                                                await with429Retry(() => Syllabus.update(programId, { assigned_device_ids: newAssignedIds }));
-
-                                                // Update InstitutionProgram entity if exists
-                                                if (instPrograms.length > 0) {
-                                                    await with429Retry(() => InstitutionProgram.update(instPrograms[0].id, { assigned_device_ids: newAssignedIds }));
-                                                }
                                             };
 
                                             return (
                                               <Badge 
                                                 key={num}
-                                                onClick={!isDisabled ? handleToggleAssignedDevice : undefined}
+                                                onClick={editMode && !isDisabled ? handleToggleAssignedDevice : undefined}
                                                 className={`flex items-center gap-1 ${
                                                   isDisabled 
-                                                    ? 'bg-slate-200 text-slate-600 border border-slate-400 cursor-not-allowed' 
-                                                    : isAssigned
-                                                      ? 'bg-emerald-500 text-white border border-emerald-600 shadow-sm cursor-pointer hover:bg-emerald-600 hover:scale-105'
-                                                      : 'bg-white text-slate-600 border border-slate-200 cursor-pointer hover:border-emerald-400 hover:text-emerald-600 hover:bg-emerald-50'
+                                                    ? 'bg-slate-200 text-slate-600 border border-slate-400 cursor-not-allowed'
+                                                    : !editMode 
+                                                        ? (isAssigned 
+                                                            ? 'bg-emerald-500 text-white border border-emerald-600 shadow-sm cursor-default' // View mode: assigned
+                                                            : 'bg-white text-slate-600 border border-slate-200 cursor-default') // View mode: not assigned
+                                                        : (isAssigned // Edit mode active
+                                                            ? 'bg-emerald-500 text-white border border-emerald-600 shadow-sm cursor-pointer hover:bg-emerald-600 hover:scale-105'
+                                                            : 'bg-white text-slate-600 border border-slate-200 cursor-pointer hover:border-emerald-400 hover:text-emerald-600 hover:bg-emerald-50')
                                                 } transition-all duration-200 text-xs px-2 py-1 select-none`}
-                                                title={isDisabled ? `משקפת ${num} - מושבת${device?.disable_reason ? `: ${device.disable_reason}` : ''}` : isAssigned ? 'לחץ להסרה מהתוכנית' : 'לחץ להוספה לתוכנית'}
+                                                title={isDisabled ? `משקפת ${num} - מושבת${device?.disable_reason ? `: ${device.disable_reason}` : ''}` : !editMode ? (isAssigned ? 'משקפת משובצת' : 'משקפת לא משובצת') : (isAssigned ? 'לחץ להסרה מהתוכנית' : 'לחץ להוספה לתוכנית')}
                                               >
                                                 {isAssigned && !isDisabled && <CheckSquare className="w-3 h-3" />}
                                                 #{String(num).padStart(3, '0')}
