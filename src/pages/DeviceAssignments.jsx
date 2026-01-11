@@ -3,6 +3,7 @@ import { VRDevice } from "@/entities/VRDevice";
 import { Silshuch } from "@/entities/Silshuch";
 import { Syllabus } from "@/entities/Syllabus";
 import { InstitutionProgram } from "@/entities/InstitutionProgram";
+import { DeviceApp } from "@/entities/DeviceApp";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,7 +47,8 @@ export default function DeviceAssignments() {
   const [showProgramsModal, setShowProgramsModal] = useState(false);
   const [programsWithDevices, setProgramsWithDevices] = useState([]);
   const [expandedProgramId, setExpandedProgramId] = useState(null); // For expanding program sessions
-  
+  const [deviceAppMap, setDeviceAppMap] = useState({}); // Map of deviceId -> Set of appIds
+
   // Summary state
   const [summaryText, setSummaryText] = useState("");
   const [showSummary, setShowSummary] = useState(false);
@@ -72,13 +74,24 @@ export default function DeviceAssignments() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [devices, silshuchim, programs, instPrograms] = await Promise.all([
+      const [devices, silshuchim, programs, instPrograms, deviceApps] = await Promise.all([
         with429Retry(() => VRDevice.list()),
         with429Retry(() => Silshuch.list()),
         with429Retry(() => Syllabus.list()),
-        with429Retry(() => InstitutionProgram.list())
+        with429Retry(() => InstitutionProgram.list()),
+        with429Retry(() => DeviceApp.list())
       ]);
       
+      // Build device app map
+      const devMap = {};
+      (deviceApps || []).forEach(da => {
+        if (!devMap[da.device_id]) {
+          devMap[da.device_id] = new Set();
+        }
+        devMap[da.device_id].add(da.app_id);
+      });
+      setDeviceAppMap(devMap);
+
       const sortedDevices = (devices || [])
         .filter(d => !d.is_disabled)
         .sort((a, b) => a.binocular_number - b.binocular_number);
@@ -924,11 +937,11 @@ export default function DeviceAssignments() {
                                     // Calculate matching devices
                                     const sessionAppIds = [...(session.app_ids || []), ...(session.experience_ids || [])];
                                     // Find devices in program that have ANY of these apps
-                                    // Note: We need device installedApps. Using allHeadsets
+                                    // We use the single source of truth: DeviceApp entity (loaded into deviceAppMap)
                                     const matchingDeviceIds = (program.assigned_device_ids || []).filter(devId => {
-                                      const device = allHeadsets.find(d => d.id === devId);
-                                      if (!device || !device.installedApps) return false;
-                                      return sessionAppIds.some(appId => device.installedApps.includes(appId));
+                                      const installedAppsSet = deviceAppMap[devId];
+                                      if (!installedAppsSet) return false;
+                                      return sessionAppIds.some(appId => installedAppsSet.has(appId));
                                     });
                                     
                                     return (

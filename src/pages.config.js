@@ -15,7 +15,6 @@ import DataImport from './pages/DataImport';
 import DataRepositories from './pages/DataRepositories';
 import DataRepositoryList from './pages/DataRepositoryList';
 import DataUpdater from './pages/DataUpdater';
-import DeviceAssignments from './pages/DeviceAssignments';
 import DeviceInfo from './pages/DeviceInfo';
 import DeviceMenu from './pages/DeviceMenu';
 import EditHeadset from './pages/EditHeadset';
@@ -40,6 +39,7 @@ import UpdateAppStatus from './pages/UpdateAppStatus';
 import UpdateAppsFromPDF from './pages/UpdateAppsFromPDF';
 import UploadLogo from './pages/UploadLogo';
 import Version2 from './pages/Version2';
+import DeviceAssignments from './pages/DeviceAssignments';
 import __Layout from './Layout.jsx';
 
 
@@ -61,7 +61,6 @@ export const PAGES = {
     "DataRepositories": DataRepositories,
     "DataRepositoryList": DataRepositoryList,
     "DataUpdater": DataUpdater,
-    "DeviceAssignments": DeviceAssignments,
     "DeviceInfo": DeviceInfo,
     "DeviceMenu": DeviceMenu,
     "EditHeadset": EditHeadset,
@@ -86,6 +85,7 @@ export const PAGES = {
     "UpdateAppsFromPDF": UpdateAppsFromPDF,
     "UploadLogo": UploadLogo,
     "Version2": Version2,
+    "DeviceAssignments": DeviceAssignments,
 }
 
 export const pagesConfig = {
