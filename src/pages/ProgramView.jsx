@@ -583,6 +583,57 @@ export default function ProgramView() {
     await loadData();
   };
 
+  const handleToggleDeviceAssignment = async (deviceId) => {
+    if (!deviceId) return;
+    const isAssigned = assignedDeviceIds.includes(deviceId);
+    const newAssignedIds = isAssigned
+        ? assignedDeviceIds.filter(id => id !== deviceId)
+        : [...assignedDeviceIds, deviceId];
+
+    // Update local state immediately
+    setAssignedDeviceIds(newAssignedIds);
+    setProgram(prev => ({ ...prev, assigned_device_ids: newAssignedIds }));
+    setEditData(prev => ({ ...prev, assigned_device_ids: newAssignedIds }));
+
+    // Update local instPrograms state if exists (for consistency)
+    if (instPrograms.length > 0) {
+        const updated = [...instPrograms];
+        updated[0] = { ...updated[0], assigned_device_ids: newAssignedIds };
+        setInstPrograms(updated);
+    }
+
+    // Update selectedDeviceNumbers for other views
+    const newNumbers = allDevices
+        .filter(d => newAssignedIds.includes(d.id))
+        .map(d => Number(d.binocular_number))
+        .sort((a,b) => a-b);
+    setSelectedDeviceNumbers(newNumbers);
+
+    // Instant Save to DB
+    try {
+        // Update Syllabus
+        await with429Retry(() => Syllabus.update(programId, { assigned_device_ids: newAssignedIds }));
+        
+        // Update InstitutionProgram if exists
+        if (instPrograms.length > 0) {
+            await with429Retry(() => InstitutionProgram.update(instPrograms[0].id, { assigned_device_ids: newAssignedIds }));
+        }
+        
+        toast({
+            title: "נשמר",
+            description: "שיבוץ המשקפות עודכן בהצלחה",
+            duration: 2000,
+        });
+    } catch (error) {
+        console.error("Failed to auto-save device assignment:", error);
+        toast({
+            variant: "destructive",
+            title: "שגיאה",
+            description: "לא ניתן לשמור את השינויים",
+        });
+    }
+  };
+
   if (loading) {
     return <div className="p-8 text-center" dir="rtl">טוען תוכנית...</div>;
   }
@@ -1108,55 +1159,7 @@ export default function ProgramView() {
                                             // Use assignedDeviceIds source of truth for immediate feedback
                                             const isAssigned = assignedDeviceIds.includes(device?.id);
 
-                                            const handleToggleAssignedDevice = async () => {
-                                                if (!device?.id) return;
-                                                const newAssignedIds = isAssigned
-                                                    ? assignedDeviceIds.filter(id => id !== device.id)
-                                                    : [...assignedDeviceIds, device.id];
-
-                                                // Update local state immediately
-                                                setAssignedDeviceIds(newAssignedIds);
-                                                setProgram(prev => ({ ...prev, assigned_device_ids: newAssignedIds }));
-                                                setEditData(prev => ({ ...prev, assigned_device_ids: newAssignedIds }));
-
-                                                // Update local instPrograms state if exists (for consistency)
-                                                if (instPrograms.length > 0) {
-                                                    const updated = [...instPrograms];
-                                                    updated[0] = { ...updated[0], assigned_device_ids: newAssignedIds };
-                                                    setInstPrograms(updated);
-                                                }
-
-                                                // Update selectedDeviceNumbers for other views
-                                                const newNumbers = allDevices
-                                                    .filter(d => newAssignedIds.includes(d.id))
-                                                    .map(d => Number(d.binocular_number))
-                                                    .sort((a,b) => a-b);
-                                                setSelectedDeviceNumbers(newNumbers);
-
-                                                // Instant Save to DB
-                                                try {
-                                                    // Update Syllabus
-                                                    await with429Retry(() => Syllabus.update(programId, { assigned_device_ids: newAssignedIds }));
-                                                    
-                                                    // Update InstitutionProgram if exists
-                                                    if (instPrograms.length > 0) {
-                                                        await with429Retry(() => InstitutionProgram.update(instPrograms[0].id, { assigned_device_ids: newAssignedIds }));
-                                                    }
-                                                    
-                                                    toast({
-                                                        title: "נשמר",
-                                                        description: "שיבוץ המשקפות עודכן בהצלחה",
-                                                        duration: 2000,
-                                                    });
-                                                } catch (error) {
-                                                    console.error("Failed to auto-save device assignment:", error);
-                                                    toast({
-                                                        variant: "destructive",
-                                                        title: "שגיאה",
-                                                        description: "לא ניתן לשמור את השינויים",
-                                                    });
-                                                }
-                                            };
+                                            const handleToggleAssignedDevice = () => handleToggleDeviceAssignment(device?.id);
 
                                             return (
                                               <Badge 
