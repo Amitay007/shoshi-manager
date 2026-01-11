@@ -28,15 +28,10 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function CRMHub() {
   const [schools, setSchools] = useState([]);
-  const [teachers, setTeachers] = useState([]);
-  const [programs, setPrograms] = useState([]);
-  const [instPrograms, setInstPrograms] = useState([]);
-  const [devices, setDevices] = useState([]);
   const [contacts, setContacts] = useState([]);
-  const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState("schools");
+  const [schoolFilter, setSchoolFilter] = useState("all");
 
   // Contact dialog
   const [showContactDialog, setShowContactDialog] = useState(false);
@@ -77,23 +72,13 @@ export default function CRMHub() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [schoolsData, teachersData, programsData, instProgramsData, devicesData, contactsData, activitiesData] = await Promise.all([
+      const [schoolsData, contactsData] = await Promise.all([
         with429Retry(() => EducationInstitution.list()),
-        with429Retry(() => Teacher.list()),
-        with429Retry(() => Syllabus.list()),
-        with429Retry(() => InstitutionProgram.list()),
-        with429Retry(() => VRDevice.list()),
-        with429Retry(() => Contact.list()),
-        with429Retry(() => ActivityLog.list())
+        with429Retry(() => Contact.list())
       ]);
       
       setSchools(schoolsData || []);
-      setTeachers(teachersData || []);
-      setPrograms(programsData || []);
-      setInstPrograms(instProgramsData || []);
-      setDevices(devicesData || []);
       setContacts(contactsData || []);
-      setActivities(activitiesData || []);
     } catch (error) {
       console.error("Error loading CRM data:", error);
     }
@@ -224,13 +209,17 @@ export default function CRMHub() {
     (t.email || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const filteredContacts = contacts.filter(c =>
-    !searchTerm ||
-    (c.full_name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (c.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (c.title || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (schools.find(s => s.id === c.institution_id)?.name || "").toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredContacts = contacts.filter(c => {
+    const matchesSearch = !searchTerm ||
+      (c.full_name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (c.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (c.title || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (schools.find(s => s.id === c.institution_id)?.name || "").toLowerCase().includes(searchTerm.toLowerCase());
+      
+    const matchesSchool = schoolFilter === "all" || c.institution_id === schoolFilter;
+    
+    return matchesSearch && matchesSchool;
+  });
 
   const recentActivities = activities
     .sort((a, b) => new Date(b.activity_date) - new Date(a.activity_date))
@@ -252,12 +241,12 @@ export default function CRMHub() {
         {/* Header */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
           <div className="flex items-center gap-3 w-full lg:w-auto">
-            <div className="w-12 h-12 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-              <TrendingUp className="w-7 h-7 text-white" />
+            <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+              <UserCircle className="w-7 h-7 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-indigo-900">מרכז ניהול</h1>
-              <p className="text-slate-500 text-xs sm:text-sm">ניהול קשרי לקוחות - בתי ספר, מורים, אנשי קשר ויומן פעילות</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-indigo-900">מרכז תקשורת</h1>
+              <p className="text-slate-500 text-xs sm:text-sm">ניהול אנשי קשר ומוסדות</p>
             </div>
           </div>
           <div className="hidden lg:block">
@@ -265,435 +254,109 @@ export default function CRMHub() {
           </div>
         </div>
 
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-8 gap-3 mb-6">
-          <Card 
-            className="bg-gradient-to-br from-blue-50 to-cyan-50 border-0 shadow-lg cursor-pointer hover:shadow-xl hover:scale-105 active:scale-95 transition-all"
-            onClick={() => setActiveTab("schools")}
-          >
-            <CardContent className="p-3">
-              <div className="flex flex-col items-center">
-                <Building2 className="w-8 h-8 text-blue-600 mb-1" />
-                <p className="text-2xl font-bold text-blue-900">{stats.totalSchools}</p>
-                <p className="text-xs text-slate-600">בתי ספר</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card 
-            className="bg-gradient-to-br from-cyan-50 to-teal-50 border-0 shadow-lg cursor-pointer hover:shadow-xl hover:scale-105 active:scale-95 transition-all"
-            onClick={() => window.location.href = createPageUrl("TeachersList")}
-          >
-            <CardContent className="p-3">
-              <div className="flex flex-col items-center">
-                <Users className="w-8 h-8 text-cyan-600 mb-1" />
-                <p className="text-2xl font-bold text-cyan-900">{stats.totalTeachers}</p>
-                <p className="text-xs text-slate-600">מורים</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card 
-            className="bg-gradient-to-br from-orange-50 to-amber-50 border-0 shadow-lg cursor-pointer hover:shadow-xl hover:scale-105 active:scale-95 transition-all"
-            onClick={() => window.location.href = createPageUrl("DeviceAssignments")}
-          >
-            <CardContent className="p-3">
-              <div className="flex flex-col items-center">
-                <Calendar className="w-8 h-8 text-orange-600 mb-1" />
-                <p className="text-2xl font-bold text-orange-900">📅</p>
-                <p className="text-xs text-slate-600">ניהול שיבוצים</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card 
-            className="bg-gradient-to-br from-green-50 to-emerald-50 border-0 shadow-lg cursor-pointer hover:shadow-xl hover:scale-105 active:scale-95 transition-all"
-            onClick={() => window.location.href = createPageUrl("Programs")}
-          >
-            <CardContent className="p-3">
-              <div className="flex flex-col items-center">
-                <Calendar className="w-8 h-8 text-green-600 mb-1" />
-                <p className="text-2xl font-bold text-green-900">{stats.activePrograms}</p>
-                <p className="text-xs text-slate-600">תוכניות פעילות</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-purple-50 to-cyan-50 border-0 shadow-lg">
-            <CardContent className="p-3">
-              <div className="flex flex-col items-center">
-                <VRIcon className="w-8 h-8 text-purple-600 mb-1" />
-                <p className="text-2xl font-bold text-purple-900">
-                  {devices.filter(d => !d.is_disabled && d.status !== 'מושבת' && d.status !== 'בתיקון').length}
-                  <span className="text-sm font-normal text-purple-700"> / {stats.totalDevices}</span>
-                </p>
-                <p className="text-xs text-slate-600">משקפות פעילות</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card 
-            className="bg-gradient-to-br from-indigo-50 to-purple-50 border-0 shadow-lg cursor-pointer hover:shadow-xl hover:scale-105 active:scale-95 transition-all"
-            onClick={() => setActiveTab("contacts")}
-          >
-            <CardContent className="p-3">
-              <div className="flex flex-col items-center">
-                <UserCircle className="w-8 h-8 text-indigo-600 mb-1" />
-                <p className="text-2xl font-bold text-indigo-900">{stats.totalContacts}</p>
-                <p className="text-xs text-slate-600">אנשי קשר</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card 
-            className="bg-gradient-to-br from-purple-50 to-indigo-50 border-0 shadow-lg cursor-pointer hover:shadow-xl hover:scale-105 active:scale-95 transition-all"
-            onClick={() => window.location.href = createPageUrl("CashFlow")}
-          >
-            <CardContent className="p-3">
-              <div className="flex flex-col items-center">
-                <Wallet className="w-8 h-8 text-purple-600 mb-1" />
-                <p className="text-2xl font-bold text-purple-900">₪</p>
-                <p className="text-xs text-slate-600">תזרים</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card 
-            className="bg-gradient-to-br from-rose-50 to-pink-50 border-0 shadow-lg cursor-pointer hover:shadow-xl hover:scale-105 active:scale-95 transition-all"
-            onClick={() => setActiveTab("activities")}
-          >
-            <CardContent className="p-3">
-              <div className="flex flex-col items-center">
-                <ClipboardList className="w-8 h-8 text-rose-600 mb-1" />
-                <p className="text-2xl font-bold text-rose-900">{stats.totalActivities}</p>
-                <p className="text-xs text-slate-600">יומן קשרי לקוחות</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Search Bar */}
-        <Card className="mb-6 shadow-lg border-0">
-          <CardContent className="p-4">
-            <Input
-              placeholder="חיפוש בתי ספר, מורים, אנשי קשר..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="text-right"
-            />
+        {/* Filters Bar */}
+        <Card className="mb-6 shadow-lg border-0 bg-white">
+          <CardContent className="p-4 flex flex-col md:flex-row gap-4 items-center">
+            <div className="flex-1 w-full">
+              <Input
+                placeholder="חיפוש לפי שם, אימייל או תפקיד..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="text-right"
+              />
+            </div>
+            <div className="w-full md:w-64">
+              <Select value={schoolFilter} onValueChange={setSchoolFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="סינון לפי בית ספר" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">כל בתי הספר</SelectItem>
+                  {schools.map(school => (
+                    <SelectItem key={school.id} value={school.id}>{school.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button onClick={() => { resetContactForm(); setShowContactDialog(true); }} className="gap-2 bg-indigo-600 hover:bg-indigo-700 w-full md:w-auto">
+              <Plus className="w-4 h-4" />
+              איש קשר חדש
+            </Button>
           </CardContent>
         </Card>
 
-        {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} dir="rtl">
-          <TabsList className="grid w-full grid-cols-3 mb-6">
-            <TabsTrigger value="schools" className="gap-2">
-              <Building2 className="w-4 h-4" />
-              בתי ספר
-            </TabsTrigger>
-            <TabsTrigger value="contacts" className="gap-2">
-              <UserCircle className="w-4 h-4" />
-              אנשי קשר
-            </TabsTrigger>
-            <TabsTrigger value="activities" className="gap-2">
-              <ClipboardList className="w-4 h-4" />
-              יומן קשרי לקוחות
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Schools Tab */}
-          <TabsContent value="schools">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredSchools.map(school => {
-                const stats = getSchoolStats(school.id);
-                
-                return (
-                  <motion.div
-                    key={school.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    whileHover={{ scale: 1.02, y: -4 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <Card 
-                      className="bg-white hover:shadow-xl transition-all duration-300 border-0 cursor-pointer"
-                      onClick={() => window.location.href = createPageUrl(`SchoolDetails?id=${school.id}`)}
-                    >
-                    <div className="h-1.5 bg-gradient-to-r from-blue-600 to-cyan-600"></div>
-                    
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-lg flex items-start justify-between">
-                        <span className="line-clamp-2">{school.name}</span>
-                        <Building2 className="w-5 h-5 text-blue-600 shrink-0 mr-2" />
-                      </CardTitle>
-                      <Badge className="bg-blue-100 text-blue-800 w-fit">
-                        {school.type}
-                      </Badge>
-                    </CardHeader>
-
-                    <CardContent className="space-y-2 text-sm">
-                      {school.city && (
-                        <div className="flex items-center gap-2 text-slate-600">
-                          <MapPin className="w-4 h-4 text-slate-400" />
-                          <span>{school.city}</span>
-                        </div>
-                      )}
-
-                      {school.contact_person && (
-                        <div className="flex items-center gap-2 text-slate-600">
-                          <Users className="w-4 h-4 text-slate-400" />
-                          <span>{school.contact_person}</span>
-                        </div>
-                      )}
-
-                      {school.contact_email && (
-                        <div className="flex items-center gap-2 text-slate-600">
-                          <Mail className="w-4 h-4 text-slate-400" />
-                          <span className="truncate">{school.contact_email}</span>
-                        </div>
-                      )}
-
-                      {school.phone && (
-                        <div className="flex items-center gap-2 text-slate-600">
-                          <Phone className="w-4 h-4 text-slate-400" />
-                          <span>{school.phone}</span>
-                        </div>
-                      )}
-
-                      <div className="pt-3 border-t border-slate-100 grid grid-cols-2 gap-2">
-                        <div className="text-center p-2 bg-purple-50 rounded">
-                          <div className="text-xs text-purple-600">תוכניות</div>
-                          <div className="text-lg font-bold text-purple-900">{stats.programs}</div>
-                        </div>
-                        <div className="text-center p-2 bg-cyan-50 rounded">
-                          <div className="text-xs text-cyan-600">מורים</div>
-                          <div className="text-lg font-bold text-cyan-900">{stats.teachers}</div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  </motion.div>
-                );
-              })}
-            </div>
-
-            {filteredSchools.length === 0 && (
-              <Card className="shadow-lg border-0">
-                <CardContent className="text-center py-12">
-                  <Building2 className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                  <p className="text-slate-500 text-lg">לא נמצאו בתי ספר</p>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-
-
-
-          {/* Contacts Tab */}
-          <TabsContent value="contacts">
-            <div className="mb-4 flex justify-end">
-              <Button onClick={() => { resetContactForm(); setShowContactDialog(true); }} className="gap-2 bg-indigo-600 hover:bg-indigo-700">
-                <Plus className="w-4 h-4" />
-                איש קשר חדש
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredContacts.map(contact => {
-                const school = schools.find(s => s.id === contact.institution_id);
-                const contactActivities = activities.filter(a => a.contact_id === contact.id);
-                
-                return (
-                  <motion.div
-                    key={contact.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    whileHover={{ scale: 1.02, y: -4 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <Card className="bg-white hover:shadow-xl transition-all duration-300 border-0">
+        {/* Contacts Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {filteredContacts.map(contact => {
+            const school = schools.find(s => s.id === contact.institution_id);
+            
+            return (
+              <motion.div
+                key={contact.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                whileHover={{ scale: 1.02, y: -4 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Link to={createPageUrl(`ContactDetails?id=${contact.id}`)}>
+                  <Card className="bg-white hover:shadow-xl transition-all duration-300 border-0 cursor-pointer h-full">
                     <div className="h-1.5 bg-gradient-to-r from-indigo-600 to-purple-600"></div>
                     
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full flex items-center justify-center">
-                            <UserCircle className="w-6 h-6 text-indigo-700" />
-                          </div>
-                          <div>
-                            <CardTitle className="text-lg">{contact.full_name}</CardTitle>
-                            {contact.role && (
-                              <p className="text-sm font-medium text-indigo-600">{contact.role}</p>
-                            )}
-                            {contact.title && (
-                              <p className="text-xs text-slate-500">{contact.title}</p>
-                            )}
-                          </div>
+                    <CardContent className="p-5">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center text-lg font-bold">
+                          {contact.full_name?.charAt(0)}
                         </div>
-                        <Badge className={
-                          contact.status === "לקוח" ? "bg-green-100 text-green-800" :
-                          contact.status === "פוטנציאלי" ? "bg-yellow-100 text-yellow-800" :
-                          "bg-blue-100 text-blue-800"
-                        }>
-                          {contact.status}
+                        <Badge variant="outline" className="bg-slate-50">
+                          {contact.title || "ללא תפקיד"}
                         </Badge>
                       </div>
-                    </CardHeader>
-
-                    <CardContent className="space-y-2 text-sm">
-                      {school && (
-                        <div className="flex items-center gap-2 text-slate-600">
-                          <Building2 className="w-4 h-4 text-slate-400" />
-                          <span className="truncate">{school.name}</span>
-                        </div>
-                      )}
-
-                      {contact.email && (
-                        <div className="flex items-center gap-2 text-slate-600">
-                          <Mail className="w-4 h-4 text-slate-400" />
-                          <span className="truncate">{contact.email}</span>
-                        </div>
-                      )}
-
-                      {contact.phone && (
-                        <div className="flex items-center gap-2 text-slate-600">
-                          <Phone className="w-4 h-4 text-slate-400" />
-                          <span>{contact.phone}</span>
-                        </div>
-                      )}
-
-                      <div className="pt-3 border-t border-slate-100">
-                        <div className="text-xs text-slate-500 mb-1">פעילויות: {contactActivities.length}</div>
-                        {contact.last_contact_date && (
-                          <div className="text-xs text-slate-500">
-                            יצירת קשר אחרונה: {format(new Date(contact.last_contact_date), "dd/MM/yyyy")}
+                      
+                      <h3 className="text-lg font-bold text-slate-900 mb-1">{contact.full_name}</h3>
+                      
+                      <div className="space-y-2 text-sm text-slate-600 mb-4 min-h-[60px]">
+                        {school ? (
+                          <div className="flex items-center gap-2">
+                            <Building2 className="w-4 h-4 text-indigo-500" />
+                            <span className="line-clamp-1 font-medium">{school.name}</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 text-slate-400">
+                            <Building2 className="w-4 h-4" />
+                            <span>לא משוייך</span>
+                          </div>
+                        )}
+                        {contact.phone && (
+                          <div className="flex items-center gap-2">
+                            <Phone className="w-4 h-4 text-indigo-500" />
+                            <span>{contact.phone}</span>
                           </div>
                         )}
                       </div>
 
-                      <div className="flex gap-2 pt-2">
-                        <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); openEditContact(contact); }} className="flex-1 gap-1">
-                          <Edit className="w-3 h-3" />
-                          ערוך
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); setActivityForm({...activityForm, contact_id: contact.id, institution_id: contact.institution_id || ""}); setShowActivityDialog(true); }} className="flex-1 gap-1">
-                          <MessageCircle className="w-3 h-3" />
-                          יומן
-                        </Button>
-                        <Button size="sm" variant="destructive" onClick={(e) => { e.stopPropagation(); handleDeleteContact(contact.id); }}>
-                          <Trash2 className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  </motion.div>
-                );
-              })}
-            </div>
-
-            {filteredContacts.length === 0 && (
-              <Card className="shadow-lg border-0">
-                <CardContent className="text-center py-12">
-                  <UserCircle className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                  <p className="text-slate-500 text-lg">לא נמצאו אנשי קשר</p>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-
-          {/* Activities Tab */}
-          <TabsContent value="activities">
-            <div className="mb-4 flex justify-end">
-              <Button onClick={() => { resetActivityForm(); setShowActivityDialog(true); }} className="gap-2 bg-rose-600 hover:bg-rose-700">
-                <Plus className="w-4 h-4" />
-                יומן קשרי לקוחות
-              </Button>
-            </div>
-
-            <div className="space-y-3">
-              {recentActivities.map(activity => {
-                const contact = contacts.find(c => c.id === activity.contact_id);
-                const school = schools.find(s => s.id === activity.institution_id);
-                
-                return (
-                  <motion.div
-                    key={activity.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <Card className="bg-white hover:shadow-md transition-all border-0">
-                    <CardContent className="p-4">
-                      <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 bg-rose-100 rounded-full flex items-center justify-center shrink-0">
-                          <ClipboardList className="w-5 h-5 text-rose-600" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-start justify-between mb-2">
-                            <div>
-                              <h3 className="font-semibold text-slate-800">{activity.subject || activity.activity_type}</h3>
-                              <div className="flex items-center gap-2 text-xs text-slate-500 mt-1">
-                                <Badge className="bg-rose-100 text-rose-800 text-[10px]">
-                                  {activity.activity_type}
-                                </Badge>
-                                <span>{format(new Date(activity.activity_date), "dd/MM/yyyy HH:mm")}</span>
-                              </div>
-                            </div>
-                            {activity.outcome && (
-                              <Badge className={
-                                activity.outcome === "מוצלח" ? "bg-green-100 text-green-800" :
-                                activity.outcome === "דורש מעקב" ? "bg-yellow-100 text-yellow-800" :
-                                "bg-slate-100 text-slate-800"
-                              }>
-                                {activity.outcome}
-                              </Badge>
-                            )}
-                          </div>
-
-                          <p className="text-sm text-slate-600 mb-2">{activity.description}</p>
-
-                          <div className="flex flex-wrap gap-2 text-xs text-slate-500">
-                            {contact && (
-                              <span className="flex items-center gap-1">
-                                <UserCircle className="w-3 h-3" />
-                                {contact.full_name}
-                              </span>
-                            )}
-                            {school && (
-                              <span className="flex items-center gap-1">
-                                <Building2 className="w-3 h-3" />
-                                {school.name}
-                              </span>
-                            )}
-                          </div>
-
-                          {activity.next_action && (
-                            <div className="mt-2 pt-2 border-t border-slate-100 text-xs">
-                              <span className="text-slate-600">פעולה הבאה:</span> <span className="font-medium">{activity.next_action}</span>
-                              {activity.next_action_date && (
-                                <span className="text-slate-500"> • {format(new Date(activity.next_action_date), "dd/MM/yyyy")}</span>
-                              )}
-                            </div>
-                          )}
+                      <div className="pt-3 border-t border-slate-100 flex justify-between items-center">
+                        <span className="text-xs text-slate-400">לחץ לפרטים מלאים</span>
+                        <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-indigo-100 transition-colors">
+                          <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-indigo-600" />
                         </div>
                       </div>
                     </CardContent>
                   </Card>
-                  </motion.div>
-                );
-              })}
-            </div>
+                </Link>
+              </motion.div>
+            );
+          })}
+        </div>
 
-            {recentActivities.length === 0 && (
-              <Card className="shadow-lg border-0">
-                <CardContent className="text-center py-12">
-                  <ClipboardList className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                  <p className="text-slate-500 text-lg">אין פעילויות ביומן</p>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-        </Tabs>
+        {filteredContacts.length === 0 && (
+          <div className="text-center py-16">
+            <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <UserCircle className="w-10 h-10 text-slate-400" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-700">לא נמצאו אנשי קשר</h3>
+            <p className="text-slate-500">נסה לשנות את הסינון או צור איש קשר חדש</p>
+          </div>
+        )}
       </div>
 
       {/* Contact Dialog */}
