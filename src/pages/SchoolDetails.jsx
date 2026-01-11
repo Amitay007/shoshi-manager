@@ -2,6 +2,7 @@ import React from "react";
 import { EducationInstitution } from "@/entities/EducationInstitution";
 import { InstitutionProgram } from "@/entities/InstitutionProgram";
 import { Syllabus } from "@/entities/Syllabus";
+import { Contact } from "@/entities/Contact";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Building2, Save, ArrowRight, Plus, Trash2, Eye, Calendar, AlertCircle } from "lucide-react";
+import { Building2, Save, ArrowRight, Plus, Trash2, Eye, Calendar, AlertCircle, MapPin, Navigation, UserCircle, Phone, Mail } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { createPageUrl } from "@/utils";
 import { Link, useNavigate } from "react-router-dom";
@@ -36,6 +37,7 @@ export default function SchoolDetails() {
   });
 
   const [programs, setPrograms] = React.useState([]);
+  const [contacts, setContacts] = React.useState([]);
   const [allSyllabi, setAllSyllabi] = React.useState([]);
   const [showAddProgramDialog, setShowAddProgramDialog] = React.useState(false);
   const [selectedSyllabusId, setSelectedSyllabusId] = React.useState("");
@@ -96,11 +98,16 @@ export default function SchoolDetails() {
   const loadSchoolData = React.useCallback(async () => {
     setLoading(true);
     try {
-      const inst = await with429Retry(() => EducationInstitution.get(schoolId));
+      const [inst, schoolContacts] = await Promise.all([
+        with429Retry(() => EducationInstitution.get(schoolId)),
+        with429Retry(() => Contact.filter({ institution_id: schoolId }))
+      ]);
+      
       if (inst) {
         setSchool(inst);
         await loadPrograms(schoolId);
       }
+      setContacts(schoolContacts || []);
     } catch (error) {
       console.error("Error loading school data:", error);
     }
@@ -244,11 +251,24 @@ export default function SchoolDetails() {
 
               <div>
                 <label className="text-sm font-medium text-slate-700 mb-1 block">כתובת</label>
-                <Input
-                  value={school.address}
-                  onChange={(e) => setSchool({ ...school, address: e.target.value })}
-                  placeholder="הזן כתובת"
-                />
+                <div className="flex gap-2">
+                  <Input
+                    value={school.address}
+                    onChange={(e) => setSchool({ ...school, address: e.target.value })}
+                    placeholder="הזן כתובת"
+                  />
+                  {school.address && (
+                    <a 
+                      href={`https://waze.com/ul?q=${encodeURIComponent(school.address)}`} 
+                      target="_blank" 
+                      rel="noreferrer"
+                    >
+                      <Button variant="outline" size="icon" className="shrink-0 text-blue-500 border-blue-200 bg-blue-50 hover:bg-blue-100">
+                        <Navigation className="w-5 h-5" />
+                      </Button>
+                    </a>
+                  )}
+                </div>
               </div>
 
               <div>
@@ -280,7 +300,7 @@ export default function SchoolDetails() {
               </div>
 
               <div className="md:col-span-2">
-                <label className="text-sm font-medium text-slate-700 mb-1 block">הערות</label>
+                <label className="text-sm font-medium text-slate-700 mb-1 block">הערות כלליות</label>
                 <Textarea
                   value={school.notes}
                   onChange={(e) => setSchool({ ...school, notes: e.target.value })}
@@ -288,9 +308,65 @@ export default function SchoolDetails() {
                   rows={3}
                 />
               </div>
+
+              {/* Operational Info (Read Only) */}
+              <div className="md:col-span-2 bg-slate-50 p-4 rounded-lg border border-slate-200 mt-2">
+                <label className="text-sm font-bold text-slate-800 mb-2 flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-purple-600" />
+                  מידע תפעולי (למדריך)
+                </label>
+                <Textarea
+                  value={school.operational_notes || school.notes} // Fallback to notes if operational_notes doesn't exist yet
+                  readOnly
+                  className="bg-white"
+                  rows={3}
+                />
+              </div>
             </div>
           </CardContent>
         </Card>
+
+        {/* Linked Contacts Section */}
+        {!isNew && schoolId && (
+          <Card className="shadow-md">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <UserCircle className="w-5 h-5" />
+                אנשי קשר משויכים
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {contacts.length === 0 ? (
+                <div className="text-center py-8 text-slate-500">
+                  <p>אין אנשי קשר משויכים למוסד זה</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {contacts.map((contact) => (
+                    <Link key={contact.id} to={createPageUrl(`ContactDetails?id=${contact.id}`)}>
+                      <div className="flex items-center gap-3 p-3 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors bg-white cursor-pointer group">
+                        <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 font-bold shrink-0">
+                          {contact.full_name?.charAt(0)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-slate-900 truncate group-hover:text-indigo-700 transition-colors">
+                            {contact.full_name}
+                          </h4>
+                          <p className="text-xs text-slate-500 truncate">{contact.title || "ללא תפקיד"}</p>
+                          <div className="flex gap-2 mt-1">
+                            {contact.phone && <Phone className="w-3 h-3 text-slate-400" />}
+                            {contact.email && <Mail className="w-3 h-3 text-slate-400" />}
+                          </div>
+                        </div>
+                        <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-indigo-500" />
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Programs Section - Only show for existing schools */}
         {!isNew && schoolId && (

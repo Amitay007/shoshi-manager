@@ -86,21 +86,10 @@ export default function CRMHub() {
   };
 
   const getSchoolStats = (schoolId) => {
-    const schoolPrograms = instPrograms.filter(ip => ip.institution_id === schoolId);
-    const schoolTeachers = teachers.filter(t => t.institution_id === schoolId);
-    
+    // Placeholder for stats since we are only loading schools and contacts now
     return {
-      programs: schoolPrograms.length,
-      teachers: schoolTeachers.length
-    };
-  };
-
-  const getTeacherStats = (teacherName) => {
-    const teacherPrograms = programs.filter(p => p.teacher_name === teacherName);
-    
-    return {
-      programs: teacherPrograms.length,
-      sessions: teacherPrograms.reduce((sum, p) => sum + (p.meetings_count || 0), 0)
+      programs: 0,
+      teachers: 0
     };
   };
 
@@ -203,11 +192,8 @@ export default function CRMHub() {
     (s.contact_person || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const filteredTeachers = teachers.filter(t =>
-    !searchTerm ||
-    (t.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (t.email || "").toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Teachers filtering removed
+  const filteredTeachers = [];
 
   const filteredContacts = contacts.filter(c => {
     const matchesSearch = !searchTerm ||
@@ -227,12 +213,12 @@ export default function CRMHub() {
 
   const stats = {
     totalSchools: schools.length,
-    totalTeachers: teachers.length,
-    totalPrograms: programs.length,
-    activePrograms: instPrograms.filter(ip => ip.status === "פעילה").length,
-    totalDevices: devices.length,
+    totalTeachers: 0,
+    totalPrograms: 0,
+    activePrograms: 0,
+    totalDevices: 0,
     totalContacts: contacts.length,
-    totalActivities: activities.length
+    totalActivities: 0
   };
 
   return (
