@@ -15,11 +15,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createPageUrl } from "@/utils";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { 
   Building2, Users, BookOpen, TrendingUp, 
   Phone, Mail, MapPin, Calendar, Plus,
-  UserCircle, ClipboardList, Edit, Trash2, MessageCircle, Wallet, ArrowRight
+  UserCircle, ClipboardList, Edit, Trash2, MessageCircle, Wallet, ArrowRight, Briefcase
 } from "lucide-react";
 import VRIcon from "@/components/icons/VRIcon";
 import BackHomeButtons from "@/components/common/BackHomeButtons";
@@ -33,6 +33,9 @@ export default function CRMHub() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [schoolFilter, setSchoolFilter] = useState("all");
+  const [searchParams] = useSearchParams();
+  const mode = searchParams.get('mode') || 'manager'; // 'hr' or 'manager'
+  const isManager = mode === 'manager';
 
   // Contact dialog
   const [showContactDialog, setShowContactDialog] = useState(false);
@@ -174,16 +177,29 @@ export default function CRMHub() {
         {/* Header */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
           <div className="flex items-center gap-3 w-full lg:w-auto">
-            <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-              <UserCircle className="w-7 h-7 text-white" />
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-lg ${isManager ? 'bg-gradient-to-r from-blue-600 to-indigo-600' : 'bg-gradient-to-r from-purple-600 to-pink-600'}`}>
+              {isManager ? <Briefcase className="w-7 h-7 text-white" /> : <UserCircle className="w-7 h-7 text-white" />}
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-indigo-900">מרכז תקשורת</h1>
-              <p className="text-slate-500 text-xs sm:text-sm">ניהול אנשי קשר ומוסדות</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-indigo-900">{isManager ? "קשרי לקוחות (CRM)" : "מרכז תקשורת"}</h1>
+              <p className="text-slate-500 text-xs sm:text-sm">{isManager ? "ניהול מלא ומעקב פיננסי" : "ניהול קשר ותפעול שוטף"}</p>
             </div>
           </div>
           <div className="hidden lg:block">
-            <BackHomeButtons />
+            {/* Custom Back Button based on Mode */}
+            <div className="flex gap-2">
+                <Link to={createPageUrl(isManager ? "Management" : "Humanmanagement")}>
+                    <Button variant="outline" className="gap-2">
+                        <ArrowRight className="w-4 h-4" />
+                        חזרה ל{isManager ? "ניהול" : "יחסי אנוש"}
+                    </Button>
+                </Link>
+                <Link to={createPageUrl("Dashboard")}>
+                    <Button variant="ghost" size="icon">
+                        <Home className="w-4 h-4" />
+                    </Button>
+                </Link>
+            </div>
           </div>
         </div>
 

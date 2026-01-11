@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { 
-  Home, Code, BookOpen, School, Users, Calculator, ChevronRight, KeyRound, Stamp, Layers, GraduationCap
+  Home, Code, BookOpen, School, Users, Calculator, ChevronRight, KeyRound, Stamp, Layers, GraduationCap, Briefcase
 } from "lucide-react";
 import VRIcon from "@/components/icons/VRIcon";
 
@@ -18,7 +18,7 @@ export default function Sidebar() {
     { id: "devices", label: "מכשירי VR", icon: VRIcon, page: "GeneralInfo" },
     { id: "apps", label: "אפליקציות", icon: Code, page: "GeneralApps" },
     { id: "schools", label: "יחסי אנוש", icon: School, page: "Humanmanagement" },
-    { id: "teachers", label: "ניהול", icon: Users, page: "CRMHub" },
+    { id: "management", label: "ניהול", icon: Briefcase, page: "Management" },
     { id: "accounts", label: "חשבונות", icon: KeyRound, page: "AccountsAndUsers" },
     { id: "version2", label: "שושי 2.0 - היסטוריה", icon: Layers, page: "Version2" },
   ];
@@ -44,9 +44,11 @@ export default function Sidebar() {
       'SyllabusWizard': 'syllabus',
       'Humanmanagement': 'schools',
       'SchoolDetails': 'schools',
-      'CRMHub': location.search.includes('mode=hr') ? 'schools' : 'teachers',
-      'TeachersList': 'teachers',
-      'TeacherProfile': 'teachers',
+      'Management': 'management',
+      'CRMHub': location.search.includes('mode=hr') ? 'schools' : 'management',
+      'CashFlow': 'management',
+      'TeachersList': 'management',
+      'TeacherProfile': 'management',
       'BinocularCalculator': 'calculator',
       'AccountsAndUsers': 'accounts',
       'Programs': 'programs',

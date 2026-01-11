@@ -41,6 +41,7 @@ import UpdateAppsFromPDF from './pages/UpdateAppsFromPDF';
 import UploadLogo from './pages/UploadLogo';
 import Version2 from './pages/Version2';
 import ContactDetails from './pages/ContactDetails';
+import Management from './pages/Management';
 import __Layout from './Layout.jsx';
 
 
@@ -88,6 +89,7 @@ export const PAGES = {
     "UploadLogo": UploadLogo,
     "Version2": Version2,
     "ContactDetails": ContactDetails,
+    "Management": Management,
 }
 
 export const pagesConfig = {
