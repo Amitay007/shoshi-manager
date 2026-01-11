@@ -110,31 +110,26 @@ export default function BinocularCalculator() {
     if (!selectedId) return [];
 
     if (comparisonMode === 'syllabi') {
-      // Logic: Devices that have the apps required by the syllabus
+      // Logic: Devices ALREADY mapped to this Syllabus (Kit-based)
+      // The Syllabus entity acts as a pre-defined "Kit" with a specific list of compatible headsets.
       const program = programs.find(p => p.id === selectedId);
       if (!program) return [];
 
-      const appIds = getProgramAppIds(program);
-      const deviceIdsWithApps = new Set();
-      allDeviceApps.forEach(da => {
-        if (appIds.includes(da.app_id)) {
-          deviceIdsWithApps.add(da.device_id);
-        }
-      });
-      
-      const deviceNumbers = [];
-      allDevices.forEach(d => {
-        if (deviceIdsWithApps.has(d.id)) {
-          const num = Number(d.binocular_number);
-          if (Number.isFinite(num)) {
-            deviceNumbers.push(num);
-          }
-        }
-      });
-      return deviceNumbers.sort((a, b) => a - b);
+      // Use the pre-defined kit (assigned_device_ids)
+      if (program.assigned_device_ids && program.assigned_device_ids.length > 0) {
+         const deviceNumbers = [];
+         allDevices.forEach(d => {
+           if (program.assigned_device_ids.includes(d.id)) {
+              const num = Number(d.binocular_number);
+              if (Number.isFinite(num)) deviceNumbers.push(num);
+           }
+         });
+         return deviceNumbers.sort((a,b) => a - b);
+      }
+      return [];
 
     } else {
-      // Logic: Devices explicitly assigned to the program
+      // Logic: Devices explicitly assigned to the program (InstitutionProgram)
       const iprog = instPrograms.find(ip => ip.id === selectedId);
       if (!iprog) return [];
       
@@ -150,8 +145,6 @@ export default function BinocularCalculator() {
          return deviceNumbers.sort((a,b) => a - b);
       }
       
-      // Fallback: If no assigned devices, fallback to School Inventory? 
-      // The user wants manual assignment. If empty, it's empty.
       return []; 
     }
   };
