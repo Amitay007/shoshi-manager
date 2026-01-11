@@ -25,59 +25,36 @@ function LayoutContent({ children, currentPageName }) {
       
       <div dir="rtl" className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 text-slate-900">
         <style>{`
-            @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700;800&family=Rubik:wght@300;400;500;700;900&display=swap');
+            @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap');
             :root { 
-              /* YoyaVR Brand Colors based on website analysis */
-              --background: 260 20% 98%; /* Light grayish purple tint */
-              --foreground: 260 40% 10%; /* Dark purple/black */
-
+              --background: 0 0% 100%;
+              --foreground: 222.2 84% 4.9%;
               --card: 0 0% 100%;
-              --card-foreground: 260 40% 10%;
-
+              --card-foreground: 222.2 84% 4.9%;
               --popover: 0 0% 100%;
-              --popover-foreground: 260 40% 10%;
-
-              /* Yoya Primary Purple #4720B7 -> HSL approx 256 70% 42% */
-              --primary: 256 70% 42%;
-              --primary-foreground: 0 0% 100%;
-
-              --secondary: 260 20% 96%;
-              --secondary-foreground: 256 70% 42%;
-
-              --muted: 260 10% 96%;
-              --muted-foreground: 260 10% 45%;
-
-              --accent: 256 70% 96%; /* Very light purple for hovers */
-              --accent-foreground: 256 70% 42%;
-
+              --popover-foreground: 222.2 84% 4.9%;
+              --primary: 222.2 47.4% 11.2%;
+              --primary-foreground: 210 40% 98%;
+              --secondary: 210 40% 96.1%;
+              --secondary-foreground: 222.2 47.4% 11.2%;
+              --muted: 210 40% 96.1%;
+              --muted-foreground: 215.4 16.3% 46.9%;
+              --accent: 210 40% 96.1%;
+              --accent-foreground: 222.2 47.4% 11.2%;
               --destructive: 0 84.2% 60.2%;
               --destructive-foreground: 210 40% 98%;
+              --border: 214.3 31.8% 91.4%;
+              --input: 214.3 31.8% 91.4%;
+              --ring: 222.2 84% 4.9%;
+              --radius: 0.5rem;
 
-              --border: 260 20% 90%;
-              --input: 260 20% 90%;
-              --ring: 256 70% 42%;
-
-              --radius: 1rem; /* More rounded corners like the site buttons */
-
-              --yoya-purple: #4720B7; 
+              --yoya-purple: #6b46c1; 
               --yoya-cyan: #00d4ff;
-              --yoya-dark: #1a1033;
-              --yoya-light: #f3f0ff;
+              --yoya-dark: #2d1b69;
+              --yoya-light: #e8def8;
             }
-
             body { 
               font-family: 'Assistant', sans-serif;
-              background-color: #f8f7fc;
-            }
-
-            h1, h2, h3, h4, h5, h6, .font-heading {
-              font-family: 'Rubik', sans-serif;
-            }
-
-            /* Button Styling to match YoyaVR */
-            .button-primary {
-              background: linear-gradient(135deg, #4720B7 0%, #6b46c1 100%);
-              box-shadow: 0 4px 14px 0 rgba(71, 32, 183, 0.39);
             }
             /* Hide scrollbar for mobile nav */
             .no-scrollbar::-webkit-scrollbar { display: none; }
