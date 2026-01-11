@@ -62,12 +62,25 @@ export default function InteractionLogModal({ isOpen, onClose, onSave }) {
               </Select>
             </div>
             <div>
-              <Label>תאריך ושעה</Label>
-              <Input 
-                type="datetime-local" 
-                value={formData.date}
-                onChange={(e) => setFormData({...formData, date: e.target.value})}
-              />
+              <Label>תאריך</Label>
+              <div className="flex gap-2">
+                <Input 
+                  type="date" 
+                  value={formData.date.split('T')[0]}
+                  onChange={(e) => {
+                    const time = formData.date.split('T')[1] || "00:00";
+                    setFormData({...formData, date: `${e.target.value}T${time}`})
+                  }}
+                />
+                <Input 
+                  type="time" 
+                  value={formData.date.split('T')[1]}
+                  onChange={(e) => {
+                    const date = formData.date.split('T')[0];
+                    setFormData({...formData, date: `${date}T${e.target.value}`})
+                  }}
+                />
+              </div>
             </div>
           </div>
 
@@ -92,13 +105,27 @@ export default function InteractionLogModal({ isOpen, onClose, onSave }) {
 
           {formData.hasFollowUp && (
             <div className="bg-slate-50 p-3 rounded-lg border border-t-0 mt-0">
-              <Label>תאריך לתזכורת</Label>
-              <Input 
-                type="datetime-local" 
-                value={formData.follow_up_date}
-                onChange={(e) => setFormData({...formData, follow_up_date: e.target.value})}
-                className="mt-1"
-              />
+              <Label>תאריך ושעה לתזכורת</Label>
+              <div className="flex gap-2 mt-1">
+                <Input 
+                  type="date" 
+                  value={formData.follow_up_date ? formData.follow_up_date.split('T')[0] : ""}
+                  onChange={(e) => {
+                    const current = formData.follow_up_date || new Date().toISOString().slice(0, 16);
+                    const time = current.split('T')[1] || "09:00";
+                    setFormData({...formData, follow_up_date: `${e.target.value}T${time}`})
+                  }}
+                />
+                <Input 
+                  type="time" 
+                  value={formData.follow_up_date ? formData.follow_up_date.split('T')[1] : ""}
+                  onChange={(e) => {
+                    const current = formData.follow_up_date || new Date().toISOString().slice(0, 16);
+                    const date = current.split('T')[0];
+                    setFormData({...formData, follow_up_date: `${date}T${e.target.value}`})
+                  }}
+                />
+              </div>
             </div>
           )}
         </div>
