@@ -320,6 +320,13 @@ export default function ProgramView() {
        assigned_device_ids: newAssignedIds
     }));
     setProgram(prev => ({ ...prev, assigned_device_ids: newAssignedIds }));
+    setEditData(prev => ({ ...prev, assigned_device_ids: newAssignedIds })); // Keep editData in sync
+
+    toast({
+      title: "נשמר",
+      description: `נוספו ${tempSelectedDeviceIds.length} משקפות לתוכנית`,
+      duration: 2000,
+    });
 
     setShowAddDevices(false);
     setTempSelectedDeviceIds([]); 
@@ -399,6 +406,13 @@ export default function ProgramView() {
     }
 
     setSelectedDevicesForRemoval(new Set());
+    
+    toast({
+      title: "נשמר",
+      description: `הוסרו ${count} משקפות מהתוכנית`,
+      duration: 2000,
+    });
+    
     await loadData();
   };
 
