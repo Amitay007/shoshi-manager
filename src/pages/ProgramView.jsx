@@ -373,6 +373,7 @@ export default function ProgramView() {
        assigned_device_ids: newAssigned
     }));
     setProgram(prev => ({ ...prev, assigned_device_ids: newAssigned }));
+    setEditData(prev => ({ ...prev, assigned_device_ids: newAssigned }));
 
     // 2. Clean up DeviceApps (apps installed on these devices for this program)
     for (const deviceNumber of selectedDevicesForRemoval) {
