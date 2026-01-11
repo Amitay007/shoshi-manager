@@ -192,7 +192,7 @@ export default function Humanmanagement() {
           <Link to={createPageUrl("CRMHub")}>
             <Card className="bg-white shadow-md rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center hover:shadow-lg transition-shadow cursor-pointer h-full">
               <Users className="w-10 h-10 text-blue-600" />
-              <CardTitle className="text-lg font-semibold text-slate-900">קשרי לקוחות</CardTitle>
+              <CardTitle className="text-lg font-semibold text-slate-900">מרכז תקשורת</CardTitle>
               <p className="text-sm text-slate-500">נהל אנשי קשר</p>
             </Card>
           </Link>
