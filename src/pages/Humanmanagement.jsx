@@ -24,6 +24,8 @@ export default function Humanmanagement() {
   const [contacts, setContacts] = useState([]);
   const [activities, setActivities] = useState([]);
   const [syllabi, setSyllabi] = useState([]);
+  const [interactionLogs, setInteractionLogs] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
   
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
@@ -50,14 +52,16 @@ export default function Humanmanagement() {
     showLoader();
     setLoading(true);
     try {
-      const [schoolsData, teachersData, programsData, devicesData, contactsData, activitiesData, syllabiData] = await Promise.all([
+      const [schoolsData, teachersData, programsData, devicesData, contactsData, activitiesData, syllabiData, logsData, userData] = await Promise.all([
         with429Retry(() => base44.entities.EducationInstitution.list()),
         with429Retry(() => base44.entities.Teacher.list()),
         with429Retry(() => base44.entities.InstitutionProgram.list()),
         with429Retry(() => base44.entities.VRDevice.list()),
         with429Retry(() => base44.entities.Contact.list()),
         with429Retry(() => base44.entities.ActivityLog.list()),
-        with429Retry(() => base44.entities.Syllabus.list())
+        with429Retry(() => base44.entities.Syllabus.list()),
+        with429Retry(() => base44.entities.InteractionLog.list()),
+        base44.auth.me()
       ]);
       
       setSchools(schoolsData || []);
@@ -67,6 +71,8 @@ export default function Humanmanagement() {
       setContacts(contactsData || []);
       setActivities(activitiesData || []);
       setSyllabi(syllabiData || []);
+      setInteractionLogs(logsData || []);
+      setCurrentUser(userData);
     } catch (error) {
       console.error("Error loading data:", error);
       toast({
@@ -181,6 +187,7 @@ export default function Humanmanagement() {
             <div>
               <h1 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-2">מרכז יחסי אנוש</h1>
               <p className="text-slate-600">מעקב וניהול למורה הנחוש</p>
+              <p className="text-purple-600 font-medium mt-1">{currentUser ? `${currentUser.full_name} מיויה` : "מיויה"}</p>
             </div>
           </div>
         </div>
@@ -231,9 +238,9 @@ export default function Humanmanagement() {
 
           <Link to={createPageUrl("MySchedule")}>
             <Card className="bg-white shadow-md rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center hover:shadow-lg transition-shadow cursor-pointer h-full">
-              <Stamp className="w-10 h-10 text-pink-600" />
-              <CardTitle className="text-lg font-semibold text-slate-900">שלישוך</CardTitle>
-              <p className="text-sm text-red-600 font-bold">2 בקשות ממתינות</p>
+              <MessageCircle className="w-10 h-10 text-pink-600" />
+              <CardTitle className="text-lg font-semibold text-slate-900">הודעות מערכת מרוכז</CardTitle>
+              <p className="text-sm text-red-600 font-bold">2 הודעות חדשות</p>
             </Card>
           </Link>
 
