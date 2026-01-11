@@ -19,8 +19,10 @@ import { Link } from "react-router-dom";
 import { with429Retry } from "@/components/utils/retry";
 import BackHomeButtons from "@/components/common/BackHomeButtons";
 import { format } from "date-fns";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function ProgramView() {
+  const { toast } = useToast();
   const urlParams = new URLSearchParams(window.location.search);
   const programId = urlParams.get("id");
 
@@ -1106,16 +1108,23 @@ export default function ProgramView() {
                                             // Use assignedDeviceIds source of truth for immediate feedback
                                             const isAssigned = assignedDeviceIds.includes(device?.id);
 
-                                            const handleToggleAssignedDevice = () => {
+                                            const handleToggleAssignedDevice = async () => {
                                                 if (!device?.id) return;
                                                 const newAssignedIds = isAssigned
                                                     ? assignedDeviceIds.filter(id => id !== device.id)
                                                     : [...assignedDeviceIds, device.id];
 
-                                                // Update local state (save will happen on "Save" button)
+                                                // Update local state immediately
                                                 setAssignedDeviceIds(newAssignedIds);
                                                 setProgram(prev => ({ ...prev, assigned_device_ids: newAssignedIds }));
-                                                setEditData(prev => ({ ...prev, assigned_device_ids: newAssignedIds })); // Ensure save picks it up
+                                                setEditData(prev => ({ ...prev, assigned_device_ids: newAssignedIds }));
+
+                                                // Update local instPrograms state if exists (for consistency)
+                                                if (instPrograms.length > 0) {
+                                                    const updated = [...instPrograms];
+                                                    updated[0] = { ...updated[0], assigned_device_ids: newAssignedIds };
+                                                    setInstPrograms(updated);
+                                                }
 
                                                 // Update selectedDeviceNumbers for other views
                                                 const newNumbers = allDevices
@@ -1123,6 +1132,30 @@ export default function ProgramView() {
                                                     .map(d => Number(d.binocular_number))
                                                     .sort((a,b) => a-b);
                                                 setSelectedDeviceNumbers(newNumbers);
+
+                                                // Instant Save to DB
+                                                try {
+                                                    // Update Syllabus
+                                                    await with429Retry(() => Syllabus.update(programId, { assigned_device_ids: newAssignedIds }));
+                                                    
+                                                    // Update InstitutionProgram if exists
+                                                    if (instPrograms.length > 0) {
+                                                        await with429Retry(() => InstitutionProgram.update(instPrograms[0].id, { assigned_device_ids: newAssignedIds }));
+                                                    }
+                                                    
+                                                    toast({
+                                                        title: "נשמר",
+                                                        description: "שיבוץ המשקפות עודכן בהצלחה",
+                                                        duration: 2000,
+                                                    });
+                                                } catch (error) {
+                                                    console.error("Failed to auto-save device assignment:", error);
+                                                    toast({
+                                                        variant: "destructive",
+                                                        title: "שגיאה",
+                                                        description: "לא ניתן לשמור את השינויים",
+                                                    });
+                                                }
                                             };
 
                                             return (
