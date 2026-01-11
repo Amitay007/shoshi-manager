@@ -9,6 +9,7 @@ import BinocularCalculator from './pages/BinocularCalculator';
 import BulkDataLoader from './pages/BulkDataLoader';
 import CRMHub from './pages/CRMHub';
 import CashFlow from './pages/CashFlow';
+import ContactDetails from './pages/ContactDetails';
 import CreateProgram from './pages/CreateProgram';
 import Dashboard from './pages/Dashboard';
 import DataImport from './pages/DataImport';
@@ -24,6 +25,7 @@ import GeneralInfo from './pages/GeneralInfo';
 import Home from './pages/Home';
 import HoursReport from './pages/HoursReport';
 import Humanmanagement from './pages/Humanmanagement';
+import Management from './pages/Management';
 import MasterSchedule from './pages/MasterSchedule';
 import MySchedule from './pages/MySchedule';
 import ProgramView from './pages/ProgramView';
@@ -40,8 +42,6 @@ import UpdateAppStatus from './pages/UpdateAppStatus';
 import UpdateAppsFromPDF from './pages/UpdateAppsFromPDF';
 import UploadLogo from './pages/UploadLogo';
 import Version2 from './pages/Version2';
-import ContactDetails from './pages/ContactDetails';
-import Management from './pages/Management';
 import __Layout from './Layout.jsx';
 
 
@@ -57,6 +57,7 @@ export const PAGES = {
     "BulkDataLoader": BulkDataLoader,
     "CRMHub": CRMHub,
     "CashFlow": CashFlow,
+    "ContactDetails": ContactDetails,
     "CreateProgram": CreateProgram,
     "Dashboard": Dashboard,
     "DataImport": DataImport,
@@ -72,6 +73,7 @@ export const PAGES = {
     "Home": Home,
     "HoursReport": HoursReport,
     "Humanmanagement": Humanmanagement,
+    "Management": Management,
     "MasterSchedule": MasterSchedule,
     "MySchedule": MySchedule,
     "ProgramView": ProgramView,
@@ -88,8 +90,6 @@ export const PAGES = {
     "UpdateAppsFromPDF": UpdateAppsFromPDF,
     "UploadLogo": UploadLogo,
     "Version2": Version2,
-    "ContactDetails": ContactDetails,
-    "Management": Management,
 }
 
 export const pagesConfig = {

@@ -35,7 +35,9 @@ export default function SchoolDetails() {
     phone: "",
     contact_person: "",
     contact_email: "",
-    notes: ""
+    notes: "",
+    teacher_notes: "",
+    manager_notes: ""
   });
 
   const [programs, setPrograms] = React.useState([]);
@@ -311,22 +313,39 @@ export default function SchoolDetails() {
                 />
               </div>
 
-              {/* Operational Info (Read Only) */}
+              {/* Teacher Notes - Visible to Everyone */}
               <div className="md:col-span-2 bg-slate-50 p-4 rounded-lg border border-slate-200 mt-2">
                 <label className="text-sm font-bold text-slate-800 mb-2 flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 text-purple-600" />
-                  מידע תפעולי (למדריך)
+                  הערות למורה / מדריך
                 </label>
                 <Textarea
-                  value={school.operational_notes || school.notes} // Fallback to notes if operational_notes doesn't exist yet
-                  readOnly
+                  value={school.teacher_notes}
+                  onChange={(e) => setSchool({ ...school, teacher_notes: e.target.value })}
+                  placeholder="הערות שיוצגו למורים ומדריכים..."
                   className="bg-white"
                   rows={3}
+                  readOnly={!isManager} // Only managers can edit, but everyone can see
                 />
               </div>
 
-              {/* Financial Info - Manager Only */}
+              {/* Manager Notes & Financial Info - Manager Only */}
               {isManager && (
+                <>
+                  <div className="md:col-span-2 bg-amber-50 p-4 rounded-lg border border-amber-200 mt-2">
+                    <label className="text-sm font-bold text-amber-800 mb-2 flex items-center gap-2">
+                      <UserCircle className="w-4 h-4" />
+                      הערות למנהל (חסוי)
+                    </label>
+                    <Textarea
+                      value={school.manager_notes}
+                      onChange={(e) => setSchool({ ...school, manager_notes: e.target.value })}
+                      placeholder="הערות פנימיות למנהלים בלבד..."
+                      className="bg-white border-amber-200"
+                      rows={3}
+                    />
+                  </div>
+
                   <div className="md:col-span-2 bg-green-50 p-4 rounded-lg border border-green-200 mt-2">
                     <label className="text-sm font-bold text-green-800 mb-2 flex items-center gap-2">
                       <Wallet className="w-4 h-4" />
@@ -343,6 +362,7 @@ export default function SchoolDetails() {
                         </div>
                     </div>
                   </div>
+                </>
               )}
             </div>
           </CardContent>
@@ -394,27 +414,29 @@ export default function SchoolDetails() {
         {!isNew && schoolId && (
           <Card className="shadow-md">
             <CardHeader>
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex gap-2">
-                  <Button 
-                    onClick={() => setShowAddProgramDialog(true)}
-                    className="bg-cyan-600 hover:bg-cyan-700 gap-2"
-                    size="sm"
-                  >
-                    <Plus className="w-4 h-4" />
-                    הוסף תוכנית קיימת
-                  </Button>
-                  <Button 
-                    onClick={() => setShowWebOnlyAlert(true)}
-                    className="bg-gray-400 hover:bg-gray-500 gap-2 cursor-not-allowed" 
-                    size="sm"
-                    disabled
-                  >
-                    <Plus className="w-4 h-4" />
-                    צור תוכנית
-                  </Button>
+              {isManager && (
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={() => setShowAddProgramDialog(true)}
+                      className="bg-cyan-600 hover:bg-cyan-700 gap-2"
+                      size="sm"
+                    >
+                      <Plus className="w-4 h-4" />
+                      הוסף תוכנית קיימת
+                    </Button>
+                    <Button 
+                      onClick={() => setShowWebOnlyAlert(true)}
+                      className="bg-gray-400 hover:bg-gray-500 gap-2 cursor-not-allowed" 
+                      size="sm"
+                      disabled
+                    >
+                      <Plus className="w-4 h-4" />
+                      צור תוכנית
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              )}
               <CardTitle>תוכניות משוייכות</CardTitle>
             </CardHeader>
             <CardContent>
