@@ -35,8 +35,8 @@ export default function Management() {
                   <Wallet className="w-8 h-8" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-slate-900">כספים</h3>
-                  <p className="text-slate-500 mt-1">תזרים, תקציב וגבייה</p>
+                  <h3 className="text-xl font-bold text-slate-900">מרכז שליטה לתזרים מזומנים</h3>
+                  <p className="text-slate-500 mt-1">ניהול תזרים, תקציב וצפי שנתי</p>
                 </div>
               </CardContent>
             </Card>
