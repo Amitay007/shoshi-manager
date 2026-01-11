@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { VRDevice } from "@/entities/VRDevice";
 import { Silshuch } from "@/entities/Silshuch";
 import { Syllabus } from "@/entities/Syllabus";
+import { InstitutionProgram } from "@/entities/InstitutionProgram";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -71,10 +72,11 @@ export default function DeviceAssignments() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [devices, silshuchim, programs] = await Promise.all([
+      const [devices, silshuchim, programs, instPrograms] = await Promise.all([
         with429Retry(() => VRDevice.list()),
         with429Retry(() => Silshuch.list()),
-        with429Retry(() => Syllabus.list())
+        with429Retry(() => Syllabus.list()),
+        with429Retry(() => InstitutionProgram.list())
       ]);
       
       const sortedDevices = (devices || [])
@@ -83,8 +85,28 @@ export default function DeviceAssignments() {
       setAllHeadsets(sortedDevices);
       setAllSilshuchim(silshuchim || []);
       
-      // Filter programs with assigned devices
-      const progs = (programs || []).filter(p => p.assigned_device_ids && p.assigned_device_ids.length > 0);
+      // Create a map of program_id -> assigned_device_ids from InstitutionProgram
+      const instProgramMap = {};
+      (instPrograms || []).forEach(ip => {
+        if (ip.program_id && ip.assigned_device_ids && ip.assigned_device_ids.length > 0) {
+            const existing = instProgramMap[ip.program_id] || [];
+            instProgramMap[ip.program_id] = [...new Set([...existing, ...ip.assigned_device_ids])];
+        }
+      });
+
+      // Filter programs with assigned devices (either in Syllabus or InstitutionProgram)
+      const progs = (programs || []).map(p => {
+          const syllabusDevices = p.assigned_device_ids || [];
+          const instDevices = instProgramMap[p.id] || [];
+          // Merge unique devices
+          const allDevices = [...new Set([...syllabusDevices, ...instDevices])];
+          
+          return {
+              ...p,
+              assigned_device_ids: allDevices
+          };
+      }).filter(p => p.assigned_device_ids && p.assigned_device_ids.length > 0);
+
       setProgramsWithDevices(progs);
     } catch (error) {
       console.error("Error loading data:", error);
