@@ -79,7 +79,7 @@ export default function DeviceAssignments() {
         with429Retry(() => Silshuch.list()),
         with429Retry(() => Syllabus.list()),
         with429Retry(() => InstitutionProgram.list()),
-        with429Retry(() => DeviceApp.list())
+        with429Retry(() => DeviceApp.list(null, 10000)) // Fetch all device apps
       ]);
       
       // Build device app map
