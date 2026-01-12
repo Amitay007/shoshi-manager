@@ -1107,7 +1107,27 @@ export default function DeviceAssignments() {
                                   key={app.id}
                                   value={app.name}
                                   onSelect={() => {
-                                    setFilterAppId(app.id === filterAppId ? null : app.id);
+                                    const newAppId = app.id === filterAppId ? null : app.id;
+                                    setFilterAppId(newAppId);
+                                    
+                                    if (newAppId) {
+                                        const newSelection = new Set(tempSelection);
+                                        let addedCount = 0;
+                                        allHeadsets.forEach(device => {
+                                            const installedApps = deviceAppMap[device.id];
+                                            if (installedApps && installedApps.has(newAppId) && !device.is_disabled) {
+                                                newSelection.add(device.id);
+                                                addedCount++;
+                                            }
+                                        });
+                                        setTempSelection(newSelection);
+                                        if (addedCount > 0) {
+                                            toast({
+                                                title: "בחירה אוטומטית",
+                                                description: `סומנו ${addedCount} משקפות המכילות את האפליקציה`,
+                                            });
+                                        }
+                                    }
                                     setIsFilterPopoverOpen(false);
                                   }}
                                   className="cursor-pointer"
