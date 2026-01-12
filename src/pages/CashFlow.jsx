@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -82,44 +81,19 @@ const createInitialData = () => {
       openingBalance: is2025 ? 15000 : (is2024 ? 0 : 50000),
       income: [
         {
-          id: "inc_projects",
-          name: "פרויקטים ואירועים",
+          id: "inc_moe",
+          name: "משרד החינוך (Ministry of Education)",
           subItems: [
             {
-              id: "proj_1", name: "רבין - ערבי כיתה ז'",
-              monthly: is2025 ? oneOff(6300, 1) : oneOff(6000, 1),
-              status: is2025 ? "cleared" : "forecast", paymentMethod: "bank", dueDate: new Date(Number(year), 1, 15), valueDate: new Date(Number(year), 1, 15)
-            },
-            {
-              id: "proj_2", name: "בגין - פרחי רפואה",
-              monthly: is2025 ? oneOff(6750, 2) : oneOff(6500, 2),
-              status: "cleared", paymentMethod: "bank", dueDate: new Date(Number(year), 2, 10), valueDate: new Date(Number(year), 2, 10)
-            },
-            {
-              id: "proj_3", name: "עירוני ט ת\"א",
-              monthly: is2025 ? oneOff(5400, 3) : oneOff(5000, 3),
-              status: "pending", paymentMethod: "check", checkNumber: "55402", dueDate: new Date(Number(year), 3, 5), valueDate: new Date(Number(year), 3, 8)
-            },
-            {
-              id: "proj_4", name: "באר אורה",
-              monthly: is2025 ? oneOff(23013, 4) : oneOff(20000, 4),
-              status: "forecast", paymentMethod: "bank", dueDate: new Date(Number(year), 4, 20)
-            },
-            {
-              id: "proj_5", name: "כסייפא",
-              monthly: is2025 ? oneOff(9000, 5) : oneOff(9000, 5),
-              status: "forecast", paymentMethod: "bank", dueDate: new Date(Number(year), 5, 1)
-            },
-            {
-              id: "proj_6", name: "צאלים",
-              monthly: is2025 ? oneOff(6000, 6) : oneOff(6000, 6),
-              status: "forecast", paymentMethod: "bank", dueDate: new Date(Number(year), 6, 15)
+              id: "moe_1", name: "גפ\"ן - תוכניות העשרה",
+              monthly: is2025 ? oneOff(12000, 2) : oneOff(10000, 2),
+              status: "forecast", paymentMethod: "bank", dueDate: new Date(Number(year), 2, 15)
             }
           ]
         },
         {
           id: "inc_private",
-          name: "אירועים פרטיים",
+          name: "לקוחות פרטיים (Private Clients)",
           subItems: [
             {
               id: "priv_1", name: "אירוע - ליאור ציפורניים",
@@ -129,57 +103,106 @@ const createInitialData = () => {
           ]
         },
         {
-          id: "inc_invest",
-          name: "השקעות/אחר",
+          id: "inc_matnas",
+          name: "מתנ\"סים (Community Centers)",
           subItems: [
             {
-               id: "inv_1", name: "השקעה אדוה",
-               monthly: is2025 ? oneOff(20000, 0) : [0,0,0,0,0,0,0,0,0,0,0,0],
-               status: "cleared", paymentMethod: "bank", dueDate: new Date(Number(year), 0, 1), valueDate: new Date(Number(year), 0, 1)
+              id: "mat_1", name: "מתנ\"ס גבעתיים - חוגים",
+              monthly: recurring(4500),
+              status: "pending", paymentMethod: "bank", dueDate: new Date(Number(year), 0, 10)
+            }
+          ]
+        },
+        {
+          id: "inc_inst",
+          name: "מוסדות (Institutions)",
+          subItems: [
+            {
+              id: "inst_1", name: "עיריית תל אביב",
+              monthly: is2025 ? oneOff(8500, 4) : oneOff(8000, 4),
+              status: "forecast", paymentMethod: "bank", dueDate: new Date(Number(year), 4, 1)
             }
           ]
         }
       ],
       expenses: [
         {
-          id: "exp_fixed",
-          name: "הוצאות קבועות",
+          id: "exp_mgmt",
+          name: "הנהלה וכלליות (Management & General)",
           subItems: [
             {
-              id: "fix_1", name: "החזר הלוואה",
-              monthly: recurring(1924),
-              status: "cleared", paymentMethod: "bank", dueDate: new Date(Number(year), 0, 10), valueDate: new Date(Number(year), 0, 10)
+              id: "mgmt_1", name: "רואה חשבון",
+              monthly: recurring(1200),
+              status: "cleared", paymentMethod: "bank", dueDate: new Date(Number(year), 0, 15)
             },
             {
-              id: "fix_2", name: "פלאפון",
-              monthly: recurring(90),
-              status: "cleared", paymentMethod: "card", dueDate: new Date(Number(year), 0, 2), valueDate: new Date(Number(year), 0, 2)
+              id: "mgmt_2", name: "שכירות משרד",
+              monthly: recurring(3500),
+              status: "cleared", paymentMethod: "bank", dueDate: new Date(Number(year), 0, 1)
+            }
+          ]
+        },
+        {
+          id: "exp_marketing",
+          name: "שיווק ומכירות (Marketing & Sales)",
+          subItems: [
+            {
+              id: "mkt_1", name: "קמפיין פייסבוק/אינסטגרם",
+              monthly: recurring(2000),
+              status: "cleared", paymentMethod: "card", dueDate: new Date(Number(year), 0, 5)
             },
             {
-              id: "fix_3", name: "עמלת חשבון",
-              monthly: recurring(9),
-              status: "cleared", paymentMethod: "bank", dueDate: new Date(Number(year), 0, 9), valueDate: new Date(Number(year), 0, 9)
-            },
-             {
-              id: "fix_4", name: "סוז (Suz)",
-              monthly: is2025 ? oneOff(500, 2) : [0,0,0,0,0,0,0,0,0,0,0,0],
-              status: "cleared", paymentMethod: "card", dueDate: new Date(Number(year), 2, 15), valueDate: new Date(Number(year), 2, 15)
+              id: "mkt_2", name: "בניית אתר (תשלומים)",
+              monthly: is2025 ? oneOff(1500, 1) : [0],
+              status: "cleared", paymentMethod: "bank", dueDate: new Date(Number(year), 1, 10)
             }
           ]
         },
         {
           id: "exp_salary",
-          name: "שכר ותפעול",
+          name: "שכר (Salaries)",
           subItems: [
             {
-              id: "sal_1", name: "מדריכים (צפי)",
-              monthly: recurring(5000),
-              status: "forecast", paymentMethod: "bank", dueDate: new Date(Number(year), 0, 9)
+              id: "sal_1", name: "משכורות עובדים",
+              monthly: recurring(15000),
+              status: "cleared", paymentMethod: "bank", dueDate: new Date(Number(year), 0, 9)
             },
             {
-               id: "sal_2", name: "ציוד מתכלה",
-               monthly: recurring(500),
-               status: "forecast", paymentMethod: "card", dueDate: new Date(Number(year), 0, 1)
+              id: "sal_2", name: "ביטוח לאומי מעסיק",
+              monthly: recurring(950),
+              status: "cleared", paymentMethod: "bank", dueDate: new Date(Number(year), 0, 15)
+            }
+          ]
+        },
+        {
+          id: "exp_ops",
+          name: "תפעול (Operations)",
+          subItems: [
+            {
+              id: "ops_1", name: "ציוד מתכלה VR",
+              monthly: recurring(600),
+              status: "forecast", paymentMethod: "card", dueDate: new Date(Number(year), 0, 1)
+            },
+            {
+              id: "ops_2", name: "חשמל ותקשורת",
+              monthly: recurring(450),
+              status: "cleared", paymentMethod: "bank", dueDate: new Date(Number(year), 0, 20)
+            }
+          ]
+        },
+        {
+          id: "exp_finance",
+          name: "מימון (Financing)",
+          subItems: [
+            {
+              id: "fin_1", name: "עמלות בנק",
+              monthly: recurring(85),
+              status: "cleared", paymentMethod: "bank", dueDate: new Date(Number(year), 0, 1)
+            },
+            {
+              id: "fin_2", name: "החזר הלוואה",
+              monthly: recurring(1924),
+              status: "cleared", paymentMethod: "bank", dueDate: new Date(Number(year), 0, 10)
             }
           ]
         }
@@ -205,8 +228,8 @@ export default function CashFlow() {
   const [cashFlowData, setCashFlowData] = useState(createInitialData());
   const [selectedYear, setSelectedYear] = useState("2025");
   const [expandedRows, setExpandedRows] = useState({
-      "inc_projects": true,
-      "exp_fixed": true
+      "inc_moe": true,
+      "exp_salary": true
   });
   const [clients, setClients] = useState(initialClients);
 
@@ -814,34 +837,31 @@ export default function CashFlow() {
           </Card>
         </div>
 
-        {/* The "Wave" Chart - Area Chart */}
+        {/* Bar Chart - Income vs Expenses */}
         <div className="grid grid-cols-1 gap-6">
             <Card className="border-0 shadow-sm bg-white">
             <CardHeader className="pb-0">
                 <CardTitle className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-[#4720B7]" />
-                    מגמת תזרים (Forecast View)
+                    <PieChart className="w-5 h-5 text-[#4720B7]" />
+                    הכנסות מול הוצאות (Income vs Expenses)
                 </CardTitle>
             </CardHeader>
             <CardContent>
                 <div className="h-[300px] w-full mt-4" dir="ltr">
                 <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={chartData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
-                    <defs>
-                        <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#4720B7" stopOpacity={0.2}/>
-                        <stop offset="95%" stopColor="#4720B7" stopOpacity={0}/>
-                        </linearGradient>
-                    </defs>
+                    <BarChart data={chartData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} />
                     <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={(val) => `₪${val/1000}k`} />
                     <RechartsTooltip
                         contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                         formatter={(value) => formatCurrency(value)}
+                        cursor={{ fill: '#f8fafc' }}
                     />
-                    <Area type="monotone" dataKey="balance" stroke="#4720B7" strokeWidth={3} fillOpacity={1} fill="url(#colorBalance)" />
-                    </AreaChart>
+                    <Legend />
+                    <Bar dataKey="income" name="הכנסות" fill="#10b981" radius={[4, 4, 0, 0]} barSize={20} />
+                    <Bar dataKey="expenses" name="הוצאות" fill="#f43f5e" radius={[4, 4, 0, 0]} barSize={20} />
+                    </BarChart>
                 </ResponsiveContainer>
                 </div>
             </CardContent>
