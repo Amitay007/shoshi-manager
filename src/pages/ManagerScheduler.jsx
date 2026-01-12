@@ -41,7 +41,9 @@ export default function ManagerScheduler() {
     sessionsCount: "",
     startTime: "08:00",
     endTime: "09:00",
-    notes: ""
+    notes: "",
+    isRecurring: false,
+    recurringWeeks: 1
   });
 
   const { toast } = useToast();
@@ -98,7 +100,9 @@ export default function ManagerScheduler() {
       sessionsCount: "",
       startTime: "08:00",
       endTime: "09:00",
-      notes: ""
+      notes: "",
+      isRecurring: false,
+      recurringWeeks: 1
     });
     setIsModalOpen(true);
   };
@@ -120,7 +124,9 @@ export default function ManagerScheduler() {
       sessionsCount: assignment.sessions_count || "",
       startTime: format(start, "HH:mm"),
       endTime: format(end, "HH:mm"),
-      notes: assignment.notes || ""
+      notes: assignment.notes || "",
+      isRecurring: false,
+      recurringWeeks: 1
     });
     setIsModalOpen(true);
   };
@@ -165,14 +171,30 @@ export default function ManagerScheduler() {
         await base44.entities.ScheduleEntry.update(newAssignment.id, assignmentData);
         toast({ title: "הצלחה", description: "השיבוץ עודכן בהצלחה" });
       } else {
-        // Create new
-        await base44.entities.ScheduleEntry.create(assignmentData);
-        
-        // Note: Notifications are handled by the backend or the TeacherAgenda page by polling 'pending_teacher_approval' status.
-        // The user mentioned notifications are not working, but TeacherAgenda page filters by 'pending_teacher_approval'.
-        // So creating an entry with this status should make it appear there.
-        
-        toast({ title: "הצלחה", description: "השיבוץ נוצר ונשלח לאישור המורה" });
+        // Create new (potentially multiple)
+        if (newAssignment.isRecurring && newAssignment.recurringWeeks > 1) {
+            const promises = [];
+            for (let i = 0; i < newAssignment.recurringWeeks; i++) {
+                const currentStart = new Date(startDateTime);
+                currentStart.setDate(currentStart.getDate() + (i * 7));
+                
+                const currentEnd = new Date(endDateTime);
+                currentEnd.setDate(currentEnd.getDate() + (i * 7));
+
+                const entryData = {
+                    ...assignmentData,
+                    start_datetime: currentStart.toISOString(),
+                    end_datetime: currentEnd.toISOString(),
+                    sessions_count: newAssignment.sessionsCount ? (parseInt(newAssignment.sessionsCount) + i) : (i + 1) // Auto increment session count if multiple
+                };
+                promises.push(base44.entities.ScheduleEntry.create(entryData));
+            }
+            await Promise.all(promises);
+            toast({ title: "הצלחה", description: `נוצרו ${newAssignment.recurringWeeks} שיבוצים עוקבים` });
+        } else {
+            await base44.entities.ScheduleEntry.create(assignmentData);
+            toast({ title: "הצלחה", description: "השיבוץ נוצר ונשלח לאישור המורה" });
+        }
       }
 
       setIsModalOpen(false);
@@ -187,7 +209,9 @@ export default function ManagerScheduler() {
         sessionsCount: "",
         startTime: "08:00",
         endTime: "09:00",
-        notes: ""
+        notes: "",
+        isRecurring: false,
+        recurringWeeks: 1
       });
     } catch (error) {
       console.error(error);
@@ -375,14 +399,43 @@ export default function ManagerScheduler() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label>מספר מפגשים (אופציונלי)</Label>
-              <Input 
-                type="number" 
-                placeholder="למשל: 5"
-                value={newAssignment.sessionsCount} 
-                onChange={e => setNewAssignment({...newAssignment, sessionsCount: e.target.value})}
-              />
+            <div className="grid grid-cols-2 gap-4 items-end">
+                <div className="space-y-2">
+                  <Label>מספר מפגש נוכחי</Label>
+                  <Input 
+                    type="number" 
+                    placeholder="למשל: 1"
+                    value={newAssignment.sessionsCount} 
+                    onChange={e => setNewAssignment({...newAssignment, sessionsCount: e.target.value})}
+                  />
+                </div>
+                {!newAssignment.id && (
+                    <div className="bg-slate-50 p-2 rounded border border-slate-200">
+                        <div className="flex items-center gap-2 mb-2">
+                            <input 
+                                type="checkbox" 
+                                id="isRecurring" 
+                                className="w-4 h-4 text-purple-600 rounded"
+                                checked={newAssignment.isRecurring}
+                                onChange={e => setNewAssignment({...newAssignment, isRecurring: e.target.checked})}
+                            />
+                            <Label htmlFor="isRecurring" className="cursor-pointer">חזור שבועי</Label>
+                        </div>
+                        {newAssignment.isRecurring && (
+                            <div className="flex items-center gap-2">
+                                <Label className="whitespace-nowrap text-xs">מספר שבועות:</Label>
+                                <Input 
+                                    type="number" 
+                                    min="2" 
+                                    max="52"
+                                    className="h-8"
+                                    value={newAssignment.recurringWeeks} 
+                                    onChange={e => setNewAssignment({...newAssignment, recurringWeeks: parseInt(e.target.value)})}
+                                />
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
 
             <div className="space-y-2">

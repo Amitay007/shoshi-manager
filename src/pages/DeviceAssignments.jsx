@@ -450,18 +450,19 @@ export default function DeviceAssignments() {
         <div className="mb-8 hidden lg:block">
           <div className="flex justify-between items-center mb-8">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-gradient-to-br from-purple-600 to-cyan-600 rounded-2xl flex items-center justify-center shadow-xl transform rotate-3 hover:rotate-6 transition-transform">
-                <Stamp className="text-white w-8 h-8" />
+                {/* Logo / Brand Element */}
+                <div className="w-16 h-16 bg-[#2d1b69] rounded-2xl flex items-center justify-center shadow-2xl shadow-purple-900/20 transform rotate-3 hover:rotate-0 transition-all duration-300 border border-[#6b46c1]/30">
+                  <Stamp className="text-[#00d4ff] w-8 h-8" />
+                </div>
+                <div>
+                  <h1 className="text-4xl font-black text-[#2d1b69] tracking-tight" style={{fontFamily: "'Assistant', sans-serif"}}>
+                    {viewMode === "form" ? (editingSilshuch ? "עריכת שיבוץ" : "יצירת שיבוץ חדש") : "שיבוץ משקפות"}
+                  </h1>
+                  <p className="text-slate-500 text-lg font-medium tracking-wide">
+                    {viewMode === "form" ? "הזנת פרטים והקצאת מכשירים" : "מרכז ניהול הקצאות ומלאי משקפות"}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-                  {viewMode === "form" ? (editingSilshuch ? "עריכת שיבוץ" : "יצירת שיבוץ חדש") : "שיבוץ משקפות"}
-                </h1>
-                <p className="text-slate-500 text-base font-medium">
-                  {viewMode === "form" ? "הזנת פרטים והקצאת מכשירים" : "מרכז ניהול הקצאות ומלאי משקפות"}
-                </p>
-              </div>
-            </div>
             
             {viewMode === "list" && (
                 <div className="flex gap-3">
@@ -563,11 +564,15 @@ export default function DeviceAssignments() {
 
         {/* List View */}
         {viewMode === "list" && (
-          <div className="space-y-6">
-            <h2 className="text-xl font-bold text-slate-800 border-r-4 border-cyan-500 pr-3">שיבוצים קיימים</h2>
+          <div className="space-y-8">
+            <div className="flex items-center gap-4 border-b border-slate-200 pb-4">
+                <div className="w-2 h-8 bg-[#00d4ff] rounded-full"></div>
+                <h2 className="text-2xl font-bold text-[#2d1b69]">שיבוצים פעילים</h2>
+            </div>
             
             {allSilshuchim.length === 0 ? (
-              <div className="bg-white rounded-2xl p-12 text-center shadow-sm border border-slate-100">
+              <div className="bg-white rounded-3xl p-16 text-center shadow-xl border border-slate-100/50 relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#6b46c1] to-[#00d4ff]"></div>
                 <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
                     <Stamp className="w-10 h-10 text-slate-300" />
                 </div>
@@ -579,56 +584,61 @@ export default function DeviceAssignments() {
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                 {allSilshuchim.map(silshuch => (
                   <motion.div
                     key={silshuch.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    whileHover={{ scale: 1.02, y: -5 }}
-                    transition={{ duration: 0.2 }}
+                    whileHover={{ scale: 1.02 }}
+                    transition={{ duration: 0.3 }}
                   >
                     <div 
-                        className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden border border-slate-100 flex flex-col h-full group"
+                        className="bg-white rounded-[2rem] shadow-lg hover:shadow-2xl hover:shadow-[#6b46c1]/10 transition-all duration-300 cursor-pointer overflow-hidden border border-slate-100 flex flex-col h-full group relative"
                         onClick={() => viewSilshuch(silshuch)}
                     >
-                      {/* Card Header Color Strip */}
-                      <div className={`h-2 w-full ${silshuch.mode === "static" ? "bg-gradient-to-r from-purple-500 to-purple-400" : "bg-gradient-to-r from-cyan-500 to-cyan-400"}`}></div>
-                      
-                      <div className="p-5 flex-1 flex flex-col">
-                        <div className="flex items-start justify-between mb-3">
-                           <Badge variant="outline" className={`${silshuch.mode === "static" ? "bg-purple-50 text-purple-700 border-purple-200" : "bg-cyan-50 text-cyan-700 border-cyan-200"} px-2 py-0.5 text-xs font-bold`}>
+                      {/* Artistic header */}
+                      <div className={`h-24 w-full relative overflow-hidden ${silshuch.mode === "static" ? "bg-[#6b46c1]" : "bg-[#00d4ff]"}`}>
+                         <div className="absolute inset-0 bg-white/10 mix-blend-overlay"></div>
+                         <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-white/20 rounded-full blur-xl"></div>
+                         <div className="absolute top-4 left-4">
+                             <Badge className="bg-white/90 backdrop-blur text-slate-900 border-none shadow-sm px-3 py-1 text-xs font-bold">
                                 {silshuch.mode === "static" ? "סטטי" : "דינמי"}
-                           </Badge>
-                           {silshuch.created_date && (
-                              <span className="text-[10px] text-slate-400 bg-slate-50 px-2 py-1 rounded-full">
-                                {format(new Date(silshuch.created_date), 'dd/MM/yy')}
-                              </span>
-                            )}
+                             </Badge>
+                         </div>
+                      </div>
+                      
+                      <div className="p-6 flex-1 flex flex-col -mt-6 relative z-10">
+                        <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-100 mb-4 min-h-[80px] flex flex-col justify-center">
+                            <h3 className="text-xl font-bold text-[#2d1b69] leading-tight mb-1 line-clamp-2">
+                                {silshuch.assignmentName}
+                            </h3>
+                            <div className="text-xs text-slate-400 font-medium">
+                                {silshuch.created_date ? format(new Date(silshuch.created_date), 'dd/MM/yyyy') : '-'}
+                            </div>
                         </div>
                         
-                        <h3 className="text-lg font-bold text-slate-800 mb-2 line-clamp-1 group-hover:text-purple-700 transition-colors">
-                            {silshuch.assignmentName}
-                        </h3>
-                        
-                        <p className="text-sm text-slate-500 mb-4 line-clamp-2 flex-1">
+                        <p className="text-sm text-slate-500 mb-6 line-clamp-3 leading-relaxed flex-1 px-1">
                             {silshuch.details || "אין פרטים נוספים"}
                         </p>
                         
                         <div className="flex items-center justify-between pt-4 border-t border-slate-100 mt-auto">
-                            <div className="flex items-center gap-2 text-sm font-medium text-slate-600">
-                                <div className={`p-1.5 rounded-full ${silshuch.mode === "static" ? "bg-purple-100 text-purple-600" : "bg-cyan-100 text-cyan-600"}`}>
-                                    <VRIcon className="w-3.5 h-3.5" />
+                            <div className="flex items-center gap-3">
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${silshuch.mode === "static" ? "bg-[#6b46c1]/10 text-[#6b46c1]" : "bg-[#00d4ff]/10 text-[#009bc2]"}`}>
+                                    <VRIcon className="w-4 h-4" />
                                 </div>
-                                <span>
-                                    {silshuch.mode === "static" ? `${(silshuch.selectedHeadsets || []).length} משקפות` : `${silshuch.numberOfSessions} מפגשים`}
+                                <span className="font-bold text-slate-700 text-sm">
+                                    {silshuch.mode === "static" ? `${(silshuch.selectedHeadsets || []).length}` : `${silshuch.numberOfSessions}`}
+                                    <span className="font-normal text-slate-400 text-xs mr-1">
+                                        {silshuch.mode === "static" ? 'משקפות' : 'מפגשים'}
+                                    </span>
                                 </span>
                             </div>
                             
                             <Button 
                                 size="icon" 
                                 variant="ghost" 
-                                className="h-8 w-8 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors" 
+                                className="h-8 w-8 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors" 
                                 onClick={(e) => deleteSilshuch(silshuch, e)}
                             >
                                 <Trash2 className="w-4 h-4" />
