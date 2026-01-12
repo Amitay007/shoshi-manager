@@ -982,32 +982,53 @@ export default function DeviceAssignments() {
               </div>
             )}
 
-            <div className="mb-6">
-              <Card className="border-2 border-green-200">
-                <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50">
-                  <CardTitle className="flex items-center gap-2"><Save className="w-5 h-5 text-green-600" /> פעולות</CardTitle>
-                </CardHeader>
-                <CardContent className="pt-4 space-y-3">
-                  <div className="flex flex-row gap-3">
+            {/* Actions Footer */}
+            <div className="sticky bottom-4 z-10">
+              <div className="bg-white/90 backdrop-blur-md border border-slate-200 shadow-2xl rounded-2xl p-4 max-w-5xl mx-auto">
+                <div className="flex items-center gap-4">
                     {!isReadOnly && (
-                      <Button onClick={saveSilshuch} disabled={saving || creatingCalendarEvent} className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 text-white gap-2 h-12 text-base">
-                        <Save className="w-5 h-5" /> {saving ? "שומר..." : "שמור שיבוץ"}
+                      <Button 
+                        onClick={saveSilshuch} 
+                        disabled={saving || creatingCalendarEvent} 
+                        className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 text-white gap-2 h-12 text-lg shadow-lg hover:shadow-green-200/50 transition-all hover:-translate-y-0.5 rounded-xl"
+                      >
+                        <Save className="w-5 h-5" /> 
+                        {saving ? "שומר נתונים..." : "שמור שיבוץ"}
                       </Button>
                     )}
-                    <Button onClick={generateSummary} className="flex-1 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 text-white gap-2 h-12 text-base">
-                      <CheckCircle className="w-5 h-5" /> סיכום WhatsApp
+                    <Button 
+                        onClick={generateSummary} 
+                        className={`flex-1 h-12 text-lg gap-2 shadow-lg transition-all hover:-translate-y-0.5 rounded-xl ${!isReadOnly ? "bg-white text-slate-700 border-2 border-slate-100 hover:border-purple-200 hover:bg-purple-50" : "bg-gradient-to-r from-purple-600 to-cyan-600 text-white"}`}
+                        variant={!isReadOnly ? "outline" : "default"}
+                    >
+                      <MessageSquare className="w-5 h-5" /> 
+                      צור סיכום WhatsApp
                     </Button>
-                  </div>
-                  {showSummary && summaryText && (
-                    <div className="space-y-3">
-                      <Textarea value={summaryText} readOnly className="min-h-[200px] bg-slate-50 font-mono text-sm" />
-                      <Button onClick={copyToClipboard} variant="outline" className="w-full gap-2">
-                        <Copy className="w-4 h-4" /> העתק ללוח
-                      </Button>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                </div>
+                
+                {/* Summary Expandable */}
+                <AnimatePresence>
+                    {showSummary && summaryText && (
+                        <motion.div 
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="overflow-hidden"
+                        >
+                            <div className="mt-4 pt-4 border-t border-slate-100">
+                                <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 relative group">
+                                    <Textarea value={summaryText} readOnly className="min-h-[120px] bg-transparent border-none focus:ring-0 resize-none font-mono text-sm" />
+                                    <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <Button onClick={copyToClipboard} size="sm" className="bg-slate-800 text-white hover:bg-slate-700 shadow-md">
+                                            <Copy className="w-3 h-3 mr-1" /> העתק
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+              </div>
             </div>
 
             <Dialog open={isHeadsetModalOpen} onOpenChange={setIsHeadsetModalOpen}>
