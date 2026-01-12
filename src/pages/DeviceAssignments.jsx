@@ -1093,7 +1093,7 @@ export default function DeviceAssignments() {
                           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-[250px] p-0">
+                      <PopoverContent className="w-[250px] p-0 z-[200]">
                         <Command>
                           <CommandInput placeholder="חפש אפליקציה..." className="text-right" />
                           <CommandList>
@@ -1101,6 +1101,12 @@ export default function DeviceAssignments() {
                             <CommandGroup>
                                 <CommandItem
                                   onSelect={() => {
+                                    setFilterAppId(null);
+                                    setIsFilterPopoverOpen(false);
+                                  }}
+                                  onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
                                     setFilterAppId(null);
                                     setIsFilterPopoverOpen(false);
                                   }}
@@ -1118,6 +1124,32 @@ export default function DeviceAssignments() {
                                   key={app.id}
                                   value={app.name}
                                   onSelect={() => {
+                                    const newAppId = app.id === filterAppId ? null : app.id;
+                                    setFilterAppId(newAppId);
+                                    
+                                    if (newAppId) {
+                                        const newSelection = new Set(tempSelection);
+                                        let addedCount = 0;
+                                        allHeadsets.forEach(device => {
+                                            const installedApps = deviceAppMap[device.id];
+                                            if (installedApps && installedApps.has(newAppId) && !device.is_disabled) {
+                                                newSelection.add(device.id);
+                                                addedCount++;
+                                            }
+                                        });
+                                        setTempSelection(newSelection);
+                                        if (addedCount > 0) {
+                                            toast({
+                                                title: "בחירה אוטומטית",
+                                                description: `סומנו ${addedCount} משקפות המכילות את האפליקציה`,
+                                            });
+                                        }
+                                    }
+                                    setIsFilterPopoverOpen(false);
+                                  }}
+                                  onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
                                     const newAppId = app.id === filterAppId ? null : app.id;
                                     setFilterAppId(newAppId);
                                     
@@ -1230,7 +1262,7 @@ export default function DeviceAssignments() {
                           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-[250px] p-0">
+                      <PopoverContent className="w-[250px] p-0 z-[200]">
                         <Command>
                           <CommandInput placeholder="חפש אפליקציה..." className="text-right" />
                           <CommandList>
@@ -1238,6 +1270,12 @@ export default function DeviceAssignments() {
                             <CommandGroup>
                                 <CommandItem
                                   onSelect={() => {
+                                    setProgramFilterAppId(null);
+                                    setIsProgramFilterPopoverOpen(false);
+                                  }}
+                                  onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
                                     setProgramFilterAppId(null);
                                     setIsProgramFilterPopoverOpen(false);
                                   }}
@@ -1255,6 +1293,12 @@ export default function DeviceAssignments() {
                                   key={app.id}
                                   value={app.name}
                                   onSelect={() => {
+                                    setProgramFilterAppId(app.id === programFilterAppId ? null : app.id);
+                                    setIsProgramFilterPopoverOpen(false);
+                                  }}
+                                  onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
                                     setProgramFilterAppId(app.id === programFilterAppId ? null : app.id);
                                     setIsProgramFilterPopoverOpen(false);
                                   }}
