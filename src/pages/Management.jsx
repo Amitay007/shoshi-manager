@@ -2,7 +2,8 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Card, CardTitle, CardContent, CardHeader } from "@/components/ui/card";
-import { Users, Wallet, FileText, BarChart3, Briefcase, Building2, Calendar, Receipt } from "lucide-react";
+import { Users, Wallet, FileText, BarChart3, Briefcase, Building2, Calendar, Receipt, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import BackHomeButtons from "@/components/common/BackHomeButtons";
 
 export default function Management() {
@@ -42,20 +43,24 @@ export default function Management() {
             </Card>
           </Link>
 
-          {/* Yoya Team - Added per request */}
-          <Link to={createPageUrl("TeachersList")}>
-            <Card className="bg-cyan-50 hover:bg-cyan-100/50 hover:shadow-xl transition-all duration-300 border-cyan-200 border cursor-pointer h-full group ring-1 ring-cyan-100">
-              <CardContent className="p-6 flex flex-col items-center text-center gap-4">
-                <div className="w-16 h-16 bg-cyan-100 text-cyan-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
-                  <Users className="w-8 h-8" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-cyan-900">צוות יויה</h3>
-                  <p className="text-cyan-700 mt-1">ניהול כרטיסי עובד ושעות</p>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
+          {/* Yoya Team - Modified to include Create button */}
+          <Card className="bg-cyan-50 hover:bg-cyan-100/50 hover:shadow-xl transition-all duration-300 border-cyan-200 border cursor-pointer h-full group ring-1 ring-cyan-100 relative">
+            <Link to={createPageUrl("TeachersList")} className="absolute inset-0 z-0" aria-label="View Team" />
+            <CardContent className="p-6 flex flex-col items-center text-center gap-4 relative z-10 pointer-events-none">
+              <div className="w-16 h-16 bg-cyan-100 text-cyan-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm pointer-events-auto">
+                <Users className="w-8 h-8" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-cyan-900">צוות יויה</h3>
+                <p className="text-cyan-700 mt-1 mb-4">ניהול כרטיסי עובד ושעות</p>
+                <Link to={createPageUrl("CreateTeacher")} className="pointer-events-auto inline-block">
+                  <Button size="sm" className="bg-cyan-600 hover:bg-cyan-700 text-white gap-2 rounded-full px-4 shadow-md hover:shadow-lg transform transition hover:-translate-y-0.5">
+                    <Plus className="w-4 h-4" /> עובד חדש
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
           
           {/* Finance */}
           <Link to={createPageUrl("CashFlow")}>

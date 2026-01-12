@@ -39,12 +39,13 @@ import SyllabusHub from './pages/SyllabusHub';
 import SyllabusValuesManager from './pages/SyllabusValuesManager';
 import SyllabusWizard from './pages/SyllabusWizard';
 import TeacherAgenda from './pages/TeacherAgenda';
+import TeacherProfile from './pages/TeacherProfile';
 import TeachersList from './pages/TeachersList';
 import UpdateAppStatus from './pages/UpdateAppStatus';
 import UpdateAppsFromPDF from './pages/UpdateAppsFromPDF';
 import UploadLogo from './pages/UploadLogo';
 import Version2 from './pages/Version2';
-import TeacherProfile from './pages/TeacherProfile';
+import CreateTeacher from './pages/CreateTeacher';
 import __Layout from './Layout.jsx';
 
 
@@ -90,12 +91,13 @@ export const PAGES = {
     "SyllabusValuesManager": SyllabusValuesManager,
     "SyllabusWizard": SyllabusWizard,
     "TeacherAgenda": TeacherAgenda,
+    "TeacherProfile": TeacherProfile,
     "TeachersList": TeachersList,
     "UpdateAppStatus": UpdateAppStatus,
     "UpdateAppsFromPDF": UpdateAppsFromPDF,
     "UploadLogo": UploadLogo,
     "Version2": Version2,
-    "TeacherProfile": TeacherProfile,
+    "CreateTeacher": CreateTeacher,
 }
 
 export const pagesConfig = {
