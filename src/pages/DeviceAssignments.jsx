@@ -448,79 +448,104 @@ export default function DeviceAssignments() {
         </div>
 
         {/* Desktop Header */}
-        <div className="mb-6 hidden lg:block">
-          <div className="flex justify-between items-start mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-xl flex items-center justify-center shadow-lg">
-                <Stamp className="text-white" size={28} />
+        <div className="mb-8 hidden lg:block">
+          <div className="flex justify-between items-center mb-8">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-gradient-to-br from-purple-600 to-cyan-600 rounded-2xl flex items-center justify-center shadow-xl transform rotate-3 hover:rotate-6 transition-transform">
+                <Stamp className="text-white w-8 h-8" />
               </div>
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-purple-900">
+                <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
                   {viewMode === "form" ? (editingSilshuch ? "עריכת שיבוץ" : "יצירת שיבוץ חדש") : "שיבוץ משקפות"}
                 </h1>
-                <p className="text-slate-600 text-sm mt-1">
-                  {viewMode === "form" ? "אנא מלא את פרטי השיבוץ" : "ניהול הקצאת משקפות"}
+                <p className="text-slate-500 text-base font-medium">
+                  {viewMode === "form" ? "הזנת פרטים והקצאת מכשירים" : "מרכז ניהול הקצאות ומלאי משקפות"}
                 </p>
               </div>
             </div>
+            
+            {viewMode === "list" && (
+                <div className="flex gap-3">
+                    <BackHomeButtons backLabel="חזרה לראשי" showHomeButton={true} className="h-12" />
+                    <Button onClick={createNewSilshuch} className="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 gap-2 h-12 px-6 text-lg rounded-xl shadow-lg transition-all hover:scale-105">
+                      <Plus className="w-5 h-5" />
+                      שיבוץ חדש
+                    </Button>
+                </div>
+            )}
           </div>
 
-          {/* New Top Section with 3 Cards */}
+          {/* Dashboard Stats Section */}
           {viewMode === "list" && (
-            <div className="grid grid-cols-12 gap-6 mb-8">
-              {/* Left Column: Faulty Headsets List */}
-              <Card className="col-span-12 lg:col-span-4 h-64 overflow-hidden border-2 border-slate-200">
-                <CardHeader className="py-3 bg-slate-50 border-b">
-                  <CardTitle className="text-base font-bold text-slate-700">איזה משקפות מתקלקלות</CardTitle>
+            <div className="grid grid-cols-12 gap-6 mb-10">
+              
+              {/* Stat Card: Date */}
+              <Card className="col-span-6 lg:col-span-3 border-none shadow-md bg-white overflow-hidden relative group">
+                 <div className="absolute top-0 right-0 w-2 h-full bg-purple-500"></div>
+                 <CardContent className="p-6 flex flex-col items-center justify-center h-full relative z-10">
+                    <div className="mb-2 p-3 bg-purple-50 rounded-full text-purple-600 group-hover:bg-purple-100 transition-colors">
+                        <Calendar className="w-6 h-6" />
+                    </div>
+                    <div className="text-sm font-medium text-slate-500 mb-1">תאריך נוכחי</div>
+                    <div className="text-3xl font-bold text-slate-800 tracking-tight">{format(new Date(), 'dd/MM')}</div>
+                    <div className="text-xs font-medium text-purple-600 mt-1 bg-purple-50 px-2 py-0.5 rounded-full">{todayHebrewDate}</div>
+                 </CardContent>
+              </Card>
+
+              {/* Stat Card: Faulty */}
+              <Card className="col-span-6 lg:col-span-3 border-none shadow-md bg-white overflow-hidden relative group">
+                 <div className="absolute top-0 right-0 w-2 h-full bg-red-500"></div>
+                 <CardContent className="p-6 flex flex-col items-center justify-center h-full relative z-10">
+                    <div className="mb-2 p-3 bg-red-50 rounded-full text-red-600 group-hover:bg-red-100 transition-colors">
+                        <Trash2 className="w-6 h-6" />
+                    </div>
+                    <div className="text-sm font-medium text-slate-500 mb-1">משקפות תקולות</div>
+                    <div className="text-3xl font-bold text-slate-800 tracking-tight">{faultyHeadsets.length}</div>
+                    <div className="text-xs text-slate-400 mt-1">דורש טיפול</div>
+                 </CardContent>
+              </Card>
+
+              {/* Calculator Action Card */}
+              <Link to={createPageUrl("BinocularCalculator")} className="col-span-12 lg:col-span-2">
+                <Card className="h-full border-none shadow-md bg-gradient-to-br from-slate-800 to-slate-900 hover:from-slate-700 hover:to-slate-800 transition-all cursor-pointer group text-white">
+                    <CardContent className="p-6 flex flex-col items-center justify-center h-full">
+                        <div className="mb-3 p-3 bg-white/10 rounded-full group-hover:scale-110 transition-transform">
+                            <Repeat className="w-6 h-6 text-cyan-400" />
+                        </div>
+                        <h3 className="text-lg font-bold text-center leading-tight">מחשבון<br/>משקפות</h3>
+                    </CardContent>
+                </Card>
+              </Link>
+
+              {/* Faulty List */}
+              <Card className="col-span-12 lg:col-span-4 border-none shadow-md bg-white flex flex-col">
+                <CardHeader className="py-4 px-6 border-b bg-slate-50/50">
+                  <CardTitle className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                    פירוט תקלות
+                  </CardTitle>
                 </CardHeader>
-                <CardContent className="p-0 overflow-y-auto h-full pb-12">
+                <div className="flex-1 overflow-y-auto max-h-[140px] p-2 custom-scrollbar">
                   {faultyHeadsets.length > 0 ? (
-                    <div className="divide-y">
+                    <div className="space-y-1">
                       {faultyHeadsets.map(device => (
-                        <div key={device.id} className="p-3 hover:bg-slate-50 flex justify-between items-center text-sm">
-                          <span className="font-medium text-slate-800">משקפת {device.binocular_number}</span>
-                          <span className="text-slate-500 text-xs truncate max-w-[150px]">{device.primary_email}</span>
+                        <div key={device.id} className="p-2 hover:bg-slate-50 rounded-md flex justify-between items-center text-sm transition-colors border border-transparent hover:border-slate-100">
+                          <div className="flex items-center gap-2">
+                             <Badge variant="outline" className="bg-white border-slate-200 text-slate-700 font-mono">#{device.binocular_number}</Badge>
+                             <span className="text-slate-600 text-xs truncate max-w-[120px]">{device.primary_email}</span>
+                          </div>
+                          <Badge variant="secondary" className="bg-red-50 text-red-600 text-[10px] px-1.5">תקול</Badge>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-8 text-slate-400">אין משקפות תקולות</div>
+                    <div className="h-full flex flex-col items-center justify-center text-slate-400">
+                        <CheckCircle className="w-8 h-8 mb-1 opacity-20" />
+                        <span className="text-xs">אין תקלות ידועות</span>
+                    </div>
                   )}
-                </CardContent>
-              </Card>
-
-              {/* Middle Column: Date & Faulty Count */}
-              <div className="col-span-12 lg:col-span-2 flex flex-col gap-4">
-                <Card className="flex-1 flex flex-col items-center justify-center border-2 border-slate-200 text-center p-4">
-                  <h3 className="text-lg font-bold text-slate-700 mb-2">תאריך של היום</h3>
-                  <div className="text-3xl font-bold text-purple-600">{format(new Date(), 'dd/MM')}</div>
-                  <div className="text-xs text-slate-500 mt-1">{todayHebrewDate}</div>
-                </Card>
-                <Card className="flex-1 flex flex-col items-center justify-center border-2 border-slate-200 text-center p-4">
-                  <h3 className="text-lg font-bold text-slate-700 mb-2">משקפות תקולות</h3>
-                  <div className="text-4xl font-bold text-red-500">{faultyHeadsets.length}</div>
-                </Card>
-              </div>
-
-              {/* Right Column: Calculator Button */}
-              <div className="col-span-12 lg:col-span-6">
-                <div className="flex flex-col gap-4 h-full">
-                  <Link to={createPageUrl("BinocularCalculator")} className="w-full">
-                    <Button variant="outline" className="w-full h-12 border-red-500 text-red-500 hover:bg-red-50 hover:text-red-600 text-lg font-medium border-2">
-                      מחשבון משקפות
-                    </Button>
-                  </Link>
-                  
-                  {/* Existing Action Buttons */}
-                  <div className="flex gap-2 mt-auto">
-                    <Button onClick={createNewSilshuch} className="flex-1 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 gap-2 h-12 text-lg">
-                      <Plus className="w-5 h-5" />
-                      צור שיבוץ חדש
-                    </Button>
-                    <BackHomeButtons backLabel="לעמוד הקודם" showHomeButton={false} className="h-12" />
-                  </div>
                 </div>
-              </div>
+              </Card>
             </div>
           )}
 
@@ -540,59 +565,79 @@ export default function DeviceAssignments() {
 
         {/* List View */}
         {viewMode === "list" && (
-          <div className="space-y-4">
+          <div className="space-y-6">
+            <h2 className="text-xl font-bold text-slate-800 border-r-4 border-cyan-500 pr-3">שיבוצים קיימים</h2>
+            
             {allSilshuchim.length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <Stamp className="w-16 h-16 mx-auto mb-4 text-slate-300" />
-                  <h3 className="text-xl font-semibold text-slate-700 mb-2">אין שיבוצים</h3>
-                  <p className="text-slate-500 mb-4">צור שיבוץ חדש כדי להתחיל</p>
-                  <Button onClick={createNewSilshuch} className="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 gap-2">
-                    <Plus className="w-5 h-5" />
-                    צור שיבוץ חדש
-                  </Button>
-                </CardContent>
-              </Card>
+              <div className="bg-white rounded-2xl p-12 text-center shadow-sm border border-slate-100">
+                <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Stamp className="w-10 h-10 text-slate-300" />
+                </div>
+                <h3 className="text-2xl font-bold text-slate-700 mb-2">אין שיבוצים במערכת</h3>
+                <p className="text-slate-500 mb-8 max-w-md mx-auto">צור שיבוץ חדש כדי להתחיל לנהל את הקצאת המשקפות לפעילויות השונות.</p>
+                <Button onClick={createNewSilshuch} className="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 gap-2 px-8 py-6 text-lg rounded-xl shadow-lg">
+                  <Plus className="w-5 h-5" />
+                  צור שיבוץ ראשון
+                </Button>
+              </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {allSilshuchim.map(silshuch => (
                   <motion.div
                     key={silshuch.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    whileHover={{ scale: 1.02, y: -4 }}
+                    whileHover={{ scale: 1.02, y: -5 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <Card className="hover:shadow-lg transition-shadow cursor-pointer relative h-full flex flex-col" onClick={() => viewSilshuch(silshuch)}>
-                      <CardHeader className={`${silshuch.mode === "static" ? "bg-gradient-to-r from-purple-50 to-purple-100" : "bg-gradient-to-r from-cyan-50 to-cyan-100"}`}>
-                        <div className="flex items-center justify-between mb-2">
-                          <CardTitle className="text-lg">{silshuch.assignmentName}</CardTitle>
-                          <Badge className={silshuch.mode === "static" ? "bg-purple-600" : "bg-cyan-600"}>
-                            {silshuch.mode === "static" ? "סטטי" : "דינמי"}
-                          </Badge>
+                    <div 
+                        className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden border border-slate-100 flex flex-col h-full group"
+                        onClick={() => viewSilshuch(silshuch)}
+                    >
+                      {/* Card Header Color Strip */}
+                      <div className={`h-2 w-full ${silshuch.mode === "static" ? "bg-gradient-to-r from-purple-500 to-purple-400" : "bg-gradient-to-r from-cyan-500 to-cyan-400"}`}></div>
+                      
+                      <div className="p-5 flex-1 flex flex-col">
+                        <div className="flex items-start justify-between mb-3">
+                           <Badge variant="outline" className={`${silshuch.mode === "static" ? "bg-purple-50 text-purple-700 border-purple-200" : "bg-cyan-50 text-cyan-700 border-cyan-200"} px-2 py-0.5 text-xs font-bold`}>
+                                {silshuch.mode === "static" ? "סטטי" : "דינמי"}
+                           </Badge>
+                           {silshuch.created_date && (
+                              <span className="text-[10px] text-slate-400 bg-slate-50 px-2 py-1 rounded-full">
+                                {format(new Date(silshuch.created_date), 'dd/MM/yy')}
+                              </span>
+                            )}
                         </div>
-                        {silshuch.created_date && (
-                          <p className="text-xs text-slate-500">
-                            נוצר: {format(new Date(silshuch.created_date), 'dd/MM/yyyy HH:mm')}
-                          </p>
-                        )}
-                      </CardHeader>
-                      <CardContent className="pt-4 flex-1 relative">
-                        {silshuch.details && <p className="text-sm text-slate-600 mb-3">{silshuch.details}</p>}
-                        <div className="flex items-center gap-4 text-sm text-slate-500 mb-8">
-                          <div className="flex items-center gap-1">
-                            <VRIcon className="w-4 h-4" />
-                            {silshuch.mode === "static" ? `${(silshuch.selectedHeadsets || []).length} משקפות` : `${silshuch.numberOfSessions} מפגשים`}
-                          </div>
+                        
+                        <h3 className="text-lg font-bold text-slate-800 mb-2 line-clamp-1 group-hover:text-purple-700 transition-colors">
+                            {silshuch.assignmentName}
+                        </h3>
+                        
+                        <p className="text-sm text-slate-500 mb-4 line-clamp-2 flex-1">
+                            {silshuch.details || "אין פרטים נוספים"}
+                        </p>
+                        
+                        <div className="flex items-center justify-between pt-4 border-t border-slate-100 mt-auto">
+                            <div className="flex items-center gap-2 text-sm font-medium text-slate-600">
+                                <div className={`p-1.5 rounded-full ${silshuch.mode === "static" ? "bg-purple-100 text-purple-600" : "bg-cyan-100 text-cyan-600"}`}>
+                                    <VRIcon className="w-3.5 h-3.5" />
+                                </div>
+                                <span>
+                                    {silshuch.mode === "static" ? `${(silshuch.selectedHeadsets || []).length} משקפות` : `${silshuch.numberOfSessions} מפגשים`}
+                                </span>
+                            </div>
+                            
+                            <Button 
+                                size="icon" 
+                                variant="ghost" 
+                                className="h-8 w-8 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors" 
+                                onClick={(e) => deleteSilshuch(silshuch, e)}
+                            >
+                                <Trash2 className="w-4 h-4" />
+                            </Button>
                         </div>
-                        {/* Delete Button - Bottom Left */}
-                        <div className="absolute bottom-4 left-4">
-                          <Button size="sm" variant="ghost" className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 w-8 p-0" onClick={(e) => deleteSilshuch(silshuch, e)}>
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
+                      </div>
+                    </div>
                   </motion.div>
                 ))}
               </div>
