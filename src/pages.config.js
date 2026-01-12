@@ -31,6 +31,7 @@ import MasterSchedule from './pages/MasterSchedule';
 import MySchedule from './pages/MySchedule';
 import ProgramView from './pages/ProgramView';
 import Programs from './pages/Programs';
+import RelationalCenter from './pages/RelationalCenter';
 import ResearchPage from './pages/ResearchPage';
 import SchoolDetails from './pages/SchoolDetails';
 import Schools from './pages/Schools';
@@ -44,7 +45,6 @@ import UpdateAppStatus from './pages/UpdateAppStatus';
 import UpdateAppsFromPDF from './pages/UpdateAppsFromPDF';
 import UploadLogo from './pages/UploadLogo';
 import Version2 from './pages/Version2';
-import RelationalCenter from './pages/RelationalCenter';
 import __Layout from './Layout.jsx';
 
 
@@ -82,6 +82,7 @@ export const PAGES = {
     "MySchedule": MySchedule,
     "ProgramView": ProgramView,
     "Programs": Programs,
+    "RelationalCenter": RelationalCenter,
     "ResearchPage": ResearchPage,
     "SchoolDetails": SchoolDetails,
     "Schools": Schools,
@@ -95,7 +96,6 @@ export const PAGES = {
     "UpdateAppsFromPDF": UpdateAppsFromPDF,
     "UploadLogo": UploadLogo,
     "Version2": Version2,
-    "RelationalCenter": RelationalCenter,
 }
 
 export const pagesConfig = {
