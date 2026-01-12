@@ -134,50 +134,58 @@ export default function SyllabusHub() {
 
         {/* Statistics Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-0 shadow-lg">
+          <Card className="bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-slate-600">סה"כ סילבוסים</p>
-                  <p className="text-3xl font-bold text-blue-900">{stats.total}</p>
+                  <p className="text-sm font-medium text-slate-500">סה"כ סילבוסים</p>
+                  <p className="text-3xl font-bold text-slate-900">{stats.total}</p>
                 </div>
-                <BookOpen className="w-10 h-10 text-blue-600 opacity-50" />
+                <div className="p-3 bg-blue-50 rounded-xl">
+                  <BookOpen className="w-6 h-6 text-blue-600" />
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-amber-50 to-orange-50 border-0 shadow-lg">
+          <Card className="bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-slate-600">טיוטות</p>
-                  <p className="text-3xl font-bold text-amber-900">{stats.draft}</p>
+                  <p className="text-sm font-medium text-slate-500">טיוטות</p>
+                  <p className="text-3xl font-bold text-slate-900">{stats.draft}</p>
                 </div>
-                <Filter className="w-10 h-10 text-amber-600 opacity-50" />
+                <div className="p-3 bg-amber-50 rounded-xl">
+                  <Filter className="w-6 h-6 text-amber-600" />
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-0 shadow-lg">
+          <Card className="bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-slate-600">מאושרים</p>
-                  <p className="text-3xl font-bold text-green-900">{stats.final}</p>
+                  <p className="text-sm font-medium text-slate-500">מאושרים</p>
+                  <p className="text-3xl font-bold text-slate-900">{stats.final}</p>
                 </div>
-                <GraduationCap className="w-10 h-10 text-green-600 opacity-50" />
+                <div className="p-3 bg-green-50 rounded-xl">
+                  <GraduationCap className="w-6 h-6 text-green-600" />
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-0 shadow-lg">
+          <Card className="bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-slate-600">פעילים</p>
-                  <p className="text-3xl font-bold text-purple-900">{stats.active}</p>
+                  <p className="text-sm font-medium text-slate-500">פעילים</p>
+                  <p className="text-3xl font-bold text-slate-900">{stats.active}</p>
                 </div>
-                <Users className="w-10 h-10 text-purple-600 opacity-50" />
+                <div className="p-3 bg-purple-50 rounded-xl">
+                  <Users className="w-6 h-6 text-purple-600" />
+                </div>
               </div>
             </CardContent>
           </Card>

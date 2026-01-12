@@ -22,7 +22,6 @@ import AddAppsFromCatalogModal from "@/components/modals/AddAppsFromCatalogModal
 import { ScheduleEntry } from "@/entities/ScheduleEntry";
 import { Syllabus } from "@/entities/Syllabus";
 import { format } from "date-fns";
-import { motion, AnimatePresence } from "framer-motion";
 
 export default function GeneralInfo() {
   const [devices, setDevices] = useState([]);
@@ -505,14 +504,9 @@ export default function GeneralInfo() {
                 : "פעיל";
 
               return (
-                <motion.div 
+                <div 
                   key={device.id} 
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  whileHover={{ scale: 1.03, y: -4 }}
-                  transition={{ duration: 0.2 }}
-                  className={`bg-white rounded-xl shadow-sm border-2 border-slate-200 hover:shadow-lg transition-all duration-200 ${borderColor} border-t-4 cursor-pointer relative ${
+                  className={`bg-white rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition-all duration-200 ${borderColor} border-t-4 cursor-pointer relative transform hover:-translate-y-1 ${
                     isSelected ? "ring-2 ring-purple-500" : ""
                   }`}
                   onClick={() => openDeviceModal(device)}
@@ -608,18 +602,15 @@ export default function GeneralInfo() {
               <div className="col-span-full text-center py-12 text-slate-500">אין משקפות תואמות.</div>
             )}
             {filteredAndSortedDevices.map(device => (
-              <motion.div
+              <div
                 key={device.id}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                whileHover={{ scale: 1.05 }}
                 onClick={() => openDeviceModal(device)}
-                className="group cursor-pointer"
+                className="group cursor-pointer transform transition-transform hover:scale-105"
               >
-                <div className={`relative h-20 rounded-lg border-2 flex flex-col items-center justify-center transition-all shadow-sm hover:shadow-lg ${
+                <div className={`relative h-20 rounded-lg border flex flex-col items-center justify-center transition-all shadow-sm hover:shadow-md ${
                   device.is_disabled 
-                    ? 'bg-red-50 border-red-300 hover:bg-red-100' 
-                    : 'bg-green-50 border-green-300 hover:bg-green-100'
+                    ? 'bg-red-50 border-red-200 hover:bg-red-100' 
+                    : 'bg-green-50 border-green-200 hover:bg-green-100'
                 }`}>
                   <div className="text-2xl font-bold text-slate-800">
                     {device.binocular_number}
