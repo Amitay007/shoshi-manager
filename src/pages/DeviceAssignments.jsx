@@ -5,9 +5,6 @@ import { Syllabus } from "@/entities/Syllabus";
 import { InstitutionProgram } from "@/entities/InstitutionProgram";
 import { DeviceApp } from "@/entities/DeviceApp";
 import { VRApp } from "@/entities/VRApp";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { VRApp } from "@/entities/VRApp";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,11 +56,6 @@ export default function DeviceAssignments() {
   const [allApps, setAllApps] = useState([]);
   const [filterAppId, setFilterAppId] = useState(null);
   const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState(false);
-  
-  // App filter state
-  const [allApps, setAllApps] = useState([]);
-  const [filterAppId, setFilterAppId] = useState(null);
-  const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState(false);
 
   // Summary state
   const [summaryText, setSummaryText] = useState("");
@@ -106,7 +98,7 @@ export default function DeviceAssignments() {
       ]);
       
       setAllApps(apps || []);
-
+      
       // Build device app map
       const devMap = {};
       (deviceApps || []).forEach(da => {
@@ -187,8 +179,6 @@ export default function DeviceAssignments() {
       // Dynamic mode
       setTempSelection(new Set(selectedDynamicHeadsets[sessionIndex]));
     }
-    setFilterAppId(null); // Reset filter when opening modal
-    setFilterAppId(null); // Reset filter when opening modal
     setIsHeadsetModalOpen(true);
   };
 
@@ -1080,7 +1070,7 @@ export default function DeviceAssignments() {
                           variant="outline"
                           role="combobox"
                           aria-expanded={isFilterPopoverOpen}
-                          className="w-[250px] justify-between h-9 bg-white"
+                          className="w-[250px] justify-between h-9 bg-white text-right"
                         >
                           {filterAppId
                             ? allApps.find((app) => app.id === filterAppId)?.name
@@ -1090,7 +1080,7 @@ export default function DeviceAssignments() {
                       </PopoverTrigger>
                       <PopoverContent className="w-[250px] p-0">
                         <Command>
-                          <CommandInput placeholder="חפש אפליקציה..." />
+                          <CommandInput placeholder="חפש אפליקציה..." className="text-right" />
                           <CommandList>
                             <CommandEmpty>לא נמצאו אפליקציות.</CommandEmpty>
                             <CommandGroup>
@@ -1102,7 +1092,7 @@ export default function DeviceAssignments() {
                                   className="cursor-pointer"
                                 >
                                   <Check
-                                    className={`mr-2 h-4 w-4 ${
+                                    className={`ml-2 h-4 w-4 ${
                                       filterAppId === null ? "opacity-100" : "opacity-0"
                                     }`}
                                   />
@@ -1119,7 +1109,7 @@ export default function DeviceAssignments() {
                                   className="cursor-pointer"
                                 >
                                   <Check
-                                    className={`mr-2 h-4 w-4 ${
+                                    className={`ml-2 h-4 w-4 ${
                                       filterAppId === app.id ? "opacity-100" : "opacity-0"
                                     }`}
                                   />
