@@ -214,11 +214,11 @@ export default function Humanmanagement() {
             </Card>
           </Link>
 
-          <Link to={createPageUrl("MasterSchedule")}>
+          <Link to={createPageUrl("TeacherAgenda")}>
             <Card className="bg-white shadow-md rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center hover:shadow-lg transition-shadow cursor-pointer h-full">
               <Calendar className="w-10 h-10 text-green-600" />
-              <CardTitle className="text-lg font-semibold text-slate-900">יומן</CardTitle>
-              <p className="text-sm text-blue-600 font-medium">הבא: פגישת צוות 10:00</p>
+              <CardTitle className="text-lg font-semibold text-slate-900">אזור אישי (יומן)</CardTitle>
+              <p className="text-sm text-blue-600 font-medium">לחץ לצפייה בשיבוצים</p>
             </Card>
           </Link>
 
