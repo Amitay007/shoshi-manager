@@ -99,7 +99,6 @@ export default function DeviceAssignments() {
       setDeviceAppMap(devMap);
 
       const sortedDevices = (devices || [])
-        .filter(d => !d.is_disabled)
         .sort((a, b) => a.binocular_number - b.binocular_number);
       setAllHeadsets(sortedDevices);
       setAllSilshuchim(silshuchim || []);
@@ -487,8 +486,7 @@ export default function DeviceAssignments() {
                         <Calendar className="w-6 h-6" />
                     </div>
                     <div className="text-sm font-medium text-slate-500 mb-1">תאריך נוכחי</div>
-                    <div className="text-3xl font-bold text-slate-800 tracking-tight">{format(new Date(), 'dd/MM')}</div>
-                    <div className="text-xs font-medium text-purple-600 mt-1 bg-purple-50 px-2 py-0.5 rounded-full">{todayHebrewDate}</div>
+                    <div className="text-3xl font-bold text-slate-800 tracking-tight">{format(new Date(), 'dd/MM/yyyy')}</div>
                  </CardContent>
               </Card>
 
@@ -1040,7 +1038,7 @@ export default function DeviceAssignments() {
                 </DialogHeader>
                 <div className="overflow-y-auto max-h-[50vh] p-4">
                   <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                    {allHeadsets.map(device => (
+                    {allHeadsets.filter(d => !d.is_disabled).map(device => (
                       <div key={device.id} onClick={() => toggleHeadsetInTemp(device.id)} className={`relative p-4 rounded-lg border-2 cursor-pointer transition-all hover:shadow-md ${tempSelection.has(device.id) ? "border-purple-500 bg-purple-50" : "border-slate-200 bg-white hover:border-purple-300"}`}>
                         <div className="absolute top-2 right-2"><Checkbox checked={tempSelection.has(device.id)} /></div>
                         <div className="text-center pt-4">
