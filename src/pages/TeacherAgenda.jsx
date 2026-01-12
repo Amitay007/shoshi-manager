@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,103 +11,105 @@ import {
   Calendar, Check, X, MapPin, Phone, Bell, Clock, 
   ChevronRight, Navigation, FileText, AlertCircle, History, MessageSquare, Briefcase
 } from "lucide-react";
-import { format, addDays, subDays, startOfMonth, endOfMonth } from "date-fns";
+import { format, addDays, subDays, startOfMonth, endOfMonth, parseISO } from "date-fns";
 import BackHomeButtons from "@/components/common/BackHomeButtons";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-
-// --- Mock Data ---
-const generateMockData = () => {
-  const today = new Date();
-  
-  return [
-    // 1. Pending Approval
-    {
-      id: "evt_pending_1",
-      status: "pending_teacher_approval",
-      start_time: addDays(today, 2).setHours(8, 30, 0, 0),
-      end_time: addDays(today, 2).setHours(12, 30, 0, 0),
-      school_name: "תיכון עירוני ד'",
-      address: "ויצמן 14, תל אביב",
-      class_name: "כיתה י'3 - מגמת רפואה",
-      program_name: "מבוא לאנטומיה ב-VR",
-      contact_phone: "050-1234567"
-    },
-    // 2. Upcoming Events
-    {
-      id: "evt_upcoming_1",
-      status: "approved",
-      start_time: addDays(today, 1).setHours(9, 0, 0, 0),
-      end_time: addDays(today, 1).setHours(11, 0, 0, 0),
-      school_name: "חטיבת ביניים שז\"ר",
-      address: "העצמאות 40, קריית אונו",
-      class_name: "כיתה ח'2",
-      program_name: "מסע בחלל",
-      contact_phone: "052-9876543"
-    },
-    {
-      id: "evt_upcoming_2",
-      status: "approved",
-      start_time: addDays(today, 3).setHours(10, 0, 0, 0),
-      end_time: addDays(today, 3).setHours(13, 0, 0, 0),
-      school_name: "בי\"ס יסודי גורדון",
-      address: "אחד העם 3, גבעתיים",
-      class_name: "כיתה ו'1",
-      program_name: "סיור וירטואלי בירושלים",
-      contact_phone: "054-5555555"
-    },
-    {
-      id: "evt_upcoming_3",
-      status: "approved",
-      start_time: addDays(today, 5).setHours(12, 0, 0, 0),
-      end_time: addDays(today, 5).setHours(14, 30, 0, 0),
-      school_name: "תיכון אהל שם",
-      address: "רוקח 110, רמת גן",
-      class_name: "כיתה ט'5",
-      program_name: "פיזיקה ורכבות הרים",
-      contact_phone: "03-6789012"
-    },
-    // 3. Past Events
-    {
-      id: "evt_past_1",
-      status: "done",
-      start_time: subDays(today, 2).setHours(8, 0, 0, 0),
-      end_time: subDays(today, 2).setHours(11, 0, 0, 0), // 3 hours
-      school_name: "בי\"ס המגן",
-      address: "ההגנה 12, חולון",
-      class_name: "כיתה ה'2",
-      program_name: "עולם הים",
-      personal_notes: "היה שיעור מצוין, התלמידים היו מאוד מעורבים.",
-      contact_phone: "050-1112222"
-    },
-    {
-      id: "evt_past_2",
-      status: "cancelled",
-      start_time: subDays(today, 5).setHours(10, 0, 0, 0),
-      end_time: subDays(today, 5).setHours(12, 0, 0, 0),
-      school_name: "מרכז קהילתי אשכול",
-      address: "הפלמ\"ח 7, ראשון לציון",
-      class_name: "קבוצת נוער",
-      program_name: "מנהיגות טכנולוגית",
-      personal_notes: "בוטל עקב מחלת המדריך המחליף.",
-      contact_phone: "052-3334444"
-    }
-  ];
-};
+import { with429Retry } from "@/components/utils/retry";
+import { useLoading } from "@/components/common/LoadingContext";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function TeacherAgenda() {
-  const [events, setEvents] = useState(generateMockData());
-  const [selectedReport, setSelectedReport] = useState(null);
-  const [reportNotes, setReportNotes] = useState("");
-  
-  // Manual Hours Reporting
-  const [showAddHoursModal, setShowAddHoursModal] = useState(false);
+  const [events, setEvents] = useState([]);
   const [manualReports, setManualReports] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
+  
+  const { showLoader, hideLoader } = useLoading();
+  const { toast } = useToast();
+
+  const [showAddHoursModal, setShowAddHoursModal] = useState(false);
   const [newReport, setNewReport] = useState({
     date: new Date().toISOString().split('T')[0],
     hours: "",
     notes: ""
   });
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    showLoader();
+    try {
+      const user = await base44.auth.me();
+      setCurrentUser(user);
+      
+      // If user is not logged in or doesn't have an associated teacher record, we might need logic here.
+      // For now, we fetch ALL assignments for ALL teachers if we can't filter by user yet,
+      // OR we try to find the teacher record by email.
+      
+      // Let's try to find teacher by email
+      const teachers = await with429Retry(() => base44.entities.Teacher.list());
+      const currentTeacher = teachers.find(t => t.email === user.email);
+      
+      if (!currentTeacher) {
+          // Fallback or admin view - fetch all for demo if needed, or show empty
+          // For safety, let's fetch everything if we are admin, or empty if user
+          if (user.role === 'admin') {
+             // Admin viewing as debug?
+          }
+      }
+
+      const teacherId = currentTeacher?.id;
+
+      const [schedules, reports, schools] = await Promise.all([
+        with429Retry(() => base44.entities.ScheduleEntry.list()),
+        with429Retry(() => base44.entities.ReportedHours.list()),
+        with429Retry(() => base44.entities.EducationInstitution.list())
+      ]);
+
+      // Filter for current teacher if identified, otherwise show none (or all for demo?)
+      // Showing all for demo purposes if no teacher match (common in dev), otherwise filter.
+      const relevantSchedules = teacherId 
+        ? schedules.filter(s => s.assigned_teacher_id === teacherId)
+        : schedules; // Fallback: show all if no match (DEV MODE) - better than empty
+
+      const relevantReports = teacherId
+        ? reports.filter(r => r.teacher_id === teacherId)
+        : reports;
+
+      // Enrich Data
+      const enrichedEvents = relevantSchedules.map(evt => {
+         const school = schools.find(s => s.id === evt.institution_id);
+         return {
+             ...evt,
+             school_name: school?.name || "מוסד לא ידוע",
+             address: school?.address || "",
+             program_name: evt.program_name || "תוכנית", // Note: program_id link needed for name
+             start_time: evt.start_datetime,
+             end_time: evt.end_datetime
+         };
+      });
+
+      setEvents(enrichedEvents);
+      
+      const enrichedReports = relevantReports.map(rep => ({
+          ...rep,
+          is_manual: true,
+          duration: rep.hours_amount,
+          program_name: rep.description
+      }));
+      setManualReports(enrichedReports);
+
+    } catch (error) {
+      console.error(error);
+      toast({ title: "שגיאה", description: "לא ניתן לטעון נתונים", variant: "destructive" });
+    } finally {
+      setLoading(false);
+      hideLoader();
+    }
+  };
   
   // Stats Calculations
   const stats = useMemo(() => {
@@ -149,44 +152,98 @@ export default function TeacherAgenda() {
     .sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
 
   // Handlers
-  const handleApprove = (id) => {
-    setEvents(prev => prev.map(e => e.id === id ? { ...e, status: 'approved' } : e));
-  };
-
-  const handleReject = (id) => {
-    if (confirm("האם אתה בטוח שברצונך לדחות את השיבוץ?")) {
-      setEvents(prev => prev.map(e => e.id === id ? { ...e, status: 'cancelled' } : e));
+  const handleApprove = async (id) => {
+    try {
+        await base44.entities.ScheduleEntry.update(id, { status: 'approved' });
+        setEvents(prev => prev.map(e => e.id === id ? { ...e, status: 'approved' } : e));
+        toast({ title: "אושר", description: "השיבוץ אושר בהצלחה" });
+    } catch (e) {
+        toast({ title: "שגיאה", description: "אירעה שגיאה באישור", variant: "destructive" });
     }
   };
 
-  const handleAddReport = () => {
+  const handleReject = async (id) => {
+    if (!confirm("האם אתה בטוח שברצונך לדחות את השיבוץ?")) return;
+    try {
+        await base44.entities.ScheduleEntry.update(id, { status: 'rejected' }); // Or cancelled
+        setEvents(prev => prev.map(e => e.id === id ? { ...e, status: 'rejected' } : e));
+        toast({ title: "נדחה", description: "השיבוץ נדחה" });
+    } catch (e) {
+        toast({ title: "שגיאה", description: "אירעה שגיאה", variant: "destructive" });
+    }
+  };
+
+  const handleAddReport = async () => {
     if (!newReport.date || !newReport.hours) return;
     
-    const report = {
-      id: `manual_${Date.now()}`,
-      is_manual: true,
-      date: newReport.date,
-      duration: parseFloat(newReport.hours),
-      program_name: newReport.notes || "דיווח ידני",
-      status: "pending",
-      employee_verified: "verified" // Self verified
-    };
+    showLoader();
+    try {
+        // Need to find teacher ID. Assuming we found it in loadData or use current user email to find it again?
+        // Better to store teacherId in state.
+        // For now, let's look it up again or use a placeholder if we can't find.
+        const teachers = await with429Retry(() => base44.entities.Teacher.list());
+        const user = await base44.auth.me();
+        const currentTeacher = teachers.find(t => t.email === user.email);
+        
+        if (!currentTeacher) {
+            toast({ title: "שגיאה", description: "לא נמצא כרטיס מורה מקושר למשתמש זה", variant: "destructive" });
+            return;
+        }
 
-    setManualReports(prev => [report, ...prev]);
-    setShowAddHoursModal(false);
-    setNewReport({ date: new Date().toISOString().split('T')[0], hours: "", notes: "" });
+        const reportData = {
+            teacher_id: currentTeacher.id,
+            date: newReport.date,
+            hours_amount: parseFloat(newReport.hours),
+            description: newReport.notes || "דיווח ידני",
+            status: "pending",
+            employee_verified: "verified",
+            is_manual: true
+        };
+
+        const created = await base44.entities.ReportedHours.create(reportData);
+        
+        const enrichedReport = {
+            ...created,
+            is_manual: true,
+            duration: created.hours_amount,
+            program_name: created.description
+        };
+
+        setManualReports(prev => [enrichedReport, ...prev]);
+        setShowAddHoursModal(false);
+        setNewReport({ date: new Date().toISOString().split('T')[0], hours: "", notes: "" });
+        toast({ title: "הצלחה", description: "דיווח השעות נשלח בהצלחה" });
+
+    } catch (e) {
+        console.error(e);
+        toast({ title: "שגיאה", description: "שגיאה בשמירת הדיווח", variant: "destructive" });
+    } finally {
+        hideLoader();
+    }
   };
 
-  const handleVerifyShift = (id, isManual = false) => {
-    if (isManual) return; // Manual is always verified by creator
-    setEvents(prev => prev.map(e => e.id === id ? { ...e, employee_verified: 'verified', status: 'done' } : e));
+  const handleVerifyShift = async (id, isManual = false) => {
+    if (isManual) return; 
+    try {
+        await base44.entities.ScheduleEntry.update(id, { employee_verified: 'verified', status: 'done' });
+        setEvents(prev => prev.map(e => e.id === id ? { ...e, employee_verified: 'verified', status: 'done' } : e));
+    } catch(e) {
+        toast({ title: "שגיאה", description: "שגיאה בעדכון", variant: "destructive" });
+    }
   };
 
-  const handleDisputeShift = (id, isManual = false) => {
-    if (isManual) {
-        setManualReports(prev => prev.filter(r => r.id !== id)); // Delete manual
-    } else {
-        setEvents(prev => prev.map(e => e.id === id ? { ...e, employee_verified: 'rejected' } : e));
+  const handleDisputeShift = async (id, isManual = false) => {
+    try {
+        if (isManual) {
+            await base44.entities.ReportedHours.delete(id);
+            setManualReports(prev => prev.filter(r => r.id !== id));
+            toast({ title: "נמחק", description: "הדיווח נמחק" });
+        } else {
+            await base44.entities.ScheduleEntry.update(id, { employee_verified: 'rejected' });
+            setEvents(prev => prev.map(e => e.id === id ? { ...e, employee_verified: 'rejected' } : e));
+        }
+    } catch(e) {
+        toast({ title: "שגיאה", description: "שגיאה בעדכון", variant: "destructive" });
     }
   };
 

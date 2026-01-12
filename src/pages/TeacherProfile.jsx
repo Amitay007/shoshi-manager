@@ -83,13 +83,27 @@ export default function TeacherProfile() {
       });
 
       // Fetch Real Shifts (ScheduleEntry + ReportedHours)
-      const [scheduleEntries, reportedHours] = await Promise.all([
-        with429Retry(() => base44.entities.ScheduleEntry.list()),
-        with429Retry(() => base44.entities.ReportedHours.list())
-      ]);
+      let scheduleEntries = [];
+      let reportedHours = [];
+      
+      try {
+        const results = await Promise.allSettled([
+            with429Retry(() => base44.entities.ScheduleEntry.list()),
+            with429Retry(() => base44.entities.ReportedHours.list())
+        ]);
+        
+        scheduleEntries = results[0].status === 'fulfilled' ? results[0].value : [];
+        reportedHours = results[1].status === 'fulfilled' ? results[1].value : [];
+        
+        if (results[1].status === 'rejected') {
+            console.warn("Failed to fetch ReportedHours", results[1].reason);
+        }
+      } catch (err) {
+        console.error("Critical error fetching shifts", err);
+      }
 
       // Process Schedule Entries
-      const processedSchedule = scheduleEntries
+      const processedSchedule = (scheduleEntries || [])
         .filter(entry => entry.assigned_teacher_id === teacherId && entry.status !== 'cancelled')
         .map(entry => {
           const start = new Date(entry.start_datetime);
@@ -111,7 +125,7 @@ export default function TeacherProfile() {
         });
 
       // Process Reported Hours
-      const processedReports = reportedHours
+      const processedReports = (reportedHours || [])
         .filter(report => report.teacher_id === teacherId)
         .map(report => ({
           id: report.id,
@@ -231,8 +245,18 @@ export default function TeacherProfile() {
     return `${day}/${month}`;
   };
 
-  if (loading || !teacher) {
+  if (loading) {
     return <div className="p-8 text-center">טוען נתונים...</div>;
+  }
+
+  if (!teacher) {
+    return (
+        <div className="p-8 text-center bg-slate-50 min-h-screen flex flex-col items-center justify-center">
+            <h2 className="text-xl font-bold text-slate-800 mb-2">מורה לא נמצא</h2>
+            <p className="text-slate-600 mb-4">לא ניתן להציג את פרטי המורה. ייתכן שהמורה נמחק או שהמזהה שגוי.</p>
+            <BackHomeButtons backTo="TeachersList" backLabel="חזור לרשימה" />
+        </div>
+    );
   }
 
   return (
