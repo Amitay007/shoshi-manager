@@ -148,11 +148,25 @@ export default function SchoolDetails() {
       } else { // If schoolId doesn't exist, it's a new creation
         await with429Retry(() => EducationInstitution.create(school));
       }
-      navigate(createPageUrl("Schools")); // Navigate to Schools page after successful save
+      navigate(createPageUrl(`Schools?mode=${mode}`)); // Navigate to Schools page after successful save
     } catch (error) {
       console.error("Error saving school:", error);
       alert("שגיאה בשמירת הנתונים");
     } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteSchool = async () => {
+    if (!confirm("האם אתה בטוח שברצונך למחוק את המוסד? פעולה זו אינה הפיכה.")) return;
+    
+    setSaving(true);
+    try {
+      await with429Retry(() => EducationInstitution.delete(schoolId));
+      navigate(createPageUrl(`Schools?mode=${mode}`));
+    } catch (error) {
+      console.error("Error deleting school:", error);
+      alert("שגיאה במחיקת המוסד");
       setSaving(false);
     }
   };
@@ -200,11 +214,33 @@ export default function SchoolDetails() {
             {isNew ? "הוספת מוסד חינוך חדש" : school.name}
           </h1>
           <div className="flex items-center justify-center gap-2">
-            <Button onClick={handleSave} disabled={saving} className="bg-green-600 hover:bg-green-700 gap-2">
-              <Save className="w-4 h-4" />
-              {saving ? "שומר..." : "שמור"}
-            </Button>
-            <Link to={createPageUrl(isManager ? "CRMHub?mode=manager" : "CRMHub?mode=hr")}>
+            {isManager ? (
+               <Button onClick={handleSave} disabled={saving} className="bg-green-600 hover:bg-green-700 gap-2">
+                 <Save className="w-4 h-4" />
+                 {saving ? "שומר..." : "שמור"}
+               </Button>
+            ) : (
+               <Button disabled className="bg-slate-200 text-slate-400 gap-2 cursor-not-allowed hover:bg-slate-200">
+                 <Save className="w-4 h-4" />
+                 שמור
+               </Button>
+            )}
+
+            {!isNew && (
+                isManager ? (
+                    <Button onClick={handleDeleteSchool} disabled={saving} variant="destructive" className="gap-2">
+                        <Trash2 className="w-4 h-4" />
+                        מחק מוסד
+                    </Button>
+                ) : (
+                    <Button disabled variant="outline" className="bg-slate-100 text-slate-300 border-slate-200 gap-2 cursor-not-allowed">
+                        <Trash2 className="w-4 h-4" />
+                        מחק מוסד
+                    </Button>
+                )
+            )}
+
+            <Link to={createPageUrl(`Schools?mode=${mode}`)}>
               <Button variant="outline" className="gap-2">
                 חזרה <ArrowRight className="w-4 h-4" />
               </Button>
