@@ -1223,7 +1223,7 @@ export default function DeviceAssignments() {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
-          </>
+          </div>
         )}
       </div>
     </div>
