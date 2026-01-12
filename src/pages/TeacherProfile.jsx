@@ -25,10 +25,13 @@ export default function TeacherProfile() {
   // Personal Details State
   const [editMode, setEditMode] = useState(false);
   const [personalData, setPersonalData] = useState({
-    start_date: "",
+    start_work_date: "",
+    end_work_date: "",
+    job_title: "",
     hourlyRate: 0,
     cv_url: "",
-    notes: ""
+    notes: "",
+    management_notes: ""
   });
 
   // Date Range for Payroll
@@ -70,62 +73,60 @@ export default function TeacherProfile() {
 
       setTeacher(selectedTeacher);
       setPersonalData({
-        start_date: selectedTeacher.start_date || "",
+        start_work_date: selectedTeacher.start_work_date || "",
+        end_work_date: selectedTeacher.end_work_date || "",
+        job_title: selectedTeacher.job_title || "",
         hourlyRate: selectedTeacher.hourlyRate || 0,
         cv_url: selectedTeacher.cv_url || "",
-        notes: selectedTeacher.notes || ""
+        notes: selectedTeacher.notes || "",
+        management_notes: selectedTeacher.management_notes || ""
       });
 
-      // Mock shifts data for this teacher
-      const today = new Date();
-      const currentMonth = today.getMonth();
-      const currentYear = today.getFullYear();
+      // Fetch Real Shifts (ScheduleEntry + ReportedHours)
+      const [scheduleEntries, reportedHours] = await Promise.all([
+        with429Retry(() => base44.entities.ScheduleEntry.list()),
+        with429Retry(() => base44.entities.ReportedHours.list())
+      ]);
 
-      const mockShifts = [
-        {
-          id: "1",
-          teacher_id: teacherId,
-          date: "2026-01-03",
-          start_time: "08:00",
-          end_time: "14:00",
-          program_name: "מבוא ל-VR - כיתה ז'",
-          duration: 6
-        },
-        {
-          id: "2",
-          teacher_id: teacherId,
-          date: "2026-01-05",
-          start_time: "09:00",
-          end_time: "15:30",
-          program_name: "סדנת מציאות רבודה",
-          duration: 6.5
-        },
-        {
-          id: "3",
-          teacher_id: teacherId,
-          date: "2026-01-02",
-          start_time: "08:30",
-          end_time: "13:30",
-          program_name: "גיאוגרפיה במציאות מדומה",
-          duration: 5
-        },
-        {
-          id: "4",
-          teacher_id: teacherId,
-          date: "2026-01-06",
-          start_time: "10:00",
-          end_time: "16:00",
-          program_name: "חקר החלל ב-3D",
-          duration: 6
-        }
-      ].filter(shift => {
-        const shiftDate = new Date(shift.date);
-        return shiftDate.getMonth() === currentMonth && 
-               shiftDate.getFullYear() === currentYear &&
-               shiftDate <= today;
-      });
+      // Process Schedule Entries
+      const processedSchedule = scheduleEntries
+        .filter(entry => entry.assigned_teacher_id === teacherId && entry.status !== 'cancelled')
+        .map(entry => {
+          const start = new Date(entry.start_datetime);
+          const end = new Date(entry.end_datetime);
+          const duration = (end - start) / (1000 * 60 * 60);
+          
+          return {
+            id: entry.id,
+            type: 'schedule',
+            date: format(start, 'yyyy-MM-dd'),
+            start_time: format(start, 'HH:mm'),
+            end_time: format(end, 'HH:mm'),
+            program_name: 'שיבוץ מערכת', // Ideally fetch program name
+            duration: parseFloat(duration.toFixed(2)),
+            status: entry.status,
+            employee_verified: entry.employee_verified,
+            notes: entry.notes
+          };
+        });
 
-      setShifts(mockShifts);
+      // Process Reported Hours
+      const processedReports = reportedHours
+        .filter(report => report.teacher_id === teacherId)
+        .map(report => ({
+          id: report.id,
+          type: 'manual',
+          date: report.date,
+          start_time: '-',
+          end_time: '-',
+          program_name: report.description || 'דיווח ידני',
+          duration: report.hours_amount,
+          status: report.status,
+          employee_verified: report.employee_verified,
+          is_manual: true
+        }));
+
+      setShifts([...processedSchedule, ...processedReports]);
     } catch (error) {
       console.error("Error loading data:", error);
       toast({ title: "שגיאה", description: "לא הצלחנו לטעון את הנתונים", variant: "destructive" });
@@ -289,10 +290,13 @@ export default function TeacherProfile() {
                       <Button variant="outline" onClick={() => {
                         setEditMode(false);
                         setPersonalData({
-                          start_date: teacher.start_date || "",
+                          start_work_date: teacher.start_work_date || "",
+                          end_work_date: teacher.end_work_date || "",
+                          job_title: teacher.job_title || "",
                           hourlyRate: teacher.hourlyRate || 0,
                           cv_url: teacher.cv_url || "",
-                          notes: teacher.notes || ""
+                          notes: teacher.notes || "",
+                          management_notes: teacher.management_notes || ""
                         });
                       }}>
                         ביטול
@@ -323,18 +327,19 @@ export default function TeacherProfile() {
                 {/* HR Info */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   
-                  {/* Start Date */}
+                  {/* Job Title */}
                   <div>
                     <Label className="flex items-center gap-2 mb-2">
-                      <Calendar className="w-4 h-4 text-blue-600" />
-                      תאריך תחילת עבודה
+                      <Briefcase className="w-4 h-4 text-indigo-600" />
+                      תפקיד
                     </Label>
                     <Input
-                      type="date"
-                      value={personalData.start_date}
-                      onChange={(e) => setPersonalData({ ...personalData, start_date: e.target.value })}
+                      type="text"
+                      value={personalData.job_title}
+                      onChange={(e) => setPersonalData({ ...personalData, job_title: e.target.value })}
                       disabled={!editMode}
                       className={!editMode ? "bg-slate-50" : ""}
+                      placeholder="לדוגמה: מדריך בכיר"
                     />
                   </div>
 
@@ -351,6 +356,36 @@ export default function TeacherProfile() {
                       disabled={!editMode}
                       className={!editMode ? "bg-slate-50" : ""}
                       placeholder="0"
+                    />
+                  </div>
+
+                  {/* Start Date */}
+                  <div>
+                    <Label className="flex items-center gap-2 mb-2">
+                      <Calendar className="w-4 h-4 text-blue-600" />
+                      תאריך תחילת עבודה
+                    </Label>
+                    <Input
+                      type="date"
+                      value={personalData.start_work_date}
+                      onChange={(e) => setPersonalData({ ...personalData, start_work_date: e.target.value })}
+                      disabled={!editMode}
+                      className={!editMode ? "bg-slate-50" : ""}
+                    />
+                  </div>
+
+                  {/* End Date */}
+                  <div>
+                    <Label className="flex items-center gap-2 mb-2">
+                      <Calendar className="w-4 h-4 text-red-600" />
+                      תאריך סיום עבודה
+                    </Label>
+                    <Input
+                      type="date"
+                      value={personalData.end_work_date}
+                      onChange={(e) => setPersonalData({ ...personalData, end_work_date: e.target.value })}
+                      disabled={!editMode}
+                      className={!editMode ? "bg-slate-50" : ""}
                     />
                   </div>
 
@@ -408,16 +443,32 @@ export default function TeacherProfile() {
                     </div>
                   </div>
 
-                  {/* Manager Notes */}
+                  {/* Follow-up Log (Management Notes) */}
                   <div className="md:col-span-2">
-                    <Label className="mb-2 block">הערות מנהל</Label>
+                    <Label className="mb-2 flex items-center gap-2 text-amber-700 font-bold">
+                       <FileText className="w-4 h-4" />
+                       יומן מעקב / הערות מנהל (פרטי)
+                    </Label>
+                    <Textarea
+                      value={personalData.management_notes}
+                      onChange={(e) => setPersonalData({ ...personalData, management_notes: e.target.value })}
+                      disabled={!editMode}
+                      className={!editMode ? "bg-amber-50 border-amber-200" : "border-amber-400 focus:ring-amber-400"}
+                      placeholder="תיעוד שיחות, סיכומי פגישות ומידע רגיש..."
+                      rows={6}
+                    />
+                  </div>
+
+                  {/* General Notes */}
+                  <div className="md:col-span-2">
+                    <Label className="mb-2 block">הערות כלליות</Label>
                     <Textarea
                       value={personalData.notes}
                       onChange={(e) => setPersonalData({ ...personalData, notes: e.target.value })}
                       disabled={!editMode}
                       className={!editMode ? "bg-slate-50" : ""}
-                      placeholder="הערות אדמיניסטרטיביות..."
-                      rows={4}
+                      placeholder="הערות כלליות..."
+                      rows={3}
                     />
                   </div>
                 </div>
@@ -504,6 +555,62 @@ export default function TeacherProfile() {
                 </Card>
               </div>
 
+              {/* Employee Updates Button */}
+              <div className="flex justify-end mb-4">
+                  <Dialog>
+                    <DialogTrigger asChild>
+                        <Button className="bg-orange-500 hover:bg-orange-600 text-white gap-2">
+                            <TrendingUp className="w-4 h-4" />
+                            שעות שדווחו/בוטלו ע"י העובד
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-3xl">
+                        <DialogHeader>
+                            <DialogTitle>עדכוני שעות מהעובד</DialogTitle>
+                            <DialogDescription>
+                                רשימת שעות שהוזנו ידנית או סומנו כ"נדחה" ע"י העובד
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="max-h-[60vh] overflow-y-auto">
+                            <table className="w-full">
+                                <thead className="bg-slate-50 sticky top-0">
+                                    <tr>
+                                        <th className="p-2 text-right">תאריך</th>
+                                        <th className="p-2 text-right">סוג</th>
+                                        <th className="p-2 text-right">תיאור</th>
+                                        <th className="p-2 text-right">שעות</th>
+                                        <th className="p-2 text-right">סטטוס</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {shifts.filter(s => s.is_manual || s.employee_verified === 'rejected').map(shift => (
+                                        <tr key={shift.id} className="border-b">
+                                            <td className="p-2">{formatDate(shift.date)}</td>
+                                            <td className="p-2">
+                                                {shift.is_manual ? 
+                                                    <span className="text-blue-600 font-bold">הוספה ידנית</span> : 
+                                                    <span className="text-red-600 font-bold">דיווח ביטול</span>
+                                                }
+                                            </td>
+                                            <td className="p-2">{shift.program_name}</td>
+                                            <td className="p-2 font-bold">{shift.duration}</td>
+                                            <td className="p-2">
+                                                {shift.is_manual ? 'ממתין' : 'נדחה ע"י עובד'}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {shifts.filter(s => s.is_manual || s.employee_verified === 'rejected').length === 0 && (
+                                        <tr>
+                                            <td colSpan="5" className="p-4 text-center text-slate-500">אין דיווחים חריגים</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </DialogContent>
+                  </Dialog>
+              </div>
+
               {/* Payroll Table */}
               <Card className="shadow-lg">
                 <CardHeader>
@@ -521,10 +628,10 @@ export default function TeacherProfile() {
                         <thead className="border-b-2 border-slate-200">
                           <tr className="text-right">
                             <th className="py-3 px-4 font-semibold text-slate-700">תאריך</th>
-                            <th className="py-3 px-4 font-semibold text-slate-700">שעת התחלה</th>
-                            <th className="py-3 px-4 font-semibold text-slate-700">שעת סיום</th>
-                            <th className="py-3 px-4 font-semibold text-slate-700">שם תוכנית</th>
+                            <th className="py-3 px-4 font-semibold text-slate-700">שעות</th>
+                            <th className="py-3 px-4 font-semibold text-slate-700">תיאור/תוכנית</th>
                             <th className="py-3 px-4 font-semibold text-slate-700">משך</th>
+                            <th className="py-3 px-4 font-semibold text-slate-700">אישור עובד</th>
                             <th className="py-3 px-4 font-semibold text-slate-700">הרוויח (₪)</th>
                             <th className="py-3 px-4 font-semibold text-slate-700">פעולות</th>
                           </tr>
@@ -533,31 +640,31 @@ export default function TeacherProfile() {
                           {filteredShifts.map((shift) => {
                             const earned = shift.duration * payrollStats.hourlyRate;
                             return (
-                              <tr key={shift.id} className="border-b border-slate-100 hover:bg-slate-50">
+                              <tr key={shift.id} className={`border-b border-slate-100 hover:bg-slate-50 ${shift.is_manual ? 'bg-blue-50/30' : ''}`}>
                                 <td className="py-3 px-4 font-medium">{formatDate(shift.date)}</td>
-                                <td className="py-3 px-4 text-slate-600">{shift.start_time}</td>
-                                <td className="py-3 px-4 text-slate-600">{shift.end_time}</td>
+                                <td className="py-3 px-4 text-slate-600">
+                                    {shift.start_time !== '-' ? `${shift.start_time} - ${shift.end_time}` : '-'}
+                                </td>
                                 <td className="py-3 px-4">
-                                  <span className="inline-block px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm">
+                                  <span className={`inline-block px-3 py-1 rounded-full text-sm ${shift.is_manual ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}`}>
                                     {shift.program_name}
                                   </span>
+                                  {shift.is_manual && <span className="mr-2 text-xs text-blue-600">(ידני)</span>}
                                 </td>
-                                <td className="py-3 px-4 text-slate-700">{shift.duration} שעות</td>
+                                <td className="py-3 px-4 text-slate-700 font-bold">{shift.duration} שעות</td>
+                                <td className="py-3 px-4">
+                                    {shift.employee_verified === 'verified' && <span className="text-green-600 font-bold">✓ אושר</span>}
+                                    {shift.employee_verified === 'rejected' && <span className="text-red-600 font-bold">✕ נדחה</span>}
+                                    {shift.employee_verified === 'pending' && <span className="text-slate-400">-</span>}
+                                </td>
                                 <td className="py-3 px-4 font-bold text-green-600">₪{earned.toFixed(0)}</td>
                                 <td className="py-3 px-4">
                                   <div className="flex gap-2">
                                     <Button
                                       size="sm"
-                                      variant="outline"
-                                      onClick={() => handleEditShift(shift)}
-                                      className="gap-1"
-                                    >
-                                      <Pencil className="w-3 h-3" />
-                                    </Button>
-                                    <Button
-                                      size="sm"
                                       variant="destructive"
                                       onClick={() => handleDeleteShift(shift.id)}
+                                      title="מחק רשומה"
                                     >
                                       <Trash2 className="w-3 h-3" />
                                     </Button>

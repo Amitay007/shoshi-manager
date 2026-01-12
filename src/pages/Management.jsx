@@ -41,6 +41,21 @@ export default function Management() {
               </CardContent>
             </Card>
           </Link>
+
+          {/* Yoya Team - Added per request */}
+          <Link to={createPageUrl("TeachersList")}>
+            <Card className="bg-cyan-50 hover:bg-cyan-100/50 hover:shadow-xl transition-all duration-300 border-cyan-200 border cursor-pointer h-full group ring-1 ring-cyan-100">
+              <CardContent className="p-6 flex flex-col items-center text-center gap-4">
+                <div className="w-16 h-16 bg-cyan-100 text-cyan-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
+                  <Users className="w-8 h-8" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-cyan-900">צוות יויה</h3>
+                  <p className="text-cyan-700 mt-1">ניהול כרטיסי עובד ושעות</p>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
           
           {/* Finance */}
           <Link to={createPageUrl("CashFlow")}>
