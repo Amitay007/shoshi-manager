@@ -12,6 +12,7 @@ import CRMHub from './pages/CRMHub';
 import CashFlow from './pages/CashFlow';
 import ContactDetails from './pages/ContactDetails';
 import CreateProgram from './pages/CreateProgram';
+import CreateTeacher from './pages/CreateTeacher';
 import Dashboard from './pages/Dashboard';
 import DataImport from './pages/DataImport';
 import DataRepositories from './pages/DataRepositories';
@@ -45,7 +46,6 @@ import UpdateAppStatus from './pages/UpdateAppStatus';
 import UpdateAppsFromPDF from './pages/UpdateAppsFromPDF';
 import UploadLogo from './pages/UploadLogo';
 import Version2 from './pages/Version2';
-import CreateTeacher from './pages/CreateTeacher';
 import __Layout from './Layout.jsx';
 
 
@@ -64,6 +64,7 @@ export const PAGES = {
     "CashFlow": CashFlow,
     "ContactDetails": ContactDetails,
     "CreateProgram": CreateProgram,
+    "CreateTeacher": CreateTeacher,
     "Dashboard": Dashboard,
     "DataImport": DataImport,
     "DataRepositories": DataRepositories,
@@ -97,7 +98,6 @@ export const PAGES = {
     "UpdateAppsFromPDF": UpdateAppsFromPDF,
     "UploadLogo": UploadLogo,
     "Version2": Version2,
-    "CreateTeacher": CreateTeacher,
 }
 
 export const pagesConfig = {

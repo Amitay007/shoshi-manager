@@ -385,14 +385,6 @@ export default function GeneralInfo() {
               <p className="text-slate-500 text-xs sm:text-sm">ניהול חכם של משקפות VR</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Link to={createPageUrl("AddNewHeadset")} className="flex-1 sm:flex-none">
-              <Button className="bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white gap-2 px-4 sm:px-6 py-4 sm:py-6 text-base sm:text-lg rounded-xl shadow-lg w-full sm:w-auto">
-                <Plus className="w-5 h-5" />
-                הוסף מכשיר
-              </Button>
-            </Link>
-          </div>
         </div>
 
         {/* Search and Filters */}
@@ -413,6 +405,15 @@ export default function GeneralInfo() {
                 </svg>
               </div>
             </div>
+            
+            {/* Add Device Button - Repositioned */}
+            <Link to={createPageUrl("AddNewHeadset")}>
+              <Button className="h-12 px-6 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white rounded-xl gap-2 shadow-lg w-auto">
+                <Plus className="w-5 h-5" />
+                הוסף מכשיר
+              </Button>
+            </Link>
+
             {/* Accounts Button - Moved from Sidebar */}
             <Link to={createPageUrl("AccountsAndUsers")}>
               <Button className="h-12 px-6 bg-[#0f172a] hover:bg-[#1e293b] text-white rounded-xl gap-2 shadow-lg border border-slate-700">

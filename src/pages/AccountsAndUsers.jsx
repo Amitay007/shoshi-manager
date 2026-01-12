@@ -280,10 +280,6 @@ export default function AccountsAndUsers() {
                     <CardHeader className="bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-t-lg">
                         <div className="flex flex-row items-center justify-between">
                             <CardTitle className="text-xl">ניהול חשבונות</CardTitle>
-                            <Button onClick={() => setShowForm(true)} className="bg-white text-purple-700 hover:bg-purple-50 gap-2 shadow-lg">
-                                <Plus className="w-4 h-4"/>
-                                הוסף חשבון
-                            </Button>
                         </div>
                     </CardHeader>
                     <CardContent className="p-4 space-y-3">

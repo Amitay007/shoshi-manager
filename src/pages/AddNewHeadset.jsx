@@ -31,9 +31,12 @@ export default function AddNewHeadset() {
     primary_email: "",
     nickname: "",
     purchase_date: null,
-    remio_account: "",
+    gmail_password: "",
+    remio_email: "",
+    remio_password: "",
     notes: "",
   });
+  const [extraAccounts, setExtraAccounts] = useState([]);
   const [errors, setErrors] = useState({ id: "", email: "" });
   const [allApps, setAllApps] = useState([]);
   const [appsDialogOpen, setAppsDialogOpen] = useState(false);
@@ -116,21 +119,35 @@ export default function AddNewHeadset() {
       const device = await with429Retry(() => VRDevice.create(payload));
 
       // Create linked accounts (GMAIL + optional Remio)
+      // GMAIL
       if (form.primary_email) {
         await with429Retry(() => DeviceLinkedAccount.create({
           device_id: device.id,
           account_type: "GMAIL",
           email: form.primary_email,
+          password: form.gmail_password,
           username: form.nickname || "",
         }));
       }
-      if (form.remio_account) {
+      // Remio
+      if (form.remio_email) {
         await with429Retry(() => DeviceLinkedAccount.create({
           device_id: device.id,
           account_type: "Remio",
-          email: "",
-          username: form.remio_account,
+          email: form.remio_email,
+          password: form.remio_password,
         }));
+      }
+      // Extra Accounts
+      for (const acc of extraAccounts) {
+        if (acc.email || acc.password) {
+          await with429Retry(() => DeviceLinkedAccount.create({
+            device_id: device.id,
+            account_type: acc.type || "Other",
+            email: acc.email,
+            password: acc.password,
+          }));
+        }
       }
 
       // NEW: persist installations in DeviceApp
@@ -224,35 +241,117 @@ export default function AddNewHeadset() {
           </CardContent>
         </Card>
 
-        {/* חשבון משויך */}
+        {/* חשבונות מקושרים */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Mail className="w-5 h-5" />
-              חשבון משויך
+              חשבונות מקושרים
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div>
+          <CardContent className="space-y-6">
+            
+            {/* Gmail Section */}
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-slate-700">Gmail</h3>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <Input
+                    placeholder="כתובת אימייל"
+                    value={form.primary_email}
+                    onChange={(e) => setForm((p) => ({ ...p, primary_email: e.target.value }))}
+                  />
+                  {errors.email && <p className="text-red-600 text-sm mt-1">{errors.email}</p>}
+                </div>
                 <Input
-                  placeholder="כתובת Gmail (חובה)"
-                  value={form.primary_email}
-                  onChange={(e) => setForm((p) => ({ ...p, primary_email: e.target.value }))}
+                  type="password"
+                  placeholder="סיסמה"
+                  value={form.gmail_password}
+                  onChange={(e) => setForm((p) => ({ ...p, gmail_password: e.target.value }))}
                 />
-                {errors.email && <p className="text-red-600 text-sm mt-1">{errors.email}</p>}
               </div>
-              <Input
-                placeholder="שם משתמש משויך (כינוי)"
-                value={form.nickname}
-                onChange={(e) => setForm((p) => ({ ...p, nickname: e.target.value }))}
-              />
             </div>
-            <Input
-              placeholder="חשבון Remio (אופציונלי)"
-              value={form.remio_account}
-              onChange={(e) => setForm((p) => ({ ...p, remio_account: e.target.value }))}
-            />
+
+            {/* Romio Section */}
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-slate-700">Romio Account</h3>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Input
+                  placeholder="כתובת אימייל"
+                  value={form.remio_email}
+                  onChange={(e) => setForm((p) => ({ ...p, remio_email: e.target.value }))}
+                />
+                <Input
+                  type="password"
+                  placeholder="סיסמה"
+                  value={form.remio_password}
+                  onChange={(e) => setForm((p) => ({ ...p, remio_password: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            {/* Dynamic Extra Accounts */}
+            {extraAccounts.map((acc, index) => (
+              <div key={index} className="space-y-2 relative pt-2">
+                <div className="flex justify-between items-center">
+                   <h3 className="text-sm font-semibold text-slate-700">חשבון נוסף #{index + 1}</h3>
+                   <button 
+                     onClick={() => setExtraAccounts(prev => prev.filter((_, i) => i !== index))}
+                     className="text-red-500 hover:text-red-700"
+                   >
+                     <X className="w-4 h-4" />
+                   </button>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-3">
+                   <Select
+                    value={acc.type}
+                    onValueChange={(val) => {
+                      const newAccs = [...extraAccounts];
+                      newAccs[index].type = val;
+                      setExtraAccounts(newAccs);
+                    }}
+                   >
+                    <SelectTrigger><SelectValue placeholder="סוג חשבון" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Facebook">Facebook</SelectItem>
+                      <SelectItem value="Steam">Steam</SelectItem>
+                      <SelectItem value="Other">אחר</SelectItem>
+                    </SelectContent>
+                   </Select>
+                   <Input
+                      placeholder="אימייל / שם משתמש"
+                      value={acc.email}
+                      onChange={(e) => {
+                        const newAccs = [...extraAccounts];
+                        newAccs[index].email = e.target.value;
+                        setExtraAccounts(newAccs);
+                      }}
+                   />
+                   <Input
+                      type="password"
+                      placeholder="סיסמה"
+                      value={acc.password}
+                      onChange={(e) => {
+                        const newAccs = [...extraAccounts];
+                        newAccs[index].password = e.target.value;
+                        setExtraAccounts(newAccs);
+                      }}
+                   />
+                </div>
+              </div>
+            ))}
+
+            <Button 
+              type="button" 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setExtraAccounts([...extraAccounts, { type: "Other", email: "", password: "" }])}
+              className="mt-2"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Account
+            </Button>
+
           </CardContent>
         </Card>
 
@@ -261,7 +360,7 @@ export default function AddNewHeadset() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CalendarIcon className="w-5 h-5" />
-              תאריך ופרטים טכניים
+              Purchase Date
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
