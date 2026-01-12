@@ -61,6 +61,17 @@ export default function DeviceAssignments() {
   const [filterAppId, setFilterAppId] = useState(null);
   const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState(false);
 
+  // Calculate app installation counts
+  const appCounts = useMemo(() => {
+    const counts = {};
+    Object.values(deviceAppMap).forEach(appSet => {
+        appSet.forEach(appId => {
+            counts[appId] = (counts[appId] || 0) + 1;
+        });
+    });
+    return counts;
+  }, [deviceAppMap]);
+
   // Summary state
   const [summaryText, setSummaryText] = useState("");
   const [showSummary, setShowSummary] = useState(false);
@@ -1137,7 +1148,12 @@ export default function DeviceAssignments() {
                                       filterAppId === app.id ? "opacity-100" : "opacity-0"
                                     }`}
                                   />
-                                  {app.name}
+                                  <div className="flex items-center justify-between w-full">
+                                      <span>{app.name}</span>
+                                      <span className="text-xs text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded-full mr-2">
+                                        {appCounts[app.id] || 0}
+                                      </span>
+                                  </div>
                                 </CommandItem>
                               ))}
                             </CommandGroup>
