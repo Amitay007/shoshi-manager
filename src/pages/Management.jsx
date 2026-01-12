@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Card, CardTitle, CardContent, CardHeader } from "@/components/ui/card";
-import { Users, Wallet, FileText, BarChart3, Briefcase, Building2, Calendar } from "lucide-react";
+import { Users, Wallet, FileText, BarChart3, Briefcase, Building2, Calendar, Receipt } from "lucide-react";
 import BackHomeButtons from "@/components/common/BackHomeButtons";
 
 export default function Management() {
@@ -109,6 +109,19 @@ export default function Management() {
               <div>
                 <h3 className="text-xl font-bold text-slate-900">דוחות</h3>
                 <p className="text-slate-500 mt-1">סטטיסטיקות וניתוחים</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Price Quotes - Placeholder */}
+          <Card className="bg-white hover:shadow-xl transition-all duration-300 border-0 cursor-pointer h-full group opacity-80">
+            <CardContent className="p-6 flex flex-col items-center text-center gap-4">
+              <div className="w-16 h-16 bg-pink-50 text-pink-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Receipt className="w-8 h-8" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-slate-900">הצעות מחיר</h3>
+                <p className="text-slate-500 mt-1">ניהול והפקת הצעות מחיר</p>
               </div>
             </CardContent>
           </Card>
