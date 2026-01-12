@@ -5,6 +5,9 @@ import { Syllabus } from "@/entities/Syllabus";
 import { InstitutionProgram } from "@/entities/InstitutionProgram";
 import { DeviceApp } from "@/entities/DeviceApp";
 import { VRApp } from "@/entities/VRApp";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { VRApp } from "@/entities/VRApp";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,6 +54,11 @@ export default function DeviceAssignments() {
   const [programsWithDevices, setProgramsWithDevices] = useState([]);
   const [expandedProgramId, setExpandedProgramId] = useState(null); // For expanding program sessions
   const [deviceAppMap, setDeviceAppMap] = useState({}); // Map of deviceId -> Set of appIds
+  
+  // App filter state
+  const [allApps, setAllApps] = useState([]);
+  const [filterAppId, setFilterAppId] = useState(null);
+  const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState(false);
   
   // App filter state
   const [allApps, setAllApps] = useState([]);
@@ -170,6 +178,7 @@ export default function DeviceAssignments() {
   // Open modal for headset selection
   const openHeadsetModal = (sessionIndex = null) => {
     if (isReadOnly) return;
+    setFilterAppId(null);
     setCurrentSessionIndex(sessionIndex);
     if (sessionIndex === null) {
       // Static mode
