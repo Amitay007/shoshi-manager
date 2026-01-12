@@ -188,7 +188,7 @@ export default function CRMHub() {
           <div className="hidden lg:block">
             {/* Custom Back Button based on Mode */}
             <div className="flex gap-2">
-                <Link to={createPageUrl(isManager ? "Management" : "Humanmanagement")}>
+                <Link to={createPageUrl(isManager ? "Management" : "RelationalCenter")}>
                     <Button variant="outline" className="gap-2">
                         <ArrowRight className="w-4 h-4" />
                         חזרה ל{isManager ? "ניהול" : "יחסי אנוש"}
