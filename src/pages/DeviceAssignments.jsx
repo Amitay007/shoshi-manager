@@ -179,6 +179,7 @@ export default function DeviceAssignments() {
       setTempSelection(new Set(selectedDynamicHeadsets[sessionIndex]));
     }
     setFilterAppId(null); // Reset filter when opening modal
+    setFilterAppId(null); // Reset filter when opening modal
     setIsHeadsetModalOpen(true);
   };
 
