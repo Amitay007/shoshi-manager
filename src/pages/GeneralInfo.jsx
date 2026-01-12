@@ -413,6 +413,15 @@ export default function GeneralInfo() {
                 </svg>
               </div>
             </div>
+            {/* Accounts Button - Moved from Sidebar */}
+            <Link to={createPageUrl("AccountsAndUsers")}>
+              <Button className="h-12 px-6 bg-[#0f172a] hover:bg-[#1e293b] text-white rounded-xl gap-2 shadow-lg border border-slate-700">
+                <span className="text-base font-medium">חשבונות</span>
+                <div className="bg-slate-700 p-1 rounded-full">
+                  <Users className="w-4 h-4" />
+                </div>
+              </Button>
+            </Link>
           </div>
 
           {/* Tabs and Actions */}

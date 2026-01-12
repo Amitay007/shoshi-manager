@@ -71,6 +71,12 @@ export default function DeviceAssignments() {
     loadData();
   }, []);
 
+  const faultyHeadsets = useMemo(() => {
+    return allHeadsets.filter(d => d.is_disabled || d.status === "מושבת" || d.status === "בתיקון" || d.status === "בתחזוקה");
+  }, [allHeadsets]);
+
+  const todayHebrewDate = new Intl.DateTimeFormat('he-IL', { dateStyle: 'full', calendar: 'hebrew' }).format(new Date());
+
   const loadData = async () => {
     setLoading(true);
     try {
@@ -443,40 +449,93 @@ export default function DeviceAssignments() {
 
         {/* Desktop Header */}
         <div className="mb-6 hidden lg:block">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-xl flex items-center justify-center shadow-lg">
-              <Stamp className="text-white" size={28} />
+          <div className="flex justify-between items-start mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-xl flex items-center justify-center shadow-lg">
+                <Stamp className="text-white" size={28} />
+              </div>
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-purple-900">
+                  {viewMode === "form" ? (editingSilshuch ? "עריכת שיבוץ" : "יצירת שיבוץ חדש") : "שיבוץ משקפות"}
+                </h1>
+                <p className="text-slate-600 text-sm mt-1">
+                  {viewMode === "form" ? "אנא מלא את פרטי השיבוץ" : "ניהול הקצאת משקפות"}
+                </p>
+              </div>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-purple-900">
-              {viewMode === "form" ? (editingSilshuch ? "עריכת שיבוץ" : "יצירת שיבוץ חדש") : "שיבוץ משקפות"}
-            </h1>
           </div>
-          <div className="mb-4 space-y-4">
-            <p className="text-slate-600 text-sm">
-              {viewMode === "form" ? "אנא מלא את פרטי השיבוץ" : "ניהול הקצאת משקפות"}
-            </p>
-            {viewMode === "list" && (
-              <div className="flex gap-2 justify-start">
-                <Button onClick={createNewSilshuch} className="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 gap-2">
-                  <Plus className="w-5 h-5" />
-                  צור שיבוץ חדש
-                </Button>
-                <BackHomeButtons backLabel="לעמוד הקודם" showHomeButton={false} />
+
+          {/* New Top Section with 3 Cards */}
+          {viewMode === "list" && (
+            <div className="grid grid-cols-12 gap-6 mb-8">
+              {/* Left Column: Faulty Headsets List */}
+              <Card className="col-span-12 lg:col-span-4 h-64 overflow-hidden border-2 border-slate-200">
+                <CardHeader className="py-3 bg-slate-50 border-b">
+                  <CardTitle className="text-base font-bold text-slate-700">איזה משקפות מתקלקלות</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0 overflow-y-auto h-full pb-12">
+                  {faultyHeadsets.length > 0 ? (
+                    <div className="divide-y">
+                      {faultyHeadsets.map(device => (
+                        <div key={device.id} className="p-3 hover:bg-slate-50 flex justify-between items-center text-sm">
+                          <span className="font-medium text-slate-800">משקפת {device.binocular_number}</span>
+                          <span className="text-slate-500 text-xs truncate max-w-[150px]">{device.primary_email}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-slate-400">אין משקפות תקולות</div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Middle Column: Date & Faulty Count */}
+              <div className="col-span-12 lg:col-span-2 flex flex-col gap-4">
+                <Card className="flex-1 flex flex-col items-center justify-center border-2 border-slate-200 text-center p-4">
+                  <h3 className="text-lg font-bold text-slate-700 mb-2">תאריך של היום</h3>
+                  <div className="text-3xl font-bold text-purple-600">{format(new Date(), 'dd/MM')}</div>
+                  <div className="text-xs text-slate-500 mt-1">{todayHebrewDate}</div>
+                </Card>
+                <Card className="flex-1 flex flex-col items-center justify-center border-2 border-slate-200 text-center p-4">
+                  <h3 className="text-lg font-bold text-slate-700 mb-2">משקפות תקולות</h3>
+                  <div className="text-4xl font-bold text-red-500">{faultyHeadsets.length}</div>
+                </Card>
               </div>
-            )}
-            {viewMode === "form" && (
-              <div className="flex gap-2 justify-start">
-                <Button onClick={() => setViewMode("list")} variant="outline" className="gap-2">
-                  <ArrowRight className="w-4 h-4" /> חזור לרשימה
-                </Button>
-                {isReadOnly && (
-                  <Button onClick={() => setIsReadOnly(false)} className="gap-2" variant="outline">
-                    <Edit className="w-4 h-4" /> ערוך
-                  </Button>
-                )}
+
+              {/* Right Column: Calculator Button */}
+              <div className="col-span-12 lg:col-span-6">
+                <div className="flex flex-col gap-4 h-full">
+                  <Link to={createPageUrl("BinocularCalculator")} className="w-full">
+                    <Button variant="outline" className="w-full h-12 border-red-500 text-red-500 hover:bg-red-50 hover:text-red-600 text-lg font-medium border-2">
+                      מחשבון משקפות
+                    </Button>
+                  </Link>
+                  
+                  {/* Existing Action Buttons */}
+                  <div className="flex gap-2 mt-auto">
+                    <Button onClick={createNewSilshuch} className="flex-1 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 gap-2 h-12 text-lg">
+                      <Plus className="w-5 h-5" />
+                      צור שיבוץ חדש
+                    </Button>
+                    <BackHomeButtons backLabel="לעמוד הקודם" showHomeButton={false} className="h-12" />
+                  </div>
+                </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
+
+          {viewMode === "form" && (
+            <div className="flex gap-2 justify-start mb-4">
+              <Button onClick={() => setViewMode("list")} variant="outline" className="gap-2">
+                <ArrowRight className="w-4 h-4" /> חזור לרשימה
+              </Button>
+              {isReadOnly && (
+                <Button onClick={() => setIsReadOnly(false)} className="gap-2" variant="outline">
+                  <Edit className="w-4 h-4" /> ערוך
+                </Button>
+              )}
+            </div>
+          )}
         </div>
 
         {/* List View */}

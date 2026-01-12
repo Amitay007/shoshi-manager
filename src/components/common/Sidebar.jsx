@@ -14,12 +14,10 @@ export default function Sidebar() {
     { id: "syllabus", label: "סילבוסים", icon: BookOpen, page: "SyllabusHub" },
     { id: "programs", label: "תוכניות", icon: GraduationCap, page: "Programs" },
     { id: "silshuch", label: "שיבוץ משקפות", icon: Stamp, page: "DeviceAssignments" },
-    { id: "calculator", label: "מחשבון", icon: Calculator, page: "BinocularCalculator" },
     { id: "devices", label: "מכשירי VR", icon: VRIcon, page: "GeneralInfo" },
     { id: "apps", label: "אפליקציות", icon: Code, page: "GeneralApps" },
     { id: "schools", label: "יחסי אנוש", icon: School, page: "RelationalCenter" },
     { id: "management", label: "ניהול", icon: Briefcase, page: "Management" },
-    { id: "accounts", label: "חשבונות", icon: KeyRound, page: "AccountsAndUsers" },
     { id: "version2", label: "שושי 2.0 - היסטוריה", icon: Layers, page: "Version2" },
   ];
 
