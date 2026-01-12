@@ -227,10 +227,17 @@ export default function CRMHub() {
                 </SelectContent>
               </Select>
             </div>
-            <Button onClick={() => { resetContactForm(); setShowContactDialog(true); }} className="gap-2 bg-indigo-600 hover:bg-indigo-700 w-full md:w-auto">
-              <Plus className="w-4 h-4" />
-              איש קשר חדש
-            </Button>
+            {isManager ? (
+              <Button onClick={() => { resetContactForm(); setShowContactDialog(true); }} className="gap-2 bg-indigo-600 hover:bg-indigo-700 w-full md:w-auto">
+                <Plus className="w-4 h-4" />
+                איש קשר חדש
+              </Button>
+            ) : (
+              <Button disabled className="gap-2 bg-slate-200 text-slate-400 w-full md:w-auto cursor-not-allowed hover:bg-slate-200">
+                <Plus className="w-4 h-4" />
+                איש קשר חדש
+              </Button>
+            )}
           </CardContent>
         </Card>
 
@@ -284,7 +291,46 @@ export default function CRMHub() {
                       </div>
 
                       <div className="pt-3 border-t border-slate-100 flex justify-between items-center">
-                        <span className="text-xs text-slate-400">לחץ לפרטים מלאים</span>
+                        <div className="flex gap-2">
+                           {isManager ? (
+                             <>
+                               <Button 
+                                 size="icon" 
+                                 variant="ghost" 
+                                 className="h-8 w-8 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50"
+                                 onClick={(e) => {
+                                   e.preventDefault();
+                                   e.stopPropagation();
+                                   openEditContact(contact);
+                                 }}
+                               >
+                                 <Edit className="w-4 h-4" />
+                               </Button>
+                               <Button 
+                                 size="icon" 
+                                 variant="ghost" 
+                                 className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                                 onClick={(e) => {
+                                   e.preventDefault();
+                                   e.stopPropagation();
+                                   handleDeleteContact(contact.id);
+                                 }}
+                               >
+                                 <Trash2 className="w-4 h-4" />
+                               </Button>
+                             </>
+                           ) : (
+                             <>
+                               <Button size="icon" variant="ghost" disabled className="h-8 w-8 text-slate-200 cursor-not-allowed hover:bg-transparent hover:text-slate-200">
+                                 <Edit className="w-4 h-4" />
+                               </Button>
+                               <Button size="icon" variant="ghost" disabled className="h-8 w-8 text-slate-200 cursor-not-allowed hover:bg-transparent hover:text-slate-200">
+                                 <Trash2 className="w-4 h-4" />
+                               </Button>
+                             </>
+                           )}
+                        </div>
+                        
                         <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-indigo-100 transition-colors">
                           <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-indigo-600" />
                         </div>
