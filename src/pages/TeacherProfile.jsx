@@ -39,36 +39,47 @@ export default function TeacherProfile() {
   const searchParams = new URLSearchParams(location.search);
   const teacherId = searchParams.get("id");
 
-  const loadData = async () => {
+  // Load Teacher Basic Info
+  const loadTeacher = async () => {
     if (!teacherId) return;
     showLoader();
     try {
-      // 1. Fetch Teacher
       const teacherData = await base44.entities.Teacher.get(teacherId);
       setTeacher(teacherData);
-
-      // 2. Fetch Schedules (for payroll/stats)
-      const schedulesData = await base44.entities.ScheduleEntry.filter({
-        assigned_teacher_id: teacherId
-      }, { start_datetime: -1 }, 1000); // Fetch enough history
-      setSchedules(schedulesData);
-
-      // 3. Fetch Reported Hours (for payroll)
-      const reportedHoursData = await base44.entities.ReportedHours.filter({
-        teacher_id: teacherId
-      }, { date: -1 }, 1000);
-      setReportedHours(reportedHoursData);
-
+      // After teacher is loaded, load stats in background
+      loadStats();
     } catch (error) {
-      console.error("Error loading teacher profile:", error);
+      console.error("Error loading teacher:", error);
       toast({ title: "שגיאה", description: "לא ניתן לטעון את נתוני המורה", variant: "destructive" });
     } finally {
       hideLoader();
     }
   };
 
+  // Load Stats (Schedules & Reports) - Optimized
+  const loadStats = async () => {
+    if (!teacherId) return;
+    try {
+      // Run in parallel for speed
+      const [schedulesData, reportedHoursData] = await Promise.all([
+        base44.entities.ScheduleEntry.filter({
+          assigned_teacher_id: teacherId
+        }, { start_datetime: -1 }, 300), // Reduced limit to 300 for performance
+        base44.entities.ReportedHours.filter({
+          teacher_id: teacherId
+        }, { date: -1 }, 300) // Reduced limit to 300
+      ]);
+
+      setSchedules(schedulesData);
+      setReportedHours(reportedHoursData);
+    } catch (error) {
+      console.error("Error loading stats:", error);
+      // Silent fail for stats is better than crashing the whole page
+    }
+  };
+
   useEffect(() => {
-    loadData();
+    loadTeacher();
   }, [teacherId]);
 
   const handleStatusToggle = async (currentStatus) => {
