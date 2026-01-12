@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,14 +10,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, 
-  Legend, ResponsiveContainer, Line, ComposedChart 
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
+  Legend, ResponsiveContainer, ComposedChart, Bar, Line
 } from "recharts";
-import { 
-  TrendingUp, TrendingDown, Wallet, ChevronDown, ChevronRight, 
+import {
+  TrendingUp, TrendingDown, Wallet, ChevronDown, ChevronRight,
   FileText, PieChart, RotateCcw, Plus, Check, Calendar as CalendarIcon,
-  CreditCard, Banknote, Landmark, Smartphone
+  CreditCard, Banknote, Landmark, Smartphone, Clock, AlertCircle
 } from "lucide-react";
 import BackHomeButtons from "@/components/common/BackHomeButtons";
 import { format } from "date-fns";
@@ -24,10 +25,6 @@ import { he } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 
 // --- Mock Data & Constants ---
-const generateMonthlyData = (min, max) => {
-  return Array.from({ length: 12 }, () => Math.floor(Math.random() * (max - min + 1)) + min);
-};
-
 const years = ["2024", "2025", "2026"];
 const months = [
   "ינואר", "פברואר", "מרץ", "אפריל", "מאי", "יוני",
@@ -42,80 +39,150 @@ const paymentMethods = [
   { id: "cash", label: "מזומן", icon: Banknote },
 ];
 
+const statusOptions = {
+  forecast: { label: "צפי", color: "text-slate-500", bg: "bg-slate-100", border: "border-slate-200" },
+  pending: { label: "הופקד (ממתין)", color: "text-orange-600", bg: "bg-orange-50", border: "border-orange-200" },
+  cleared: { label: "נפרע (בבנק)", color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200" }
+};
+
 const initialClients = [
   "עיריית תל אביב",
   "רשת אורט",
   "מתנ\"ס גבעתיים",
   "אינטל ישראל",
-  "לקוח פרטי - משה כהן"
+  "לקוח פרטי - משה כהן",
+  "רבין - ערבי כיתה ז'",
+  "בגין - פרחי רפואה",
+  "עירוני ט ת\"א",
+  "באר אורה",
+  "כסייפא",
+  "צאלים",
+  "ליאור ציפורניים",
+  "אדוה השקעות"
 ];
+
+// --- Real Data Generators ---
+
+const recurring = (amount) => Array(12).fill(amount);
+const oneOff = (amount, monthIndex) => {
+    const arr = Array(12).fill(0);
+    arr[monthIndex] = amount;
+    return arr;
+};
 
 // Initial Data Structure
 const createInitialData = () => {
   const data = {};
-  
+
   years.forEach(year => {
+    const is2025 = year === "2025";
+    const is2024 = year === "2024";
+
     data[year] = {
-      openingBalance: 0,
+      openingBalance: is2025 ? 15000 : (is2024 ? 0 : 50000),
       income: [
-        { 
-          id: "inc1", 
-          name: "משרד החינוך", 
+        {
+          id: "inc_projects",
+          name: "פרויקטים ואירועים",
           subItems: [
-            { 
-              id: "inc1-1", 
-              name: "מענק בסיס - ינואר", 
-              monthly: [15000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-              status: "actual",
-              paymentMethod: "bank",
-              dueDate: new Date(Number(year), 0, 15)
+            {
+              id: "proj_1", name: "רבין - ערבי כיתה ז'",
+              monthly: is2025 ? oneOff(6300, 1) : oneOff(6000, 1),
+              status: is2025 ? "cleared" : "forecast", paymentMethod: "bank", dueDate: new Date(Number(year), 1, 15), valueDate: new Date(Number(year), 1, 15)
             },
-            { 
-              id: "inc1-2", 
-              name: "תקציב פרויקטים", 
-              monthly: [0, 0, 25000, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-              status: "forecast",
-              paymentMethod: "bank",
-              dueDate: new Date(Number(year), 2, 10)
+            {
+              id: "proj_2", name: "בגין - פרחי רפואה",
+              monthly: is2025 ? oneOff(6750, 2) : oneOff(6500, 2),
+              status: "cleared", paymentMethod: "bank", dueDate: new Date(Number(year), 2, 10), valueDate: new Date(Number(year), 2, 10)
+            },
+            {
+              id: "proj_3", name: "עירוני ט ת\"א",
+              monthly: is2025 ? oneOff(5400, 3) : oneOff(5000, 3),
+              status: "pending", paymentMethod: "check", checkNumber: "55402", dueDate: new Date(Number(year), 3, 5), valueDate: new Date(Number(year), 3, 8)
+            },
+            {
+              id: "proj_4", name: "באר אורה",
+              monthly: is2025 ? oneOff(23013, 4) : oneOff(20000, 4),
+              status: "forecast", paymentMethod: "bank", dueDate: new Date(Number(year), 4, 20)
+            },
+            {
+              id: "proj_5", name: "כסייפא",
+              monthly: is2025 ? oneOff(9000, 5) : oneOff(9000, 5),
+              status: "forecast", paymentMethod: "bank", dueDate: new Date(Number(year), 5, 1)
+            },
+            {
+              id: "proj_6", name: "צאלים",
+              monthly: is2025 ? oneOff(6000, 6) : oneOff(6000, 6),
+              status: "forecast", paymentMethod: "bank", dueDate: new Date(Number(year), 6, 15)
             }
           ]
         },
-        { 
-          id: "inc2", 
-          name: "לקוחות פרטיים", 
+        {
+          id: "inc_private",
+          name: "אירועים פרטיים",
           subItems: [
-            { 
-              id: "inc2-1", 
-              name: "סדנת קיץ - קבוצה א'", 
-              monthly: [0, 0, 0, 0, 0, 0, 12000, 0, 0, 0, 0, 0],
-              status: "forecast",
-              paymentMethod: "bit",
-              dueDate: new Date(Number(year), 6, 20)
+            {
+              id: "priv_1", name: "אירוע - ליאור ציפורניים",
+              monthly: is2025 ? oneOff(2170, 0) : oneOff(2000, 0),
+              status: "cleared", paymentMethod: "bit", dueDate: new Date(Number(year), 0, 12), valueDate: new Date(Number(year), 0, 12)
             }
           ]
         },
-        { id: "inc3", name: "מתנ\"סים", subItems: [] },
-        { id: "inc4", name: "מוסדות", subItems: [] }
+        {
+          id: "inc_invest",
+          name: "השקעות/אחר",
+          subItems: [
+            {
+               id: "inv_1", name: "השקעה אדוה",
+               monthly: is2025 ? oneOff(20000, 0) : [0,0,0,0,0,0,0,0,0,0,0,0],
+               status: "cleared", paymentMethod: "bank", dueDate: new Date(Number(year), 0, 1), valueDate: new Date(Number(year), 0, 1)
+            }
+          ]
+        }
       ],
       expenses: [
-        { 
-          id: "exp1", 
-          name: "הנהלה וכלליות", 
+        {
+          id: "exp_fixed",
+          name: "הוצאות קבועות",
           subItems: [
-            { 
-              id: "exp1-1", 
-              name: "שכירות משרד - שנתי", 
-              monthly: Array(12).fill(4000), 
-              status: "actual",
-              paymentMethod: "bank",
-              dueDate: new Date(Number(year), 0, 1)
+            {
+              id: "fix_1", name: "החזר הלוואה",
+              monthly: recurring(1924),
+              status: "cleared", paymentMethod: "bank", dueDate: new Date(Number(year), 0, 10), valueDate: new Date(Number(year), 0, 10)
+            },
+            {
+              id: "fix_2", name: "פלאפון",
+              monthly: recurring(90),
+              status: "cleared", paymentMethod: "card", dueDate: new Date(Number(year), 0, 2), valueDate: new Date(Number(year), 0, 2)
+            },
+            {
+              id: "fix_3", name: "עמלת חשבון",
+              monthly: recurring(9),
+              status: "cleared", paymentMethod: "bank", dueDate: new Date(Number(year), 0, 9), valueDate: new Date(Number(year), 0, 9)
+            },
+             {
+              id: "fix_4", name: "סוז (Suz)",
+              monthly: is2025 ? oneOff(500, 2) : [0,0,0,0,0,0,0,0,0,0,0,0],
+              status: "cleared", paymentMethod: "card", dueDate: new Date(Number(year), 2, 15), valueDate: new Date(Number(year), 2, 15)
             }
           ]
         },
-        { id: "exp2", name: "שיווק ומכירות", subItems: [] },
-        { id: "exp3", name: "שכר (קריטי)", subItems: [] },
-        { id: "exp4", name: "תפעול", subItems: [] },
-        { id: "exp5", name: "מימון", subItems: [] }
+        {
+          id: "exp_salary",
+          name: "שכר ותפעול",
+          subItems: [
+            {
+              id: "sal_1", name: "מדריכים (צפי)",
+              monthly: recurring(5000),
+              status: "forecast", paymentMethod: "bank", dueDate: new Date(Number(year), 0, 9)
+            },
+            {
+               id: "sal_2", name: "ציוד מתכלה",
+               monthly: recurring(500),
+               status: "forecast", paymentMethod: "card", dueDate: new Date(Number(year), 0, 1)
+            }
+          ]
+        }
       ]
     };
   });
@@ -136,14 +203,17 @@ const calculateGrandTotal = (categories) => {
 
 export default function CashFlow() {
   const [cashFlowData, setCashFlowData] = useState(createInitialData());
-  const [selectedYear, setSelectedYear] = useState("2024");
-  const [expandedRows, setExpandedRows] = useState({});
+  const [selectedYear, setSelectedYear] = useState("2025");
+  const [expandedRows, setExpandedRows] = useState({
+      "inc_projects": true,
+      "exp_fixed": true
+  });
   const [clients, setClients] = useState(initialClients);
-  
+
   // Modal States
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newTransaction, setNewTransaction] = useState({
-    type: "income", // or 'expenses'
+    type: "income",
     client: "",
     isNewClient: false,
     newClientName: "",
@@ -151,9 +221,10 @@ export default function CashFlow() {
     categoryId: "",
     paymentMethod: "bank",
     checkNumber: "",
-    depositDate: undefined,
+    depositDate: undefined, // Used for dueDate in the form
+    valueDate: undefined,   // New field for value date
     status: "forecast",
-    monthIndex: new Date().getMonth() // default to current month
+    monthIndex: new Date().getMonth()
   });
 
   const toggleRow = (id) => {
@@ -167,9 +238,8 @@ export default function CashFlow() {
   };
 
   const handleSaveTransaction = () => {
-    // Validate
     if (!newTransaction.amount || !newTransaction.categoryId) return;
-    
+
     const clientName = newTransaction.isNewClient ? newTransaction.newClientName : newTransaction.client;
     if (!clientName) return;
 
@@ -182,9 +252,8 @@ export default function CashFlow() {
       const yearData = newData[selectedYear];
       const collection = newTransaction.type === "income" ? yearData.income : yearData.expenses;
       const category = collection.find(c => c.id === newTransaction.categoryId);
-      
+
       if (category) {
-        // Create monthly array with value only at the selected month
         const monthlyArr = Array(12).fill(0);
         monthlyArr[newTransaction.monthIndex] = Number(newTransaction.amount);
 
@@ -195,32 +264,49 @@ export default function CashFlow() {
           status: newTransaction.status,
           paymentMethod: newTransaction.paymentMethod,
           checkNumber: newTransaction.checkNumber,
-          depositDate: newTransaction.depositDate,
-          dueDate: new Date(Number(selectedYear), newTransaction.monthIndex, 1) // Approx due date
+          dueDate: newTransaction.depositDate || new Date(Number(selectedYear), newTransaction.monthIndex, 1), // Using depositDate from form as dueDate
+          valueDate: newTransaction.valueDate
         };
 
         category.subItems.push(newSubItem);
-        // Auto expand the category to show the new item
         setExpandedRows(prev => ({ ...prev, [category.id]: true }));
       }
-      
+
       return newData;
     });
 
     setIsModalOpen(false);
-    // Reset form partially
-    setNewTransaction(prev => ({ ...prev, amount: "", isNewClient: false, newClientName: "" }));
+    setNewTransaction(prev => ({ ...prev, amount: "", isNewClient: false, newClientName: "", checkNumber: "", depositDate: undefined, valueDate: undefined, status: "forecast" }));
   };
 
-  const toggleStatus = (year, type, categoryId, subItemId) => {
+  const cycleStatus = (year, type, categoryId, subItemId) => {
     setCashFlowData(prev => {
       const newData = { ...prev };
       const collection = type === 'income' ? newData[year].income : newData[year].expenses;
       const category = collection.find(c => c.id === categoryId);
       const subItem = category.subItems.find(s => s.id === subItemId);
       if (subItem) {
-        subItem.status = subItem.status === 'forecast' ? 'actual' : 'forecast';
+        if (subItem.status === 'forecast') subItem.status = 'pending';
+        else if (subItem.status === 'pending') subItem.status = 'cleared';
+        else subItem.status = 'forecast';
       }
+      return newData;
+    });
+  };
+
+  const handleCellValueChange = (year, type, categoryId, subItemId, monthIndex, newValue) => {
+    const numValue = parseInt(newValue) || 0;
+
+    setCashFlowData(prev => {
+      const newData = { ...prev };
+      const collection = type === 'income' ? newData[year].income : newData[year].expenses;
+      const category = collection.find(c => c.id === categoryId);
+      const subItem = category.subItems.find(s => s.id === subItemId);
+
+      const newMonthly = [...subItem.monthly];
+      newMonthly[monthIndex] = numValue;
+      subItem.monthly = newMonthly;
+
       return newData;
     });
   };
@@ -228,8 +314,7 @@ export default function CashFlow() {
   const currentYearData = cashFlowData[selectedYear];
   const incomeStats = useMemo(() => calculateGrandTotal(currentYearData.income), [currentYearData]);
   const expensesStats = useMemo(() => calculateGrandTotal(currentYearData.expenses), [currentYearData]);
-  
-  // Calculate Cumulative Balance
+
   const cumulativeData = useMemo(() => {
     let runningBalance = currentYearData.openingBalance || 0;
     return incomeStats.monthlyTotals.map((inc, i) => {
@@ -248,7 +333,6 @@ export default function CashFlow() {
 
   const endOfYearBalance = cumulativeData[11]?.cumulative || 0;
 
-  // Chart Data
   const chartData = months.map((month, index) => ({
     name: month,
     income: incomeStats.monthlyTotals[index],
@@ -264,11 +348,62 @@ export default function CashFlow() {
     return <Icon className="w-4 h-4" />;
   };
 
+  const EditableCell = ({ value, onChange, isExpense, status }) => {
+    const [localValue, setLocalValue] = useState(value);
+    const [isEditing, setIsEditing] = useState(false);
+
+    useEffect(() => { setLocalValue(value); }, [value]);
+
+    const handleBlur = () => {
+      setIsEditing(false);
+      onChange(localValue);
+    };
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Enter') {
+        setIsEditing(false);
+        onChange(localValue);
+      }
+    };
+
+    if (isEditing) {
+      return (
+        <Input
+          autoFocus
+          type="number"
+          value={localValue}
+          onChange={(e) => setLocalValue(e.target.value)}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
+          className="h-7 w-20 p-1 text-xs font-mono bg-white shadow-sm"
+        />
+      );
+    }
+
+    const isPositive = Number(value) > 0;
+    const textClass = isPositive
+        ? (isExpense ? 'text-red-700 font-bold' : 'text-emerald-700 font-bold')
+        : 'text-slate-300';
+
+    // Status visual effect on the cell
+    const cellBg = status === 'forecast' ? 'bg-transparent' : (status === 'pending' ? 'bg-orange-50/50' : 'bg-emerald-50/50');
+
+    return (
+      <div
+        onClick={() => setIsEditing(true)}
+        className={cn(
+            "cursor-pointer hover:bg-white/80 hover:shadow-sm hover:scale-105 transition-all p-1 rounded px-2 min-h-[24px] flex items-center justify-end border border-transparent hover:border-slate-100",
+            textClass, cellBg
+        )}
+      >
+        {isPositive ? Number(value).toLocaleString() : "-"}
+      </div>
+    );
+  };
+
   const CategoryRow = ({ category, type }) => {
     const isExpanded = expandedRows[category.id];
     const isExpense = type === 'expenses';
-
-    // Calculate totals for this category row
     const catMonthlyTotals = Array(12).fill(0);
     category.subItems.forEach(sub => {
       sub.monthly.forEach((val, idx) => catMonthlyTotals[idx] += (Number(val) || 0));
@@ -277,20 +412,18 @@ export default function CashFlow() {
 
     return (
       <>
-        {/* Category Header Row */}
-        <tr 
-          className={`hover:bg-slate-50 transition-colors border-b border-slate-100 ${isExpanded ? 'bg-slate-50' : ''}`}
-        >
+        <tr className={`hover:bg-slate-50 transition-colors border-b border-slate-100 ${isExpanded ? 'bg-slate-50' : ''}`}>
           <td colSpan={2}
-            className="p-3 sticky right-0 bg-white md:bg-transparent z-10 font-bold text-slate-800 flex items-center gap-2 cursor-pointer border-l"
+            className="p-3 sticky right-0 bg-white md:bg-transparent z-10 font-bold text-slate-800 flex items-center gap-2 cursor-pointer border-l shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]"
             onClick={() => toggleRow(category.id)}
           >
             {isExpanded ? <ChevronDown className="w-4 h-4 text-slate-400" /> : <ChevronRight className="w-4 h-4 text-slate-400" />}
             {category.name}
-            <span className="text-xs font-normal text-slate-400 mr-2">({category.subItems.length} תנועות)</span>
+            <span className="text-xs font-normal text-slate-400 mr-2">({category.subItems.length})</span>
           </td>
+          <td className="p-2 border-l border-slate-100 hidden md:table-cell"></td> {/* Space for Value Date column in header */}
           {catMonthlyTotals.map((val, idx) => (
-            <td key={idx} className="p-3 text-left text-sm text-slate-500 font-mono min-w-[80px] bg-slate-50/30">
+            <td key={idx} className="p-3 text-left text-sm text-slate-500 font-mono min-w-[80px] bg-slate-50/30 border-l border-slate-100/50">
               {val > 0 ? val.toLocaleString() : "-"}
             </td>
           ))}
@@ -300,62 +433,74 @@ export default function CashFlow() {
           <td></td>
         </tr>
 
-        {/* Sub-items (Transactions) */}
         {isExpanded && category.subItems.map(sub => {
-           const isForecast = sub.status === 'forecast';
-           const rowClass = isForecast ? "text-slate-500 italic" : "text-slate-900 font-bold bg-slate-50/50";
+           const statusConfig = statusOptions[sub.status];
            const method = paymentMethods.find(m => m.id === sub.paymentMethod);
 
            return (
-            <tr key={sub.id} className={`border-b border-slate-100 text-xs animate-in slide-in-from-top-1 duration-200 group hover:bg-slate-100/50`}>
+            <tr key={sub.id} className="border-b border-slate-100 text-xs animate-in slide-in-from-top-1 duration-200 group hover:bg-slate-50">
               <td className="p-2 pr-8 sticky right-0 bg-slate-50 md:bg-transparent z-10 border-l border-slate-100 min-w-[200px]">
-                <div className="flex flex-col">
-                  <span className={cn("text-sm", rowClass)}>{sub.name}</span>
+                <div className="flex flex-col gap-1">
+                  <span className="text-sm font-medium text-slate-700">{sub.name}</span>
                   {sub.paymentMethod === 'check' && sub.checkNumber && (
-                    <span className="text-[10px] text-slate-400">צ'ק מס': {sub.checkNumber}</span>
+                    <span className="text-[10px] text-slate-400 flex items-center gap-1">
+                        <FileText className="w-3 h-3" /> צ'ק {sub.checkNumber}
+                    </span>
                   )}
                 </div>
               </td>
               <td className="p-2 min-w-[140px] border-l border-slate-100">
-                <div className="flex items-center gap-2 text-slate-600">
-                  <div className="p-1 bg-white rounded border border-slate-200" title={method?.label}>
-                    {getMethodIcon(sub.paymentMethod)}
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[10px] opacity-70">תאריך יעד:</span>
-                    <span>{sub.dueDate ? format(sub.dueDate, 'dd/MM') : '-'}</span>
-                  </div>
+                <div className="flex flex-col gap-1">
+                   <div className="flex items-center gap-1 text-slate-600" title={method?.label}>
+                      {getMethodIcon(sub.paymentMethod)}
+                      <span className="text-[11px]">{method?.label}</span>
+                   </div>
+                   <div className="text-[10px] text-slate-400 flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      יעד: {sub.dueDate ? format(sub.dueDate, 'dd/MM') : '-'}
+                   </div>
                 </div>
               </td>
-              
+
+              {/* Value Date Column */}
+              <td className="p-2 border-l border-slate-100 text-center min-w-[100px] hidden md:table-cell">
+                 {sub.valueDate ? (
+                    <div className="flex flex-col items-center">
+                        <span className="font-mono font-medium text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded text-[11px]">
+                            {format(sub.valueDate, 'dd/MM/yy')}
+                        </span>
+                    </div>
+                 ) : (
+                    <span className="text-slate-300 text-[10px]">-</span>
+                 )}
+              </td>
+
               {sub.monthly.map((val, idx) => (
-                <td key={idx} className="p-2 text-left font-mono border-l border-slate-100/50">
-                  {val > 0 ? (
-                    <span className={cn(isForecast && "opacity-70")}>{val.toLocaleString()}</span>
-                  ) : ""}
+                <td key={idx} className="p-2 text-left font-mono border-l border-slate-100/50 hover:bg-white transition-colors">
+                  <EditableCell
+                     value={val}
+                     isExpense={isExpense}
+                     status={sub.status}
+                     onChange={(newValue) => handleCellValueChange(selectedYear, type === 'income' ? 'income' : 'expenses', category.id, sub.id, idx, newValue)}
+                  />
                 </td>
               ))}
-              
+
               <td className="p-2 text-left font-semibold text-slate-700 font-mono bg-slate-100/50">
                 {sub.monthly.reduce((a, b) => a + (Number(b)||0), 0).toLocaleString()}
               </td>
-              
+
               <td className="p-2 text-center">
-                 {isForecast ? (
-                   <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="h-6 w-6 p-0 hover:bg-green-100 hover:text-green-700"
-                    onClick={() => toggleStatus(selectedYear, type === 'expenses' ? 'expenses' : 'income', category.id, sub.id)}
-                    title="סמן כשולם (הפוך לבפועל)"
-                   >
-                     <Check className="w-4 h-4" />
-                   </Button>
-                 ) : (
-                    <div className="flex justify-center">
-                        <span className="bg-green-100 text-green-700 text-[10px] px-2 py-0.5 rounded-full font-bold">שולם</span>
-                    </div>
-                 )}
+                <button
+                    onClick={() => cycleStatus(selectedYear, type === 'expenses' ? 'expenses' : 'income', category.id, sub.id)}
+                    className={cn(
+                        "flex items-center gap-1.5 px-2 py-1 rounded-full border transition-all hover:scale-105 active:scale-95 mx-auto w-fit",
+                        statusConfig.color, statusConfig.bg, statusConfig.border
+                    )}
+                >
+                    <div className={cn("w-1.5 h-1.5 rounded-full", statusConfig.color.replace('text-', 'bg-'))}></div>
+                    <span className="text-[10px] font-bold">{statusConfig.label}</span>
+                </button>
               </td>
             </tr>
           );
@@ -365,39 +510,27 @@ export default function CashFlow() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 p-2 md:p-8 font-sans" dir="rtl">
-      <div className="max-w-[1900px] mx-auto space-y-8">
-        
-        {/* Header Section */}
-        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-100 transform rotate-3">
-              <PieChart className="w-7 h-7 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-black text-slate-900 tracking-tight">מרכז שליטה פיננסי</h1>
-              <p className="text-slate-500 font-medium">ניהול תזרים, תקציב וצפי שנתי</p>
-            </div>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row items-center gap-4 w-full xl:w-auto">
-             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-                <DialogTrigger asChild>
-                    <Button className="gap-2 bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-200">
-                        <Plus className="w-4 h-4" />
-                        הוסף תנועה חדשה
-                    </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[500px]" dir="rtl">
-                    <DialogHeader>
-                        <DialogTitle>הוספת תנועה חדשה</DialogTitle>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
+    <div className="min-h-screen bg-slate-50 p-2 md:p-6 font-sans" dir="rtl">
+
+      {/* Floating Action Button (FAB) - Morning Style */}
+      <div className="fixed bottom-8 left-8 z-50">
+         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+            <DialogTrigger asChild>
+                <Button className="h-14 w-14 rounded-full bg-indigo-600 hover:bg-indigo-700 shadow-xl shadow-indigo-300 flex items-center justify-center transition-transform hover:scale-110">
+                    <Plus className="w-8 h-8 text-white" />
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[500px]" dir="rtl">
+                <DialogHeader>
+                    <DialogTitle>הוספת תנועה חדשה</DialogTitle>
+                </DialogHeader>
+                {/* Modal Form */}
+                <div className="grid gap-4 py-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label>סוג תנועה</Label>
-                                <Select 
-                                    value={newTransaction.type} 
+                                <Select
+                                    value={newTransaction.type}
                                     onValueChange={(val) => setNewTransaction(prev => ({ ...prev, type: val, categoryId: "" }))}
                                 >
                                     <SelectTrigger>
@@ -411,8 +544,8 @@ export default function CashFlow() {
                             </div>
                             <div className="space-y-2">
                                 <Label>חודש לחיוב</Label>
-                                <Select 
-                                    value={newTransaction.monthIndex.toString()} 
+                                <Select
+                                    value={newTransaction.monthIndex.toString()}
                                     onValueChange={(val) => setNewTransaction(prev => ({ ...prev, monthIndex: parseInt(val) }))}
                                 >
                                     <SelectTrigger>
@@ -427,8 +560,8 @@ export default function CashFlow() {
 
                         <div className="space-y-2">
                             <Label>קטגוריה (תקציב)</Label>
-                            <Select 
-                                value={newTransaction.categoryId} 
+                            <Select
+                                value={newTransaction.categoryId}
                                 onValueChange={(val) => setNewTransaction(prev => ({ ...prev, categoryId: val }))}
                             >
                                 <SelectTrigger>
@@ -446,7 +579,7 @@ export default function CashFlow() {
                             <Label>לקוח / ספק</Label>
                             {newTransaction.isNewClient ? (
                                 <div className="flex gap-2 animate-in fade-in zoom-in-95 duration-200">
-                                    <Input 
+                                    <Input
                                         placeholder="שם הלקוח החדש..."
                                         value={newTransaction.newClientName}
                                         onChange={(e) => setNewTransaction(prev => ({ ...prev, newClientName: e.target.value }))}
@@ -454,8 +587,8 @@ export default function CashFlow() {
                                     <Button variant="outline" onClick={() => setNewTransaction(prev => ({ ...prev, isNewClient: false }))}>ביטול</Button>
                                 </div>
                             ) : (
-                                <Select 
-                                    value={newTransaction.client} 
+                                <Select
+                                    value={newTransaction.client}
                                     onValueChange={(val) => {
                                         if (val === "NEW_CLIENT") {
                                             setNewTransaction(prev => ({ ...prev, isNewClient: true }));
@@ -480,16 +613,16 @@ export default function CashFlow() {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label>סכום (₪)</Label>
-                                <Input 
-                                    type="number" 
+                                <Input
+                                    type="number"
                                     value={newTransaction.amount}
                                     onChange={(e) => setNewTransaction(prev => ({ ...prev, amount: e.target.value }))}
                                 />
                             </div>
                             <div className="space-y-2">
                                 <Label>אמצעי תשלום</Label>
-                                <Select 
-                                    value={newTransaction.paymentMethod} 
+                                <Select
+                                    value={newTransaction.paymentMethod}
                                     onValueChange={(val) => setNewTransaction(prev => ({ ...prev, paymentMethod: val }))}
                                 >
                                     <SelectTrigger>
@@ -509,80 +642,127 @@ export default function CashFlow() {
                         </div>
 
                         {newTransaction.paymentMethod === "check" && (
-                             <div className="grid grid-cols-2 gap-4 p-3 bg-slate-50 rounded-lg border border-slate-100">
-                                <div className="space-y-2">
-                                    <Label className="text-xs">מספר צ'ק</Label>
-                                    <Input 
-                                        className="h-8 bg-white"
-                                        value={newTransaction.checkNumber}
-                                        onChange={(e) => setNewTransaction(prev => ({ ...prev, checkNumber: e.target.value }))}
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label className="text-xs">תאריך פירעון</Label>
-                                    <Popover>
-                                        <PopoverTrigger asChild>
-                                            <Button
-                                                variant={"outline"}
-                                                className={cn("w-full h-8 justify-start text-left font-normal bg-white", !newTransaction.depositDate && "text-muted-foreground")}
-                                            >
-                                                <CalendarIcon className="ml-auto h-3 w-3 opacity-50" />
-                                                {newTransaction.depositDate ? format(newTransaction.depositDate, "P", { locale: he }) : <span className="text-xs">בחר תאריך</span>}
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0" align="start">
-                                            <Calendar
-                                                mode="single"
-                                                selected={newTransaction.depositDate}
-                                                onSelect={(date) => setNewTransaction(prev => ({ ...prev, depositDate: date }))}
-                                                initialFocus
-                                            />
-                                        </PopoverContent>
-                                    </Popover>
-                                </div>
+                             <div className="space-y-2">
+                                <Label className="text-xs">מספר צ'ק</Label>
+                                <Input
+                                    className="h-8 bg-white"
+                                    value={newTransaction.checkNumber}
+                                    onChange={(e) => setNewTransaction(prev => ({ ...prev, checkNumber: e.target.value }))}
+                                />
                              </div>
                         )}
 
-                        <div className="flex items-center justify-between p-3 border rounded-lg bg-slate-50">
-                            <div className="space-y-0.5">
-                                <Label>סטטוס תנועה</Label>
-                                <div className="text-xs text-muted-foreground">
-                                    {newTransaction.status === 'forecast' ? 'מוגדר כ"צפי" (לא סופי)' : 'מוגדר כ"בפועל" (כסף בבנק)'}
-                                </div>
+                        {/* Due Date and Value Date Field */}
+                        <div className="grid grid-cols-2 gap-4 p-3 bg-indigo-50/50 rounded-lg border border-indigo-100">
+                            <div className="space-y-2">
+                                <Label className="text-xs text-indigo-900 font-bold flex items-center gap-1">
+                                    <CalendarIcon className="w-3 h-3" /> תאריך יעד
+                                </Label>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant={"outline"}
+                                            className={cn("w-full h-8 justify-start text-left font-normal bg-white border-indigo-200", !newTransaction.depositDate && "text-muted-foreground")}
+                                        >
+                                            <CalendarIcon className="ml-auto h-3 w-3 opacity-50" />
+                                            {newTransaction.depositDate ? format(newTransaction.depositDate, "P", { locale: he }) : <span className="text-xs">בחר תאריך</span>}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                        <Calendar
+                                            mode="single"
+                                            selected={newTransaction.depositDate}
+                                            onSelect={(date) => setNewTransaction(prev => ({ ...prev, depositDate: date }))}
+                                            initialFocus
+                                        />
+                                    </PopoverContent>
+                                </Popover>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <span className={cn("text-xs font-medium", newTransaction.status === 'forecast' ? "text-slate-900" : "text-slate-400")}>צפי</span>
-                                <Switch 
-                                    checked={newTransaction.status === 'actual'}
-                                    onCheckedChange={(checked) => setNewTransaction(prev => ({ ...prev, status: checked ? 'actual' : 'forecast' }))}
-                                />
-                                <span className={cn("text-xs font-medium", newTransaction.status === 'actual' ? "text-green-600" : "text-slate-400")}>בפועל</span>
+                             <div className="space-y-2">
+                                <Label className="text-xs text-indigo-900 font-bold flex items-center gap-1">
+                                    <CalendarIcon className="w-3 h-3" /> תאריך ערך (בבנק)
+                                </Label>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant={"outline"}
+                                            className={cn("w-full h-8 justify-start text-left font-normal bg-white border-indigo-200", !newTransaction.valueDate && "text-muted-foreground")}
+                                        >
+                                            <CalendarIcon className="ml-auto h-3 w-3 opacity-50" />
+                                            {newTransaction.valueDate ? format(newTransaction.valueDate, "P", { locale: he }) : <span className="text-xs">תאריך פירעון בפועל</span>}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                        <Calendar
+                                            mode="single"
+                                            selected={newTransaction.valueDate}
+                                            onSelect={(date) => setNewTransaction(prev => ({ ...prev, valueDate: date }))}
+                                            initialFocus
+                                        />
+                                    </PopoverContent>
+                                </Popover>
                             </div>
                         </div>
-                    </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsModalOpen(false)}>ביטול</Button>
-                        <Button onClick={handleSaveTransaction} className="bg-indigo-600 hover:bg-indigo-700">שמור תנועה</Button>
-                    </DialogFooter>
-                </DialogContent>
-             </Dialog>
 
-             <Button 
-                variant="outline" 
+                        <div className="space-y-2">
+                            <Label>סטטוס ראשוני</Label>
+                            <Select
+                                value={newTransaction.status}
+                                onValueChange={(val) => setNewTransaction(prev => ({ ...prev, status: val }))}
+                            >
+                                <SelectTrigger className="h-10">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="forecast">צפי (טיוטה)</SelectItem>
+                                    <SelectItem value="pending">הופקד (ממתין)</SelectItem>
+                                    <SelectItem value="cleared">נפרע (סופי)</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                </div>
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsModalOpen(false)}>ביטול</Button>
+                    <Button onClick={handleSaveTransaction} className="bg-indigo-600 hover:bg-indigo-700">שמור תנועה</Button>
+                </DialogFooter>
+            </DialogContent>
+         </Dialog>
+      </div>
+
+      <div className="max-w-[1900px] mx-auto space-y-8 pb-20">
+
+        {/* Header Section */}
+        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+          <div className="flex items-center gap-4">
+             <div className="relative">
+                <div className="absolute inset-0 bg-indigo-500 blur-lg opacity-20 rounded-full"></div>
+                <div className="w-14 h-14 bg-gradient-to-tr from-[#4720B7] to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg relative z-10">
+                    <Wallet className="w-7 h-7 text-white" />
+                </div>
+             </div>
+            <div>
+              <h1 className="text-3xl font-black text-slate-900 tracking-tight" style={{fontFamily: 'Heebo, sans-serif'}}>תזרים מזומנים</h1>
+              <p className="text-slate-500 font-medium">ניהול פיננסי חכם למנהלים</p>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center gap-4 w-full xl:w-auto">
+             <Button
+                variant="outline"
                 onClick={handleReset}
-                className="gap-2 text-slate-600 hover:text-red-600 hover:bg-red-50 border-slate-200"
+                className="gap-2 text-slate-400 hover:text-red-500 hover:bg-red-50 border-slate-200"
               >
                 <RotateCcw className="w-4 h-4" />
-                אפס נתונים
+                אפס הכל
               </Button>
-            
+
             <Tabs value={selectedYear} onValueChange={setSelectedYear} className="w-full sm:w-auto">
               <TabsList className="bg-slate-100 p-1 h-11 w-full sm:w-auto grid grid-cols-3 sm:flex">
                 {years.map(year => (
-                  <TabsTrigger 
-                    key={year} 
+                  <TabsTrigger
+                    key={year}
                     value={year}
-                    className="px-6 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm font-bold rounded-md transition-all"
+                    className="px-6 data-[state=active]:bg-white data-[state=active]:text-[#4720B7] data-[state=active]:shadow-sm font-bold rounded-md transition-all"
                   >
                     {year}
                   </TabsTrigger>
@@ -593,100 +773,94 @@ export default function CashFlow() {
           </div>
         </div>
 
-        {/* KPI Cards */}
+        {/* Xero-Style KPI Cards - Clean & Minimal */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card className="border-0 shadow-sm hover:shadow-md transition-all bg-white overflow-hidden group">
-            <div className="absolute top-0 right-0 w-1.5 h-full bg-emerald-500 group-hover:w-2 transition-all"></div>
             <CardContent className="p-6">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-sm font-bold text-slate-400 mb-1 uppercase tracking-wider">סה"כ הכנסות {selectedYear}</p>
-                  <h2 className="text-4xl font-black text-emerald-600 tracking-tight">{formatCurrency(incomeStats.total)}</h2>
+                <div className="flex flex-col gap-2">
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">נכנס (Money In)</span>
+                    <div className="flex items-baseline gap-2">
+                        <span className="text-4xl font-black text-emerald-500 tracking-tight">{formatCurrency(incomeStats.total)}</span>
+                        <TrendingUp className="w-5 h-5 text-emerald-500" />
+                    </div>
                 </div>
-                <div className="p-3 bg-emerald-50 rounded-xl group-hover:scale-110 transition-transform">
-                  <TrendingUp className="w-6 h-6 text-emerald-600" />
-                </div>
-              </div>
             </CardContent>
           </Card>
 
           <Card className="border-0 shadow-sm hover:shadow-md transition-all bg-white overflow-hidden group">
-            <div className="absolute top-0 right-0 w-1.5 h-full bg-rose-500 group-hover:w-2 transition-all"></div>
             <CardContent className="p-6">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-sm font-bold text-slate-400 mb-1 uppercase tracking-wider">סה"כ הוצאות {selectedYear}</p>
-                  <h2 className="text-4xl font-black text-rose-600 tracking-tight">{formatCurrency(expensesStats.total)}</h2>
+                 <div className="flex flex-col gap-2">
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">יצא (Money Out)</span>
+                    <div className="flex items-baseline gap-2">
+                        <span className="text-4xl font-black text-rose-500 tracking-tight">{formatCurrency(expensesStats.total)}</span>
+                        <TrendingDown className="w-5 h-5 text-rose-500" />
+                    </div>
                 </div>
-                <div className="p-3 bg-rose-50 rounded-xl group-hover:scale-110 transition-transform">
-                  <TrendingDown className="w-6 h-6 text-rose-600" />
-                </div>
-              </div>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-md bg-gradient-to-br from-indigo-600 to-purple-700 text-white overflow-hidden relative group">
-            <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <Card className="border-0 shadow-md bg-[#4720B7] text-white overflow-hidden relative group">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
             <CardContent className="p-6 relative z-10">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-sm font-bold text-indigo-100 mb-1 uppercase tracking-wider">יתרה צפויה לסוף שנה</p>
-                  <h2 className="text-4xl font-black text-white tracking-tight">{formatCurrency(endOfYearBalance)}</h2>
+                 <div className="flex flex-col gap-2">
+                    <span className="text-xs font-bold text-indigo-200 uppercase tracking-widest">יתרה צפויה (Projected)</span>
+                    <div className="flex items-baseline gap-2">
+                        <span className={cn("text-4xl font-black tracking-tight", endOfYearBalance < 0 ? "text-rose-200" : "text-white")}>
+                            {formatCurrency(endOfYearBalance)}
+                        </span>
+                    </div>
                 </div>
-                <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                  <Wallet className="w-6 h-6 text-white" />
-                </div>
-              </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Charts Section */}
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-            <Card className="border-0 shadow-sm xl:col-span-4">
-            <CardHeader>
-                <CardTitle className="text-lg font-bold text-slate-800">מגמת תזרים שנתית</CardTitle>
+        {/* The "Wave" Chart - Area Chart */}
+        <div className="grid grid-cols-1 gap-6">
+            <Card className="border-0 shadow-sm bg-white">
+            <CardHeader className="pb-0">
+                <CardTitle className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-[#4720B7]" />
+                    מגמת תזרים (Forecast View)
+                </CardTitle>
             </CardHeader>
             <CardContent>
-                <div className="h-[350px] w-full" dir="ltr">
+                <div className="h-[300px] w-full mt-4" dir="ltr">
                 <ResponsiveContainer width="100%" height="100%">
-                    <ComposedChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                    <AreaChart data={chartData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
+                    <defs>
+                        <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#4720B7" stopOpacity={0.2}/>
+                        <stop offset="95%" stopColor="#4720B7" stopOpacity={0}/>
+                        </linearGradient>
+                    </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
-                    <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} tickFormatter={(val) => `₪${val/1000}k`} />
-                    <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{ fill: '#8b5cf6', fontSize: 12 }} />
-                    <RechartsTooltip 
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={(val) => `₪${val/1000}k`} />
+                    <RechartsTooltip
                         contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                         formatter={(value) => formatCurrency(value)}
                     />
-                    <Legend />
-                    <Bar yAxisId="left" dataKey="income" name="הכנסות" fill="#10b981" radius={[4, 4, 0, 0]} barSize={30} />
-                    <Bar yAxisId="left" dataKey="expenses" name="הוצאות" fill="#f43f5e" radius={[4, 4, 0, 0]} barSize={30} />
-                    <Line yAxisId="right" type="monotone" dataKey="balance" name="יתרה מצטברת" stroke="#8b5cf6" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: "#fff", stroke: "#8b5cf6" }} />
-                    </ComposedChart>
+                    <Area type="monotone" dataKey="balance" stroke="#4720B7" strokeWidth={3} fillOpacity={1} fill="url(#colorBalance)" />
+                    </AreaChart>
                 </ResponsiveContainer>
                 </div>
             </CardContent>
             </Card>
         </div>
 
+
         {/* Data Grid */}
         <Card className="border-0 shadow-md overflow-hidden bg-white">
           <CardHeader className="bg-white border-b border-slate-100 px-6 py-4">
             <div className="flex justify-between items-center">
                 <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                <FileText className="w-5 h-5 text-indigo-600" />
-                פירוט תנועות חודשי
+                <FileText className="w-5 h-5 text-slate-500" />
+                פירוט תנועות (Transaction Grid)
                 </CardTitle>
-                <div className="flex items-center gap-4 text-sm text-slate-500">
-                    <div className="flex items-center gap-1">
-                        <div className="w-3 h-3 bg-slate-200 rounded-sm"></div>
-                        <span>צפי (Forecast)</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                        <div className="w-3 h-3 bg-slate-800 rounded-sm"></div>
-                        <span>בפועל (Actual)</span>
-                    </div>
+                <div className="flex items-center gap-4 text-xs font-medium text-slate-500 bg-slate-50 px-3 py-1.5 rounded-full">
+                    <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-slate-300"></div> צפי (Forecast)</span>
+                    <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-orange-400"></div> ממתין (Pending)</span>
+                    <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-emerald-500"></div> נפרע (Cleared)</span>
                 </div>
             </div>
           </CardHeader>
@@ -695,53 +869,30 @@ export default function CashFlow() {
               <thead>
                 <tr className="bg-slate-50/80 text-slate-500 border-b border-slate-200">
                   <th colSpan={2} className="p-4 text-right font-bold min-w-[220px] sticky right-0 bg-slate-50 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">פרטי תנועה</th>
+                  <th className="p-4 text-center font-bold min-w-[100px] text-indigo-800 hidden md:table-cell">ת. ערך</th>
                   {months.map(m => <th key={m} className="p-4 text-left font-bold min-w-[80px]">{m}</th>)}
                   <th className="p-4 text-left font-bold min-w-[120px] text-indigo-700 bg-indigo-50/30">סה"כ שנתי</th>
-                  <th className="p-4 text-center font-bold min-w-[60px]">פעולות</th>
+                  <th className="p-4 text-center font-bold min-w-[100px]">סטטוס</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                
-                {/* Income Section */}
-                <tr className="bg-emerald-50/50">
-                  <td colSpan={16} className="p-3 font-black text-emerald-800 sticky right-0 bg-emerald-50/90 z-10 text-sm tracking-wide">הכנסות</td>
-                </tr>
-                {currentYearData.income.map(cat => (
-                  <CategoryRow key={cat.id} category={cat} type="income" />
-                ))}
-                <tr className="bg-emerald-100/50 border-t-2 border-emerald-100 font-bold">
-                  <td colSpan={2} className="p-4 sticky right-0 bg-emerald-100 z-10 text-emerald-900 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">סה"כ הכנסות</td>
-                  {incomeStats.monthlyTotals.map((val, idx) => (
-                    <td key={idx} className="p-4 text-left font-mono text-emerald-900">{val.toLocaleString()}</td>
-                  ))}
-                  <td className="p-4 text-left font-mono text-emerald-900 bg-emerald-200/30">{incomeStats.total.toLocaleString()}</td>
-                  <td></td>
-                </tr>
 
-                {/* Expenses Section */}
-                <tr className="bg-rose-50/50">
-                  <td colSpan={16} className="p-3 font-black text-rose-800 sticky right-0 bg-rose-50/90 z-10 text-sm tracking-wide mt-8">הוצאות</td>
+                {/* Income */}
+                <tr className="bg-emerald-50/30">
+                  <td colSpan={17} className="p-3 font-bold text-emerald-800 sticky right-0 bg-emerald-50/90 z-10 text-sm tracking-wide">הכנסות (Income)</td>
                 </tr>
-                {currentYearData.expenses.map(cat => (
-                  <CategoryRow key={cat.id} category={cat} type="expenses" />
-                ))}
-                <tr className="bg-rose-100/50 border-t-2 border-rose-100 font-bold">
-                  <td colSpan={2} className="p-4 sticky right-0 bg-rose-100 z-10 text-rose-900 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">סה"כ הוצאות</td>
-                  {expensesStats.monthlyTotals.map((val, idx) => (
-                    <td key={idx} className="p-4 text-left font-mono text-rose-900">{val.toLocaleString()}</td>
-                  ))}
-                  <td className="p-4 text-left font-mono text-rose-900 bg-rose-200/30">{expensesStats.total.toLocaleString()}</td>
-                  <td></td>
-                </tr>
+                {currentYearData.income.map(cat => <CategoryRow key={cat.id} category={cat} type="income" />)}
 
-                {/* Summary Section Header */}
-                <tr className="bg-indigo-50/30 border-t border-indigo-100">
-                    <td colSpan={16} className="p-2"></td>
+                {/* Expenses */}
+                <tr className="bg-rose-50/30">
+                  <td colSpan={17} className="p-3 font-bold text-rose-800 sticky right-0 bg-rose-50/90 z-10 text-sm tracking-wide mt-8">הוצאות (Expenses)</td>
                 </tr>
+                {currentYearData.expenses.map(cat => <CategoryRow key={cat.id} category={cat} type="expenses" />)}
 
                 {/* Monthly Net */}
-                <tr className="bg-white font-semibold text-slate-600">
-                    <td colSpan={2} className="p-4 sticky right-0 bg-white z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">רווח/הפסד חודשי</td>
+                <tr className="bg-white font-semibold text-slate-600 border-t-4 border-slate-100 mt-4">
+                    <td colSpan={2} className="p-4 sticky right-0 bg-white z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">תזרים נטו חודשי</td>
+                    <td className="hidden md:table-cell"></td>
                     {cumulativeData.map((data, idx) => (
                         <td key={idx} className={`p-4 text-left font-mono ${data.monthlyNet >= 0 ? 'text-slate-700' : 'text-rose-600'}`}>
                             {data.monthlyNet.toLocaleString()}
@@ -753,23 +904,21 @@ export default function CashFlow() {
                     <td></td>
                 </tr>
 
-                {/* Cumulative Balance Row (The Chain Reaction) */}
-                <tr className="bg-gradient-to-r from-indigo-600 to-purple-700 text-white font-bold text-base shadow-lg transform scale-[1.002]">
-                  <td colSpan={2} className="p-4 sticky right-0 bg-indigo-600 z-10 flex items-center gap-2 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.2)]">
+                {/* Cumulative Balance Row */}
+                <tr className="bg-[#4720B7] text-white font-bold text-base shadow-lg transform scale-[1.002]">
+                  <td colSpan={2} className="p-4 sticky right-0 bg-[#4720B7] z-10 flex items-center gap-2 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.2)]">
                     <Wallet className="w-5 h-5 text-indigo-200" />
-                    יתרה מצטברת (תזרים)
+                    יתרה מצטברת (Balance)
                   </td>
+                  <td className="bg-[#4720B7] hidden md:table-cell"></td>
                   {cumulativeData.map((data, idx) => (
                     <td key={idx} className={`p-4 text-left font-mono relative group`}>
                       <span className={data.cumulative < 0 ? "text-rose-200" : "text-white"}>
                          {data.cumulative.toLocaleString()}
                       </span>
-                      {data.cumulative < 0 && (
-                        <div className="absolute inset-0 bg-rose-500/20 pointer-events-none"></div>
-                      )}
                     </td>
                   ))}
-                  <td className="p-4 text-left font-mono bg-purple-800/50">
+                  <td className="p-4 text-left font-mono bg-indigo-900/30">
                     {endOfYearBalance.toLocaleString()}
                   </td>
                   <td></td>
