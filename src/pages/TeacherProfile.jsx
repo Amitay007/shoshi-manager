@@ -77,7 +77,7 @@ export default function TeacherProfile() {
       const newStatus = !currentStatus;
       await base44.entities.Teacher.update(teacher.id, { active: newStatus });
       setTeacher({ ...teacher, active: newStatus });
-      toast({ title: "סטטוס עודכן", description: \`המורה כעת \${newStatus ? "פעיל" : "לא פעיל"}\` });
+      toast({ title: "סטטוס עודכן", description: "המורה כעת " + (newStatus ? "פעיל" : "לא פעיל") });
     } catch (error) {
       toast({ title: "שגיאה", description: "עדכון הסטטוס נכשל", variant: "destructive" });
     }
