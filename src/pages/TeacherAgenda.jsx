@@ -99,6 +99,15 @@ export default function TeacherAgenda() {
   const [selectedReport, setSelectedReport] = useState(null);
   const [reportNotes, setReportNotes] = useState("");
   
+  // Manual Hours Reporting
+  const [showAddHoursModal, setShowAddHoursModal] = useState(false);
+  const [manualReports, setManualReports] = useState([]);
+  const [newReport, setNewReport] = useState({
+    date: new Date().toISOString().split('T')[0],
+    hours: "",
+    notes: ""
+  });
+  
   // Stats Calculations
   const stats = useMemo(() => {
     const now = new Date();
@@ -147,6 +156,37 @@ export default function TeacherAgenda() {
   const handleReject = (id) => {
     if (confirm("האם אתה בטוח שברצונך לדחות את השיבוץ?")) {
       setEvents(prev => prev.map(e => e.id === id ? { ...e, status: 'cancelled' } : e));
+    }
+  };
+
+  const handleAddReport = () => {
+    if (!newReport.date || !newReport.hours) return;
+    
+    const report = {
+      id: `manual_${Date.now()}`,
+      is_manual: true,
+      date: newReport.date,
+      duration: parseFloat(newReport.hours),
+      program_name: newReport.notes || "דיווח ידני",
+      status: "pending",
+      employee_verified: "verified" // Self verified
+    };
+
+    setManualReports(prev => [report, ...prev]);
+    setShowAddHoursModal(false);
+    setNewReport({ date: new Date().toISOString().split('T')[0], hours: "", notes: "" });
+  };
+
+  const handleVerifyShift = (id, isManual = false) => {
+    if (isManual) return; // Manual is always verified by creator
+    setEvents(prev => prev.map(e => e.id === id ? { ...e, employee_verified: 'verified', status: 'done' } : e));
+  };
+
+  const handleDisputeShift = (id, isManual = false) => {
+    if (isManual) {
+        setManualReports(prev => prev.filter(r => r.id !== id)); // Delete manual
+    } else {
+        setEvents(prev => prev.map(e => e.id === id ? { ...e, employee_verified: 'rejected' } : e));
     }
   };
 
@@ -295,46 +335,134 @@ export default function TeacherAgenda() {
              )}
         </div>
 
-        {/* History List */}
+        {/* Hours Reporting Section */}
         <div className="space-y-4 pt-4 border-t border-slate-200">
-            <h2 className="text-xl font-bold text-slate-500 flex items-center gap-2">
-                <History className="w-6 h-6" />
-                היסטוריית דיווחים
-            </h2>
+            <div className="flex justify-between items-center">
+                <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <History className="w-6 h-6 text-indigo-600" />
+                    דיווח שעות
+                </h2>
+                <Button onClick={() => setShowAddHoursModal(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2">
+                    <Clock className="w-4 h-4" />
+                    הוסף שעות ידנית
+                </Button>
+            </div>
 
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                {pastEvents.map((event, idx) => (
-                    <div 
-                        key={event.id}
-                        className={`p-4 flex items-center justify-between hover:bg-slate-50 transition-colors ${idx !== pastEvents.length - 1 ? 'border-b border-slate-100' : ''}`}
-                    >
-                        <div className="flex items-center gap-4">
-                            <div className="text-center w-12">
-                                <div className="font-bold text-slate-700">{format(new Date(event.start_time), "dd/MM")}</div>
-                                <div className="text-xs text-slate-400">{format(new Date(event.start_time), "HH:mm")}</div>
+                <div className="p-3 bg-slate-50 border-b border-slate-100 text-xs text-slate-500 font-bold grid grid-cols-12 gap-2">
+                    <div className="col-span-2">תאריך</div>
+                    <div className="col-span-4">תיאור</div>
+                    <div className="col-span-2 text-center">שעות</div>
+                    <div className="col-span-4 text-center">אישור</div>
+                </div>
+                
+                {[...pastEvents, ...manualReports].sort((a,b) => {
+                    const dateA = a.is_manual ? new Date(a.date) : new Date(a.start_time);
+                    const dateB = b.is_manual ? new Date(b.date) : new Date(b.start_time);
+                    return dateB - dateA;
+                }).map((item, idx) => {
+                    const isManual = item.is_manual;
+                    const date = isManual ? new Date(item.date) : new Date(item.start_time);
+                    const duration = isManual ? item.duration : ((new Date(item.end_time) - new Date(item.start_time)) / (1000 * 60 * 60)).toFixed(1);
+                    const isVerified = item.employee_verified === 'verified' || isManual;
+                    const isRejected = item.employee_verified === 'rejected';
+
+                    return (
+                        <div 
+                            key={item.id}
+                            className={`p-3 grid grid-cols-12 gap-2 items-center hover:bg-slate-50 transition-colors border-b border-slate-100`}
+                        >
+                            <div className="col-span-2 font-bold text-slate-700">
+                                {format(date, "dd/MM")}
+                                {!isManual && <div className="text-xs text-slate-400 font-normal">{format(date, "HH:mm")}</div>}
                             </div>
-                            <div>
-                                <div className="font-bold text-slate-800">{event.school_name}</div>
-                                <div className="text-sm text-slate-500">{event.program_name} • {event.class_name}</div>
-                            </div>
-                        </div>
-                        
-                        <div className="flex items-center gap-4">
-                             {event.status === 'done' ? (
-                                <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-0">בוצע</Badge>
-                             ) : (
-                                <Badge className="bg-red-100 text-red-700 hover:bg-red-200 border-0">בוטל</Badge>
-                             )}
-                             {event.personal_notes && (
-                                <div className="hidden md:block max-w-xs truncate text-xs text-slate-400 italic bg-slate-50 px-2 py-1 rounded">
-                                    "{event.personal_notes}"
+                            <div className="col-span-4">
+                                <div className="font-medium text-slate-800 line-clamp-1">
+                                    {isManual ? item.program_name : item.school_name}
                                 </div>
-                             )}
+                                {!isManual && <div className="text-xs text-slate-500 line-clamp-1">{item.program_name}</div>}
+                                {isManual && <Badge variant="outline" className="text-[10px] h-4 px-1 bg-blue-50 text-blue-600 border-blue-200">ידני</Badge>}
+                            </div>
+                            <div className="col-span-2 text-center font-bold text-slate-900">
+                                {duration}
+                            </div>
+                            <div className="col-span-4 flex justify-center gap-2">
+                                {isVerified ? (
+                                    <div className="flex items-center text-green-600 font-bold text-sm bg-green-50 px-2 py-1 rounded-full border border-green-100">
+                                        <Check className="w-3 h-3 mr-1" />
+                                        אושר
+                                    </div>
+                                ) : isRejected ? (
+                                    <div className="flex items-center text-red-600 font-bold text-sm bg-red-50 px-2 py-1 rounded-full border border-red-100">
+                                        <X className="w-3 h-3 mr-1" />
+                                        נדחה
+                                    </div>
+                                ) : (
+                                    <>
+                                        <Button 
+                                            size="sm" 
+                                            onClick={() => handleDisputeShift(item.id, isManual)} 
+                                            variant="ghost" 
+                                            className="h-8 w-8 p-0 rounded-full text-red-500 hover:text-red-600 hover:bg-red-50"
+                                        >
+                                            <X className="w-5 h-5" />
+                                        </Button>
+                                        <Button 
+                                            size="sm" 
+                                            onClick={() => handleVerifyShift(item.id, isManual)} 
+                                            variant="ghost" 
+                                            className="h-8 w-8 p-0 rounded-full text-green-500 hover:text-green-600 hover:bg-green-50"
+                                        >
+                                            <Check className="w-5 h-5" />
+                                        </Button>
+                                    </>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         </div>
+
+        {/* Add Hours Modal */}
+        <Dialog open={showAddHoursModal} onOpenChange={setShowAddHoursModal}>
+            <DialogContent className="max-w-sm" dir="rtl">
+                <DialogHeader>
+                    <DialogTitle>דיווח שעות ידני</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 py-2">
+                    <div className="space-y-2">
+                        <Label>תאריך</Label>
+                        <Input 
+                            type="date" 
+                            value={newReport.date} 
+                            onChange={e => setNewReport({...newReport, date: e.target.value})}
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label>מספר שעות</Label>
+                        <Input 
+                            type="number" 
+                            placeholder="למשל: 4.5" 
+                            value={newReport.hours} 
+                            onChange={e => setNewReport({...newReport, hours: e.target.value})}
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label>הערות / פירוט</Label>
+                        <Textarea 
+                            placeholder="תיאור הפעילות..." 
+                            value={newReport.notes} 
+                            onChange={e => setNewReport({...newReport, notes: e.target.value})}
+                        />
+                    </div>
+                </div>
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => setShowAddHoursModal(false)}>ביטול</Button>
+                    <Button onClick={handleAddReport} className="bg-indigo-600 hover:bg-indigo-700">שמור דיווח</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
 
       </div>
     </div>
