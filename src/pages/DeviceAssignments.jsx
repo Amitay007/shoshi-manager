@@ -647,130 +647,221 @@ export default function DeviceAssignments() {
 
         {/* Form View */}
         {viewMode === "form" && (
-          <>
-            <div className="flex justify-between items-center mb-6">
-              <div className="flex items-center gap-3">
-                <span className="text-sm font-medium text-slate-700">סוג:</span>
-                {/* Small Toggle Selector */}
-                <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
-                  <button 
-                    onClick={() => !isReadOnly && setMode("static")} 
-                    disabled={isReadOnly}
-                    className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${mode === "static" ? "bg-white shadow text-purple-700" : "text-slate-500 hover:text-slate-700"}`}
-                  >
-                    סטטי
-                  </button>
-                  <button 
-                    onClick={() => !isReadOnly && setMode("dynamic")} 
-                    disabled={isReadOnly}
-                    className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${mode === "dynamic" ? "bg-white shadow text-cyan-700" : "text-slate-500 hover:text-slate-700"}`}
-                  >
-                    דינמי
-                  </button>
-                </div>
+          <div className="max-w-5xl mx-auto">
+            {/* Mode Selection */}
+            <div className="mb-8 flex justify-center">
+              <div className="bg-white p-1.5 rounded-2xl shadow-sm border border-slate-200 inline-flex gap-2">
+                <button 
+                  onClick={() => !isReadOnly && setMode("static")} 
+                  disabled={isReadOnly}
+                  className={`px-8 py-3 rounded-xl font-bold transition-all flex items-center gap-2 ${mode === "static" ? "bg-purple-600 text-white shadow-md" : "text-slate-500 hover:bg-slate-50"}`}
+                >
+                  <div className={`w-3 h-3 rounded-full ${mode === "static" ? "bg-white" : "bg-purple-200"}`}></div>
+                  שיבוץ סטטי
+                </button>
+                <button 
+                  onClick={() => !isReadOnly && setMode("dynamic")} 
+                  disabled={isReadOnly}
+                  className={`px-8 py-3 rounded-xl font-bold transition-all flex items-center gap-2 ${mode === "dynamic" ? "bg-cyan-600 text-white shadow-md" : "text-slate-500 hover:bg-slate-50"}`}
+                >
+                  <div className={`w-3 h-3 rounded-full ${mode === "dynamic" ? "bg-white" : "bg-cyan-200"}`}></div>
+                  שיבוץ דינמי
+                </button>
               </div>
-              
             </div>
 
-            <Card className="mb-6">
-              <CardHeader><CardTitle>פרטי השיבוץ</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-slate-700 mb-2 block">שם השיבוץ</label>
-                  {!isReadOnly ? (
-                    <Input value={assignmentName} onChange={(e) => setAssignmentName(e.target.value)} placeholder="לדוגמה: סדנת VR לכיתה ט'" className="text-base" />
-                  ) : (
-                    <div className="text-lg font-medium p-2 bg-slate-50 rounded border border-slate-100">{assignmentName}</div>
-                  )}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                {/* Left Column - Details */}
+                <div className="lg:col-span-2 space-y-6">
+                    <Card className="border-none shadow-md overflow-hidden">
+                        <div className={`h-2 w-full ${mode === "static" ? "bg-purple-500" : "bg-cyan-500"}`}></div>
+                        <CardHeader className="bg-slate-50/50 border-b border-slate-100">
+                            <CardTitle className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                <FileText className="w-5 h-5 text-slate-400" />
+                                פרטי השיבוץ
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-6 space-y-5">
+                            <div>
+                                <label className="text-sm font-semibold text-slate-700 mb-2 block">שם השיבוץ <span className="text-red-500">*</span></label>
+                                {!isReadOnly ? (
+                                    <Input 
+                                        value={assignmentName} 
+                                        onChange={(e) => setAssignmentName(e.target.value)} 
+                                        placeholder="לדוגמה: סדנת VR לכיתה ט'" 
+                                        className="h-12 text-lg border-slate-200 focus:border-purple-500 focus:ring-purple-500 bg-slate-50/50" 
+                                    />
+                                ) : (
+                                    <div className="text-xl font-bold text-slate-800">{assignmentName}</div>
+                                )}
+                            </div>
+                            
+                            <div>
+                                <label className="text-sm font-semibold text-slate-700 mb-2 block">תיאור ופרטים נוספים</label>
+                                {!isReadOnly ? (
+                                    <Textarea 
+                                        value={details} 
+                                        onChange={(e) => setDetails(e.target.value)} 
+                                        placeholder="פרטים נוספים על השיבוץ..." 
+                                        className="min-h-[120px] border-slate-200 focus:border-purple-500 bg-slate-50/50" 
+                                    />
+                                ) : (
+                                    <div className="text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                        {details || "אין פרטים נוספים"}
+                                    </div>
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-slate-700 mb-2 block">פרטים נוספים</label>
-                  {!isReadOnly ? (
-                    <Textarea value={details} onChange={(e) => setDetails(e.target.value)} placeholder="תאור השיבוץ..." className="min-h-[100px]" />
-                  ) : (
-                    <div className="text-slate-600 p-2 bg-slate-50 rounded border border-slate-100 min-h-[60px]">{details || "אין פרטים נוספים"}</div>
-                  )}
+
+                {/* Right Column - Settings */}
+                <div className="space-y-6">
+                    <Card className="border-none shadow-md overflow-hidden h-full">
+                        <div className="h-2 w-full bg-slate-200"></div>
+                        <CardHeader className="bg-slate-50/50 border-b border-slate-100">
+                            <CardTitle className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                <Calendar className="w-5 h-5 text-slate-400" />
+                                הגדרות
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-6 space-y-6">
+                            {mode === "dynamic" && (
+                                <div>
+                                    <label className="text-sm font-semibold text-slate-700 mb-2 block">מספר מפגשים</label>
+                                    {!isReadOnly ? (
+                                        <div className="flex items-center gap-3">
+                                            <Button 
+                                                type="button" 
+                                                variant="outline" 
+                                                size="icon"
+                                                onClick={() => setNumberOfSessions(Math.max(1, numberOfSessions - 1))}
+                                            >
+                                                -
+                                            </Button>
+                                            <div className="font-bold text-xl w-12 text-center">{numberOfSessions}</div>
+                                            <Button 
+                                                type="button" 
+                                                variant="outline" 
+                                                size="icon"
+                                                onClick={() => setNumberOfSessions(Math.min(20, numberOfSessions + 1))}
+                                            >
+                                                +
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <div className="font-bold text-lg">{numberOfSessions} מפגשים</div>
+                                    )}
+                                </div>
+                            )}
+                            
+                            <div className="space-y-3">
+                                <label className="text-sm font-semibold text-slate-700 block">תאריכים</label>
+                                <div className="flex gap-2">
+                                    {!isReadOnly ? (
+                                    <>
+                                        <button 
+                                            type="button" 
+                                            onClick={() => setHasDates(false)} 
+                                            className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium border transition-all ${!hasDates ? "bg-slate-800 text-white border-slate-800" : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"}`}
+                                        >
+                                            ללא תאריך
+                                        </button>
+                                        <button 
+                                            type="button" 
+                                            onClick={() => setHasDates(true)} 
+                                            className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium border transition-all ${hasDates ? "bg-purple-600 text-white border-purple-600" : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"}`}
+                                        >
+                                            יש תאריכים
+                                        </button>
+                                    </>
+                                    ) : (
+                                        <Badge variant={hasDates ? "default" : "secondary"}>{hasDates ? "מוגדרים תאריכים" : "ללא תאריכים"}</Badge>
+                                    )}
+                                </div>
+                            </div>
+
+                            {hasDates && !isReadOnly && (
+                                <div className="p-4 bg-blue-50/50 rounded-xl border border-blue-100 space-y-3">
+                                    <div className="flex items-center gap-2 text-blue-800 font-medium text-sm">
+                                        <Calendar className="w-4 h-4" />
+                                        סנכרון Google Calendar
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button 
+                                            type="button" 
+                                            onClick={() => setCalendarEnabled(false)} 
+                                            className={`flex-1 py-1.5 px-2 rounded-md text-xs font-medium border transition-all ${!calendarEnabled ? "bg-slate-200 text-slate-800 border-slate-300" : "bg-white text-slate-500 border-blue-100"}`}
+                                        >
+                                            לא
+                                        </button>
+                                        <button 
+                                            type="button" 
+                                            onClick={() => setCalendarEnabled(true)} 
+                                            className={`flex-1 py-1.5 px-2 rounded-md text-xs font-medium border transition-all ${calendarEnabled ? "bg-blue-600 text-white border-blue-600" : "bg-white text-slate-500 border-blue-100"}`}
+                                        >
+                                            כן
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
                 </div>
-                {mode === "dynamic" && (
-                  <div>
-                    <label className="text-sm font-medium text-slate-700 mb-2 block">מספר מפגשים</label>
-                    {!isReadOnly ? (
-                      <Input type="number" min="1" max="20" value={numberOfSessions} onChange={(e) => setNumberOfSessions(Math.max(1, parseInt(e.target.value) || 1))} className="text-base w-32" />
-                    ) : (
-                      <div className="font-medium">{numberOfSessions}</div>
-                    )}
-                  </div>
-                )}
-                <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-lg border-2 border-slate-200">
-                  <label className="text-sm font-medium text-slate-700 flex-1">האם יש תאריכים לשיבוץ?</label>
-                  <div className="flex gap-2">
-                    {!isReadOnly ? (
-                      <>
-                        <Button type="button" size="sm" variant={!hasDates ? "default" : "outline"} onClick={() => setHasDates(false)} className={!hasDates ? "bg-slate-700" : ""}>אין תאריך</Button>
-                        <Button type="button" size="sm" variant={hasDates ? "default" : "outline"} onClick={() => setHasDates(true)} className={hasDates ? "bg-purple-600" : ""}>יש תאריכים</Button>
-                      </>
-                    ) : (
-                      <Badge variant="outline">{hasDates ? "כן" : "לא"}</Badge>
-                    )}
-                  </div>
-                </div>
-                {hasDates && !isReadOnly && (
-                  <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border-2 border-blue-200">
-                    <div className="flex-1">
-                      <label className="text-sm font-medium text-blue-900 block">סנכרון עם Google Calendar 📅</label>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button type="button" size="sm" variant={!calendarEnabled ? "default" : "outline"} onClick={() => setCalendarEnabled(false)} className={!calendarEnabled ? "bg-slate-600" : ""}>לא</Button>
-                      <Button type="button" size="sm" variant={calendarEnabled ? "default" : "outline"} onClick={() => setCalendarEnabled(true)} className={calendarEnabled ? "bg-blue-600" : ""}>כן</Button>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            </div>
 
             {mode === "static" && (
-              <Card className="mb-6">
-                <CardHeader>
-                  <CardTitle>משקפות משובצות</CardTitle>
-                  {!isReadOnly && (
-                    <div className="flex gap-2 mt-4">
-                      <Button onClick={() => openHeadsetModal(null)} className="bg-gradient-to-r from-purple-600 to-purple-700 gap-2 w-fit">
-                        <Plus className="w-4 h-4" /> הוסף משקפות
-                      </Button>
-                      <Button onClick={() => setShowProgramsModal(true)} variant="outline" className="border-purple-200 hover:bg-purple-50 text-purple-700 gap-2 w-fit">
-                        <Plus className="w-4 h-4" /> הוסף מתוכנית
-                      </Button>
-                    </div>
-                  )}
+              <Card className="mb-8 border-none shadow-md overflow-hidden">
+                <div className="h-2 w-full bg-purple-500"></div>
+                <CardHeader className="bg-purple-50/30 border-b border-purple-100">
+                  <div className="flex items-center justify-between flex-wrap gap-4">
+                    <CardTitle className="text-lg font-bold text-purple-900 flex items-center gap-2">
+                        <VRIcon className="w-5 h-5 text-purple-600" />
+                        משקפות משובצות
+                        <Badge className="bg-purple-100 text-purple-700 border-none ml-2">{selectedStaticHeadsets.size}</Badge>
+                    </CardTitle>
+                    {!isReadOnly && (
+                      <div className="flex gap-2">
+                        <Button onClick={() => setShowProgramsModal(true)} variant="outline" className="border-purple-200 hover:bg-purple-50 text-purple-700 gap-2 h-9">
+                          <FileText className="w-4 h-4" /> יבא מתוכנית
+                        </Button>
+                        <Button onClick={() => openHeadsetModal(null)} className="bg-gradient-to-r from-purple-600 to-purple-700 text-white gap-2 shadow-md hover:shadow-lg h-9">
+                          <Plus className="w-4 h-4" /> הוסף משקפות
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-6">
                   {/* Date Picker moved here for static mode */}
                   {hasDates && (
-                    <div className="mb-6 p-3 bg-purple-50 rounded border border-purple-100 flex items-center gap-3">
-                      <label className="text-sm font-medium text-purple-900">תאריך ביצוע:</label>
-                      {!isReadOnly ? (
-                        <Input type="date" value={executionDate || ""} onChange={(e) => setExecutionDate(e.target.value)} className="max-w-xs bg-white" />
-                      ) : (
-                        <span className="font-medium">{executionDate ? format(new Date(executionDate), 'dd/MM/yyyy') : "לא נקבע"}</span>
-                      )}
+                    <div className="mb-6 p-4 bg-white rounded-xl border border-purple-100 shadow-sm flex items-center gap-4 max-w-md">
+                      <div className="bg-purple-100 p-2 rounded-lg text-purple-600"><Calendar className="w-5 h-5" /></div>
+                      <div className="flex-1">
+                          <label className="text-xs font-bold text-purple-900 uppercase tracking-wide block mb-1">תאריך ביצוע</label>
+                          {!isReadOnly ? (
+                            <Input type="date" value={executionDate || ""} onChange={(e) => setExecutionDate(e.target.value)} className="bg-transparent border-none p-0 h-auto font-medium text-slate-700 focus:ring-0 w-full" />
+                          ) : (
+                            <span className="font-medium text-slate-700">{executionDate ? format(new Date(executionDate), 'dd/MM/yyyy') : "לא נקבע"}</span>
+                          )}
+                      </div>
                     </div>
                   )}
                   
                   {selectedStaticHeadsets.size > 0 ? (
                     <div className="space-y-4">
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-3">
                         {Array.from(selectedStaticHeadsets).map(deviceId => (
-                          <div key={deviceId} className="relative group">
+                          <div key={deviceId} className="relative group animate-in zoom-in-50 duration-200">
                             <Link to={createPageUrl(`DeviceInfo?id=${getHeadsetDisplay(deviceId)}`)}>
-                              <Badge className="bg-gradient-to-r from-purple-500 to-purple-600 text-white text-base px-4 py-2 cursor-pointer hover:from-purple-600 hover:to-purple-700 pl-8">
-                                <VRIcon className="w-4 h-4 mr-2" /> משקפת {getHeadsetDisplay(deviceId)}
-                              </Badge>
+                              <div className="flex items-center gap-3 bg-white border border-slate-200 rounded-xl px-4 py-2 shadow-sm hover:shadow-md hover:border-purple-300 transition-all cursor-pointer pr-10">
+                                <VRIcon className="w-5 h-5 text-purple-600" /> 
+                                <span className="font-bold text-slate-700 text-lg">{getHeadsetDisplay(deviceId)}</span>
+                              </div>
                             </Link>
                             {!isReadOnly && (
-                              <Button 
-                                size="sm" 
-                                variant="ghost" 
-                                className="absolute top-1/2 -translate-y-1/2 left-1 w-6 h-6 p-0 rounded-full bg-red-600 text-white hover:bg-red-700 z-10 opacity-80 hover:opacity-100" 
+                              <button 
+                                className="absolute top-1/2 -translate-y-1/2 right-2 w-6 h-6 flex items-center justify-center rounded-full text-slate-400 hover:bg-red-50 hover:text-red-500 transition-colors" 
                                 onClick={(e) => {
                                   e.preventDefault(); e.stopPropagation();
                                   const newSet = new Set(selectedStaticHeadsets);
@@ -778,18 +869,18 @@ export default function DeviceAssignments() {
                                   setSelectedStaticHeadsets(newSet);
                                 }}
                               >
-                                <X className="w-3 h-3" />
-                              </Button>
+                                <X className="w-4 h-4" />
+                              </button>
                             )}
                           </div>
                         ))}
                       </div>
-                      <div className="text-sm text-slate-600 font-medium">סה"כ משקפות: {selectedStaticHeadsets.size}</div>
                     </div>
                   ) : (
-                    <div className="text-center py-8 text-slate-500">
-                      <VRIcon className="w-12 h-12 mx-auto mb-2 opacity-30" />
-                      <p>טרם נבחרו משקפות</p>
+                    <div className="text-center py-12 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+                      <VRIcon className="w-12 h-12 mx-auto mb-3 text-slate-300" />
+                      <p className="text-slate-500 font-medium">טרם נבחרו משקפות לשיבוץ זה</p>
+                      {!isReadOnly && <p className="text-slate-400 text-sm mt-1">השתמש בכפתורים למעלה להוספת משקפות</p>}
                     </div>
                   )}
                 </CardContent>
@@ -797,57 +888,66 @@ export default function DeviceAssignments() {
             )}
 
             {mode === "dynamic" && (
-              <div className="space-y-4 mb-6">
+              <div className="space-y-6 mb-8">
                 {selectedDynamicHeadsets.map((sessionSet, idx) => (
-                  <Card key={idx} className="border-2 border-cyan-200">
-                    <CardHeader className="bg-gradient-to-r from-cyan-50 to-blue-50">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-3">
-                          <CardTitle className="flex items-center gap-2">
-                            <Calendar className="w-5 h-5 text-cyan-600" /> מפגש {idx + 1}
-                          </CardTitle>
-                          {!isReadOnly && (
-                            <div className="flex gap-2">
-                              <Button onClick={() => openHeadsetModal(idx)} size="sm" className="bg-gradient-to-r from-cyan-600 to-cyan-700 gap-2">
-                                <Plus className="w-4 h-4" /> הוסף משקפות
-                              </Button>
-                              <Button onClick={() => { setCurrentSessionIndex(idx); setShowProgramsModal(true); }} size="sm" variant="outline" className="border-cyan-200 hover:bg-cyan-50 text-cyan-700 gap-2">
-                                <Plus className="w-4 h-4" /> הוסף מתוכנית
-                              </Button>
+                  <Card key={idx} className="border-none shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                    <div className="h-1.5 w-full bg-cyan-500"></div>
+                    <CardHeader className="bg-cyan-50/30 border-b border-cyan-100 py-4">
+                      <div className="flex items-center justify-between flex-wrap gap-4">
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 bg-cyan-100 rounded-lg flex items-center justify-center text-cyan-700 font-bold text-xl">
+                                {idx + 1}
                             </div>
-                          )}
+                            <div>
+                                <CardTitle className="text-lg text-slate-800">מפגש {idx + 1}</CardTitle>
+                                <div className="text-xs text-slate-500 mt-1">{sessionSet.size} משקפות משובצות</div>
+                            </div>
                         </div>
+                        
+                        {!isReadOnly && (
+                          <div className="flex gap-2">
+                            <Button onClick={() => { setCurrentSessionIndex(idx); setShowProgramsModal(true); }} size="sm" variant="outline" className="border-cyan-200 hover:bg-cyan-50 text-cyan-700 gap-2">
+                              <FileText className="w-4 h-4" /> יבא
+                            </Button>
+                            <Button onClick={() => openHeadsetModal(idx)} size="sm" className="bg-cyan-600 hover:bg-cyan-700 text-white gap-2">
+                              <Plus className="w-4 h-4" /> הוסף משקפות
+                            </Button>
+                          </div>
+                        )}
                       </div>
+                    </CardHeader>
+                    <CardContent className="p-4 pt-6">
+                      
                       {hasDates && (
-                        <div className="flex items-center gap-2">
-                          <label className="text-xs text-slate-600">תאריך:</label>
-                          {!isReadOnly ? (
-                            <Input type="date" value={sessionDates[idx] || ""} onChange={(e) => {
-                              const newDates = [...sessionDates];
-                              newDates[idx] = e.target.value;
-                              setSessionDates(newDates);
-                            }} className="max-w-xs text-sm h-8" />
-                          ) : (
-                            <span className="text-sm">{sessionDates[idx] ? format(new Date(sessionDates[idx]), 'dd/MM/yyyy') : "לא נקבע"}</span>
-                          )}
+                        <div className="mb-4 flex items-center gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100 max-w-sm">
+                            <Calendar className="w-4 h-4 text-slate-500" />
+                            <span className="text-sm font-medium text-slate-700">תאריך המפגש:</span>
+                            {!isReadOnly ? (
+                                <Input type="date" value={sessionDates[idx] || ""} onChange={(e) => {
+                                  const newDates = [...sessionDates];
+                                  newDates[idx] = e.target.value;
+                                  setSessionDates(newDates);
+                                }} className="h-8 text-sm w-auto bg-white" />
+                            ) : (
+                                <span className="font-bold text-slate-800">{sessionDates[idx] ? format(new Date(sessionDates[idx]), 'dd/MM/yyyy') : "לא נקבע"}</span>
+                            )}
                         </div>
                       )}
-                    </CardHeader>
-                    <CardContent className="pt-4">
+
                       {sessionSet.size > 0 ? (
-                        <div className="space-y-3">
+                        <div className="space-y-4">
                           <div className="flex flex-wrap gap-2">
                             {Array.from(sessionSet).map(deviceId => (
                               <div key={deviceId} className="relative group">
-                                <Badge className="bg-gradient-to-r from-cyan-500 to-cyan-600 text-white text-sm px-3 py-1 pl-6">
-                                  <VRIcon className="w-3 h-3 mr-1" /> {getHeadsetDisplay(deviceId)}
-                                </Badge>
+                                <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-3 py-1.5 shadow-sm pr-8">
+                                    <VRIcon className="w-4 h-4 text-cyan-600" />
+                                    <span className="font-bold text-slate-700">{getHeadsetDisplay(deviceId)}</span>
+                                </div>
                                 {!isReadOnly && (
-                                  <Button 
-                                    size="sm" 
-                                    variant="ghost" 
-                                    className="absolute top-1/2 -translate-y-1/2 left-1 w-4 h-4 p-0 rounded-full bg-red-600 text-white hover:bg-red-700 z-10 opacity-80 hover:opacity-100" 
-                                    onClick={() => {
+                                  <button 
+                                    className="absolute top-1/2 -translate-y-1/2 right-1.5 w-5 h-5 flex items-center justify-center rounded-full text-slate-300 hover:bg-red-50 hover:text-red-500 transition-colors" 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
                                       const newDynamic = [...selectedDynamicHeadsets];
                                       newDynamic[idx] = new Set(sessionSet);
                                       newDynamic[idx].delete(deviceId);
@@ -855,22 +955,26 @@ export default function DeviceAssignments() {
                                     }}
                                   >
                                     <X className="w-3 h-3" />
-                                  </Button>
+                                  </button>
                                 )}
                               </div>
                             ))}
                           </div>
-                          <Button type="button" size="sm" variant="outline" className="w-full gap-2 text-green-600 border-green-600 hover:bg-green-50" onClick={() => {
-                            const session = idx + 1;
-                            const headsetNumbers = Array.from(sessionSet).map(id => getHeadsetDisplay(id)).sort((a, b) => a - b).join(", ");
-                            const whatsappText = `📅 *מפגש ${session}*\n👓 משקפות: ${headsetNumbers}${sessionDates[idx] ? `\n📆 תאריך: ${format(new Date(sessionDates[idx]), 'dd/MM/yyyy')}` : ''}`;
-                            window.open(`https://wa.me/?text=${encodeURIComponent(whatsappText)}`, '_blank');
-                          }}>
-                            <MessageSquare className="w-4 h-4" /> WhatsApp למפגש
-                          </Button>
+                          <div className="flex justify-end pt-2 border-t border-slate-100 mt-2">
+                            <Button type="button" size="sm" variant="ghost" className="text-green-600 hover:text-green-700 hover:bg-green-50 gap-2" onClick={() => {
+                                const session = idx + 1;
+                                const headsetNumbers = Array.from(sessionSet).map(id => getHeadsetDisplay(id)).sort((a, b) => a - b).join(", ");
+                                const whatsappText = `📅 *מפגש ${session}*\n👓 משקפות: ${headsetNumbers}${sessionDates[idx] ? `\n📆 תאריך: ${format(new Date(sessionDates[idx]), 'dd/MM/yyyy')}` : ''}`;
+                                window.open(`https://wa.me/?text=${encodeURIComponent(whatsappText)}`, '_blank');
+                            }}>
+                                <MessageSquare className="w-4 h-4" /> שלח בוואטסאפ
+                            </Button>
+                          </div>
                         </div>
                       ) : (
-                        <div className="text-center py-4 text-slate-400 text-sm">אין משקפות למפגש זה</div>
+                        <div className="text-center py-6 text-slate-400 text-sm border-2 border-dashed border-slate-100 rounded-xl">
+                            אין משקפות למפגש זה
+                        </div>
                       )}
                     </CardContent>
                   </Card>
