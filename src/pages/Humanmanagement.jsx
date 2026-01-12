@@ -240,6 +240,14 @@ export default function Humanmanagement() {
             </Card>
           </Link>
 
+          <Link to={createPageUrl("ManagerScheduler")}>
+            <Card className="bg-white shadow-md rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center hover:shadow-lg transition-shadow cursor-pointer h-full">
+              <Calendar className="w-10 h-10 text-amber-600" />
+              <CardTitle className="text-lg font-semibold text-slate-900">ניהול שיבוצים</CardTitle>
+              <p className="text-sm text-slate-500">שיבוץ מורים ומשקפות</p>
+            </Card>
+          </Link>
+
           <Link to={createPageUrl("MySchedule")}>
             <Card className="bg-white shadow-md rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center hover:shadow-lg transition-shadow cursor-pointer h-full">
               <MessageCircle className="w-10 h-10 text-pink-600" />
