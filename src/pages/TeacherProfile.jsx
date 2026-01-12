@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { useParams } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,10 @@ import { with429Retry } from "@/components/utils/retry";
 import { format, startOfMonth, endOfMonth } from "date-fns";
 
 export default function TeacherProfile() {
-  const { teacherId } = useParams();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const teacherId = searchParams.get("teacherId");
+
   const [teacher, setTeacher] = useState(null);
   const [shifts, setShifts] = useState([]);
   const [loading, setLoading] = useState(true);
