@@ -93,7 +93,10 @@ export default function TeacherProfile() {
 
   // Payroll Calculation Logic (Preserved from original)
   const payrollStats = useMemo(() => {
-    if (!schedules.length && !reportedHours.length) return { totalHours: 0, totalPayment: 0 };
+    // Defensive check: if teacher is not loaded yet
+    if (!teacher) return { totalHours: 0, totalPayment: 0, details: { scheduleCount: 0, reportCount: 0 } };
+    
+    if (!schedules.length && !reportedHours.length) return { totalHours: 0, totalPayment: 0, details: { scheduleCount: 0, reportCount: 0 } };
     
     // Filter by date range
     const fromDate = payrollDateRange.from;
@@ -136,7 +139,14 @@ export default function TeacherProfile() {
   }, [schedules, reportedHours, payrollDateRange, teacher]);
 
 
-  if (!teacher) return null; // Or a loading state handled by global loader
+  if (!teacher) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 text-gray-500">
+        <Loader2 className="w-10 h-10 animate-spin mb-4 text-[var(--yoya-purple)]" />
+        <h2 className="text-xl font-semibold">טוען פרופיל מורה...</h2>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
@@ -149,7 +159,7 @@ export default function TeacherProfile() {
             
             <div className="flex flex-col">
               <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-bold text-gray-900">{teacher.name}</h1>
+                <h1 className="text-2xl font-bold text-gray-900">{teacher?.name || "שם לא זמין"}</h1>
                 {hasPoliceAlert && (
                   <div className="bg-red-100 text-red-600 p-1.5 rounded-full" title="חסר אישור משטרה או פג תוקף">
                     <AlertTriangle className="w-5 h-5" />
@@ -159,28 +169,28 @@ export default function TeacherProfile() {
               
               <div className="flex items-center gap-2 mt-1">
                 <Switch 
-                  checked={teacher.active} 
-                  onCheckedChange={() => handleStatusToggle(teacher.active)} 
+                  checked={teacher?.active || false} 
+                  onCheckedChange={() => handleStatusToggle(teacher?.active)} 
                 />
-                <span className={`text-sm font-medium ${teacher.active ? 'text-green-600' : 'text-gray-500'}`}>
-                  {teacher.active ? "פעיל" : "לא פעיל / בחופשה"}
+                <span className={`text-sm font-medium ${teacher?.active ? 'text-green-600' : 'text-gray-500'}`}>
+                  {teacher?.active ? "פעיל" : "לא פעיל / בחופשה"}
                 </span>
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-3 w-full md:w-auto justify-end">
-            <a href={`tel:${teacher.phone}`}>
+            <a href={`tel:${teacher?.phone}`}>
               <Button variant="outline" size="icon" className="rounded-full bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100">
                 <Phone className="w-5 h-5" />
               </Button>
             </a>
-            <a href={`https://wa.me/${teacher.phone?.replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer">
+            <a href={`https://wa.me/${teacher?.phone?.replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer">
               <Button variant="outline" size="icon" className="rounded-full bg-green-50 text-green-600 border-green-200 hover:bg-green-100">
                 <MessageCircle className="w-5 h-5" />
               </Button>
             </a>
-            <a href={`mailto:${teacher.email}`}>
+            <a href={`mailto:${teacher?.email}`}>
               <Button variant="outline" size="icon" className="rounded-full bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100">
                 <Mail className="w-5 h-5" />
               </Button>
