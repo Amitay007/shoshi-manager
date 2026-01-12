@@ -18,7 +18,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import BackHomeButtons from "@/components/common/BackHomeButtons";
 import { with429Retry } from "@/components/utils/retry";
-// import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import VRIcon from "@/components/icons/VRIcon";
 
@@ -556,8 +556,14 @@ export default function DeviceAssignments() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {allSilshuchim.map(silshuch => (
-                  <div key={silshuch.id} className="h-full">
-                    <Card className="hover:shadow-md transition-all cursor-pointer relative h-full flex flex-col border border-slate-200 shadow-sm" onClick={() => viewSilshuch(silshuch)}>
+                  <motion.div
+                    key={silshuch.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    whileHover={{ scale: 1.02, y: -4 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Card className="hover:shadow-lg transition-shadow cursor-pointer relative h-full flex flex-col" onClick={() => viewSilshuch(silshuch)}>
                       <CardHeader className={`${silshuch.mode === "static" ? "bg-gradient-to-r from-purple-50 to-purple-100" : "bg-gradient-to-r from-cyan-50 to-cyan-100"}`}>
                         <div className="flex items-center justify-between mb-2">
                           <CardTitle className="text-lg">{silshuch.assignmentName}</CardTitle>
@@ -587,8 +593,7 @@ export default function DeviceAssignments() {
                         </div>
                       </CardContent>
                     </Card>
-                  </Card>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             )}

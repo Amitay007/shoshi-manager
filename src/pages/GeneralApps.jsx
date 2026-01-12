@@ -871,7 +871,7 @@ export default function GeneralApps() {
               return (
                 <Card
                   key={app.id}
-                  className={`bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col rounded-xl relative cursor-pointer
+                  className={`bg-white hover:shadow-lg transition-shadow flex flex-col rounded-xl relative cursor-pointer
                     ${isSelected ? 'ring-2 ring-purple-500' : ''} 
                     ${isSelectedForDeletion ? 'ring-2 ring-red-500' : ''}`
                   }
