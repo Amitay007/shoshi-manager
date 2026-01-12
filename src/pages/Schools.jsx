@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Building2, Plus, Search, MapPin, Phone, Mail, GraduationCap } from "lucide-react";
 import BackHomeButtons from "@/components/common/BackHomeButtons";
@@ -19,6 +19,9 @@ export default function Schools() {
   const [programs, setPrograms] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const { showLoader, hideLoader } = useLoading();
+  const [searchParams] = useSearchParams();
+  const mode = searchParams.get('mode') || 'manager';
+  const isManager = mode === 'manager';
 
   useEffect(() => {
     const init = async () => {
@@ -77,12 +80,19 @@ export default function Schools() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Link to={createPageUrl("SchoolDetails?new=true")} className="flex-1 sm:flex-none">
-              <Button className="bg-green-600 hover:bg-green-700 gap-2 w-full sm:w-auto">
+            {isManager ? (
+              <Link to={createPageUrl("SchoolDetails?new=true&mode=manager")} className="flex-1 sm:flex-none">
+                <Button className="bg-green-600 hover:bg-green-700 gap-2 w-full sm:w-auto">
+                  <Plus className="w-4 h-4" />
+                  הוספת מוסד
+                </Button>
+              </Link>
+            ) : (
+              <Button disabled className="bg-slate-200 text-slate-400 gap-2 w-full sm:w-auto cursor-not-allowed hover:bg-slate-200">
                 <Plus className="w-4 h-4" />
                 הוספת מוסד
               </Button>
-            </Link>
+            )}
             <div className="hidden lg:block">
               <BackHomeButtons />
             </div>
@@ -181,12 +191,12 @@ export default function Schools() {
 
                 {/* Footer with Action */}
                 <div className="px-6 pb-4">
-                  <Link to={createPageUrl(`SchoolDetails?id=${school.id}`)}>
+                  <Link to={createPageUrl(`SchoolDetails?id=${school.id}&mode=${mode}`)}>
                     <Button 
                       variant="outline" 
                       className="w-full border-2 border-indigo-200 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:border-indigo-400 transition-all"
                     >
-                      צפה בפרטים
+                      {isManager ? "ניהול ופרטים" : "צפה בפרטים"}
                     </Button>
                   </Link>
                 </div>
