@@ -4,6 +4,7 @@ import { Silshuch } from "@/entities/Silshuch";
 import { Syllabus } from "@/entities/Syllabus";
 import { InstitutionProgram } from "@/entities/InstitutionProgram";
 import { DeviceApp } from "@/entities/DeviceApp";
+import { VRApp } from "@/entities/VRApp";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +13,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
-import { Plus, Copy, Save, Repeat, Calendar, FileText, Search, CheckCircle, Stamp, MessageSquare, Trash2, X, Edit, ArrowRight, ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Plus, Copy, Save, Repeat, Calendar, FileText, Search, CheckCircle, Stamp, MessageSquare, Trash2, X, Edit, ArrowRight, ArrowLeft, ChevronDown, ChevronUp, Filter, Check } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -48,6 +51,11 @@ export default function DeviceAssignments() {
   const [programsWithDevices, setProgramsWithDevices] = useState([]);
   const [expandedProgramId, setExpandedProgramId] = useState(null); // For expanding program sessions
   const [deviceAppMap, setDeviceAppMap] = useState({}); // Map of deviceId -> Set of appIds
+  
+  // App filter state
+  const [allApps, setAllApps] = useState([]);
+  const [filterAppId, setFilterAppId] = useState(null);
+  const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState(false);
 
   // Summary state
   const [summaryText, setSummaryText] = useState("");
@@ -80,14 +88,17 @@ export default function DeviceAssignments() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [devices, silshuchim, programs, instPrograms, deviceApps] = await Promise.all([
+      const [devices, silshuchim, programs, instPrograms, deviceApps, apps] = await Promise.all([
         with429Retry(() => VRDevice.list()),
         with429Retry(() => Silshuch.list()),
         with429Retry(() => Syllabus.list()),
         with429Retry(() => InstitutionProgram.list()),
-        with429Retry(() => DeviceApp.list(null, 10000)) // Fetch all device apps
+        with429Retry(() => DeviceApp.list(null, 10000)), // Fetch all device apps
+        with429Retry(() => VRApp.list())
       ]);
       
+      setAllApps(apps || []);
+
       // Build device app map
       const devMap = {};
       (deviceApps || []).forEach(da => {
@@ -167,6 +178,7 @@ export default function DeviceAssignments() {
       // Dynamic mode
       setTempSelection(new Set(selectedDynamicHeadsets[sessionIndex]));
     }
+    setFilterAppId(null); // Reset filter when opening modal
     setIsHeadsetModalOpen(true);
   };
 
@@ -1046,9 +1058,87 @@ export default function DeviceAssignments() {
                     <VRIcon className="w-6 h-6 text-purple-600" /> בחר משקפות {currentSessionIndex !== null && ` - מפגש ${currentSessionIndex + 1}`}
                   </DialogTitle>
                 </DialogHeader>
+                
+                {/* App Filter Bar */}
+                <div className="px-4 py-2 bg-slate-50 border-b flex items-center gap-2">
+                    <Filter className="w-4 h-4 text-slate-500" />
+                    <span className="text-sm font-medium text-slate-700">סינון לפי אפליקציה:</span>
+                    
+                    <Popover open={isFilterPopoverOpen} onOpenChange={setIsFilterPopoverOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={isFilterPopoverOpen}
+                          className="w-[250px] justify-between h-9 bg-white"
+                        >
+                          {filterAppId
+                            ? allApps.find((app) => app.id === filterAppId)?.name
+                            : "בחר אפליקציה..."}
+                          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[250px] p-0">
+                        <Command>
+                          <CommandInput placeholder="חפש אפליקציה..." />
+                          <CommandList>
+                            <CommandEmpty>לא נמצאו אפליקציות.</CommandEmpty>
+                            <CommandGroup>
+                                <CommandItem
+                                  onSelect={() => {
+                                    setFilterAppId(null);
+                                    setIsFilterPopoverOpen(false);
+                                  }}
+                                  className="cursor-pointer"
+                                >
+                                  <Check
+                                    className={`mr-2 h-4 w-4 ${
+                                      filterAppId === null ? "opacity-100" : "opacity-0"
+                                    }`}
+                                  />
+                                  הכל (ללא סינון)
+                                </CommandItem>
+                              {allApps.map((app) => (
+                                <CommandItem
+                                  key={app.id}
+                                  value={app.name}
+                                  onSelect={() => {
+                                    setFilterAppId(app.id === filterAppId ? null : app.id);
+                                    setIsFilterPopoverOpen(false);
+                                  }}
+                                  className="cursor-pointer"
+                                >
+                                  <Check
+                                    className={`mr-2 h-4 w-4 ${
+                                      filterAppId === app.id ? "opacity-100" : "opacity-0"
+                                    }`}
+                                  />
+                                  {app.name}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    
+                    {filterAppId && (
+                        <Button variant="ghost" size="icon" onClick={() => setFilterAppId(null)} className="h-8 w-8 text-slate-400 hover:text-red-500">
+                            <X className="w-4 h-4" />
+                        </Button>
+                    )}
+                </div>
+
                 <div className="overflow-y-auto max-h-[50vh] p-4">
                   <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                    {allHeadsets.filter(d => !d.is_disabled).map(device => (
+                    {allHeadsets.filter(d => {
+                        if (d.is_disabled) return false;
+                        if (filterAppId) {
+                            const installedApps = deviceAppMap[d.id];
+                            return installedApps && installedApps.has(filterAppId);
+                        }
+                        return true;
+                    }).map(device => (
                       <div key={device.id} onClick={() => toggleHeadsetInTemp(device.id)} className={`relative p-4 rounded-lg border-2 cursor-pointer transition-all hover:shadow-md ${tempSelection.has(device.id) ? "border-purple-500 bg-purple-50" : "border-slate-200 bg-white hover:border-purple-300"}`}>
                         <div className="absolute top-2 right-2"><Checkbox checked={tempSelection.has(device.id)} /></div>
                         <div className="text-center pt-4">
@@ -1058,6 +1148,11 @@ export default function DeviceAssignments() {
                       </div>
                     ))}
                   </div>
+                  {allHeadsets.filter(d => !d.is_disabled && (filterAppId ? deviceAppMap[d.id]?.has(filterAppId) : true)).length === 0 && (
+                      <div className="text-center py-10 text-slate-500">
+                          לא נמצאו משקפות תואמות לסינון שנבחר
+                      </div>
+                  )}
                 </div>
                 <DialogFooter className="gap-2">
                   <div className="flex-1 text-sm text-slate-600">נבחרו: {tempSelection.size} משקפות</div>
