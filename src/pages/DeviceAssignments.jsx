@@ -52,6 +52,10 @@ export default function DeviceAssignments() {
   const [expandedProgramId, setExpandedProgramId] = useState(null); // For expanding program sessions
   const [deviceAppMap, setDeviceAppMap] = useState({}); // Map of deviceId -> Set of appIds
   
+  // Program filter state
+  const [programFilterAppId, setProgramFilterAppId] = useState(null);
+  const [isProgramFilterPopoverOpen, setIsProgramFilterPopoverOpen] = useState(false);
+  
   // App filter state
   const [allApps, setAllApps] = useState([]);
   const [filterAppId, setFilterAppId] = useState(null);
@@ -1170,9 +1174,87 @@ export default function DeviceAssignments() {
                     <FileText className="w-6 h-6 text-purple-600" /> בחר תוכנית להוספת משקפות
                   </DialogTitle>
                 </DialogHeader>
+
+                {/* Program App Filter Bar */}
+                <div className="px-4 py-2 bg-slate-50 border-b flex items-center gap-2">
+                    <Filter className="w-4 h-4 text-slate-500" />
+                    <span className="text-sm font-medium text-slate-700">סינון לפי אפליקציה בתוכנית:</span>
+                    
+                    <Popover open={isProgramFilterPopoverOpen} onOpenChange={setIsProgramFilterPopoverOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={isProgramFilterPopoverOpen}
+                          className="w-[250px] justify-between h-9 bg-white text-right"
+                        >
+                          {programFilterAppId
+                            ? allApps.find((app) => app.id === programFilterAppId)?.name
+                            : "בחר אפליקציה..."}
+                          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[250px] p-0">
+                        <Command>
+                          <CommandInput placeholder="חפש אפליקציה..." className="text-right" />
+                          <CommandList>
+                            <CommandEmpty>לא נמצאו אפליקציות.</CommandEmpty>
+                            <CommandGroup>
+                                <CommandItem
+                                  onSelect={() => {
+                                    setProgramFilterAppId(null);
+                                    setIsProgramFilterPopoverOpen(false);
+                                  }}
+                                  className="cursor-pointer"
+                                >
+                                  <Check
+                                    className={`ml-2 h-4 w-4 ${
+                                      programFilterAppId === null ? "opacity-100" : "opacity-0"
+                                    }`}
+                                  />
+                                  הכל (ללא סינון)
+                                </CommandItem>
+                              {allApps.map((app) => (
+                                <CommandItem
+                                  key={app.id}
+                                  value={app.name}
+                                  onSelect={() => {
+                                    setProgramFilterAppId(app.id === programFilterAppId ? null : app.id);
+                                    setIsProgramFilterPopoverOpen(false);
+                                  }}
+                                  className="cursor-pointer"
+                                >
+                                  <Check
+                                    className={`ml-2 h-4 w-4 ${
+                                      programFilterAppId === app.id ? "opacity-100" : "opacity-0"
+                                    }`}
+                                  />
+                                  {app.name}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    
+                    {programFilterAppId && (
+                        <Button variant="ghost" size="icon" onClick={() => setProgramFilterAppId(null)} className="h-8 w-8 text-slate-400 hover:text-red-500">
+                            <X className="w-4 h-4" />
+                        </Button>
+                    )}
+                </div>
+
                 <div className="overflow-y-auto max-h-[50vh] p-4 space-y-3">
                   {programsWithDevices.length > 0 ? (
-                    programsWithDevices.map(program => {
+                    programsWithDevices.filter(p => {
+                        if (!programFilterAppId) return true;
+                        // Check if program uses the app in sessions, enrichment or teaching materials
+                        const inSessions = p.sessions?.some(s => s.app_ids?.includes(programFilterAppId) || s.experience_ids?.includes(programFilterAppId));
+                        const inEnrichment = p.enrichment_materials?.some(m => m.app_ids?.includes(programFilterAppId));
+                        const inTeaching = p.teaching_materials?.some(m => m.app_ids?.includes(programFilterAppId));
+                        return inSessions || inEnrichment || inTeaching;
+                    }).map(program => {
                       const deviceCount = (program.assigned_device_ids || []).length;
                       const title = program.title || program.course_topic || program.subject || "ללא שם";
                       const isExpanded = expandedProgramId === program.id;
