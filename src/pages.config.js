@@ -44,6 +44,7 @@ import UploadLogo from './pages/UploadLogo';
 import Version2 from './pages/Version2';
 import TeacherAgenda from './pages/TeacherAgenda';
 import AssignmentDetails from './pages/AssignmentDetails';
+import ManagerScheduler from './pages/ManagerScheduler';
 import __Layout from './Layout.jsx';
 
 
@@ -94,6 +95,7 @@ export const PAGES = {
     "Version2": Version2,
     "TeacherAgenda": TeacherAgenda,
     "AssignmentDetails": AssignmentDetails,
+    "ManagerScheduler": ManagerScheduler,
 }
 
 export const pagesConfig = {
