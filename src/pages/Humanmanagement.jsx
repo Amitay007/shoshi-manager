@@ -261,12 +261,6 @@ export default function Humanmanagement() {
             <CardTitle className="text-lg font-semibold text-slate-900">בקרוב</CardTitle>
             <p className="text-sm text-slate-400">תכונה חדשה</p>
           </Card>
-
-          <Card className="bg-white shadow-md rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center hover:shadow-lg transition-shadow cursor-pointer">
-            <Hourglass className="w-10 h-10 text-amber-600" />
-            <CardTitle className="text-lg font-semibold text-slate-900">עוד מעט</CardTitle>
-            <p className="text-sm text-slate-400">בפיתוח</p>
-          </Card>
         </div>
 
         {/* Bottom Widget Split */}
