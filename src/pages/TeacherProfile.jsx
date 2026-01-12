@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
-import { DollarSign, Clock, TrendingUp, Pencil, User, Calendar, FileText, Upload, Trash2, Save } from "lucide-react";
+import { DollarSign, Clock, TrendingUp, Pencil, User, Calendar, FileText, Upload, Trash2, Save, Briefcase } from "lucide-react";
 import BackHomeButtons from "@/components/common/BackHomeButtons";
 import { useLoading } from "@/components/common/LoadingContext";
 import { with429Retry } from "@/components/utils/retry";
