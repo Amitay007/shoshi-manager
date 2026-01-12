@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { VRDevice } from "@/entities/VRDevice";
 import { Silshuch } from "@/entities/Silshuch";
 import { Syllabus } from "@/entities/Syllabus";
@@ -60,6 +60,23 @@ export default function DeviceAssignments() {
   const [allApps, setAllApps] = useState([]);
   const [filterAppId, setFilterAppId] = useState(null);
   const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState(false);
+  const appFilterRef = useRef(null);
+  const programFilterRef = useRef(null);
+
+  useEffect(() => {
+      function handleClickOutside(event) {
+          if (appFilterRef.current && !appFilterRef.current.contains(event.target)) {
+              setIsFilterPopoverOpen(false);
+          }
+          if (programFilterRef.current && !programFilterRef.current.contains(event.target)) {
+              setIsProgramFilterPopoverOpen(false);
+          }
+      }
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+          document.removeEventListener("mousedown", handleClickOutside);
+      };
+  }, [appFilterRef, programFilterRef]);
 
   // Calculate app installation counts
   const appCounts = useMemo(() => {
@@ -1079,12 +1096,12 @@ export default function DeviceAssignments() {
                     <Filter className="w-4 h-4 text-slate-500" />
                     <span className="text-sm font-medium text-slate-700">סינון לפי אפליקציה:</span>
                     
-                    <Popover open={isFilterPopoverOpen} onOpenChange={setIsFilterPopoverOpen}>
-                      <PopoverTrigger asChild>
+                    <div ref={appFilterRef} className="relative inline-block text-right">
                         <Button
                           variant="outline"
                           role="combobox"
                           aria-expanded={isFilterPopoverOpen}
+                          onClick={() => setIsFilterPopoverOpen(!isFilterPopoverOpen)}
                           className="w-[250px] justify-between h-9 bg-white text-right"
                         >
                           {filterAppId
@@ -1092,107 +1109,77 @@ export default function DeviceAssignments() {
                             : "בחר אפליקציה..."}
                           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-[250px] p-0 z-[200]">
-                        <Command>
-                          <CommandInput placeholder="חפש אפליקציה..." className="text-right" />
-                          <CommandList>
-                            <CommandEmpty>לא נמצאו אפליקציות.</CommandEmpty>
-                            <CommandGroup>
-                                <CommandItem
-                                  onSelect={() => {
-                                    setFilterAppId(null);
-                                    setIsFilterPopoverOpen(false);
-                                  }}
-                                  onMouseDown={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    setFilterAppId(null);
-                                    setIsFilterPopoverOpen(false);
-                                  }}
-                                  className="cursor-pointer"
-                                >
-                                  <Check
-                                    className={`ml-2 h-4 w-4 ${
-                                      filterAppId === null ? "opacity-100" : "opacity-0"
-                                    }`}
-                                  />
-                                  הכל (ללא סינון)
-                                </CommandItem>
-                              {allApps.map((app) => (
-                                <CommandItem
-                                  key={app.id}
-                                  value={app.name}
-                                  onSelect={() => {
-                                    const newAppId = app.id === filterAppId ? null : app.id;
-                                    setFilterAppId(newAppId);
-                                    
-                                    if (newAppId) {
-                                        const newSelection = new Set(tempSelection);
-                                        let addedCount = 0;
-                                        allHeadsets.forEach(device => {
-                                            const installedApps = deviceAppMap[device.id];
-                                            if (installedApps && installedApps.has(newAppId) && !device.is_disabled) {
-                                                newSelection.add(device.id);
-                                                addedCount++;
+                        
+                        {isFilterPopoverOpen && (
+                            <div className="absolute top-full mt-1 w-[250px] z-[200] bg-white rounded-md border shadow-md max-h-[300px] overflow-auto">
+                                <Command>
+                                  <CommandInput placeholder="חפש אפליקציה..." className="text-right" />
+                                  <CommandList>
+                                    <CommandEmpty>לא נמצאו אפליקציות.</CommandEmpty>
+                                    <CommandGroup>
+                                        <CommandItem
+                                          onSelect={() => {
+                                            setFilterAppId(null);
+                                            setIsFilterPopoverOpen(false);
+                                          }}
+                                          className="cursor-pointer"
+                                        >
+                                          <Check
+                                            className={`ml-2 h-4 w-4 ${
+                                              filterAppId === null ? "opacity-100" : "opacity-0"
+                                            }`}
+                                          />
+                                          הכל (ללא סינון)
+                                        </CommandItem>
+                                      {allApps.map((app) => (
+                                        <CommandItem
+                                          key={app.id}
+                                          value={app.name}
+                                          onSelect={() => {
+                                            const newAppId = app.id === filterAppId ? null : app.id;
+                                            setFilterAppId(newAppId);
+                                            
+                                            if (newAppId) {
+                                                const newSelection = new Set(tempSelection);
+                                                let addedCount = 0;
+                                                allHeadsets.forEach(device => {
+                                                    const installedApps = deviceAppMap[device.id];
+                                                    if (installedApps && installedApps.has(newAppId) && !device.is_disabled) {
+                                                        newSelection.add(device.id);
+                                                        addedCount++;
+                                                    }
+                                                });
+                                                setTempSelection(newSelection);
+                                                if (addedCount > 0) {
+                                                    toast({
+                                                        title: "בחירה אוטומטית",
+                                                        description: `סומנו ${addedCount} משקפות המכילות את האפליקציה`,
+                                                    });
+                                                }
                                             }
-                                        });
-                                        setTempSelection(newSelection);
-                                        if (addedCount > 0) {
-                                            toast({
-                                                title: "בחירה אוטומטית",
-                                                description: `סומנו ${addedCount} משקפות המכילות את האפליקציה`,
-                                            });
-                                        }
-                                    }
-                                    setIsFilterPopoverOpen(false);
-                                  }}
-                                  onMouseDown={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    const newAppId = app.id === filterAppId ? null : app.id;
-                                    setFilterAppId(newAppId);
-                                    
-                                    if (newAppId) {
-                                        const newSelection = new Set(tempSelection);
-                                        let addedCount = 0;
-                                        allHeadsets.forEach(device => {
-                                            const installedApps = deviceAppMap[device.id];
-                                            if (installedApps && installedApps.has(newAppId) && !device.is_disabled) {
-                                                newSelection.add(device.id);
-                                                addedCount++;
-                                            }
-                                        });
-                                        setTempSelection(newSelection);
-                                        if (addedCount > 0) {
-                                            toast({
-                                                title: "בחירה אוטומטית",
-                                                description: `סומנו ${addedCount} משקפות המכילות את האפליקציה`,
-                                            });
-                                        }
-                                    }
-                                    setIsFilterPopoverOpen(false);
-                                  }}
-                                  className="cursor-pointer"
-                                >
-                                  <Check
-                                    className={`ml-2 h-4 w-4 ${
-                                      filterAppId === app.id ? "opacity-100" : "opacity-0"
-                                    }`}
-                                  />
-                                  <div className="flex items-center justify-between w-full">
-                                      <span>{app.name}</span>
-                                      <span className="text-xs text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded-full mr-2">
-                                        {appCounts[app.id] || 0}
-                                      </span>
-                                  </div>
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
+                                            setIsFilterPopoverOpen(false);
+                                          }}
+                                          className="cursor-pointer"
+                                        >
+                                          <Check
+                                            className={`ml-2 h-4 w-4 ${
+                                              filterAppId === app.id ? "opacity-100" : "opacity-0"
+                                            }`}
+                                          />
+                                          <div className="flex items-center justify-between w-full">
+                                              <span>{app.name}</span>
+                                              <span className="text-xs text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded-full mr-2">
+                                                {appCounts[app.id] || 0}
+                                              </span>
+                                          </div>
+                                        </CommandItem>
+                                      ))}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                            </div>
+                        )}
+                    </div>
                     
                     {filterAppId && (
                         <Button variant="ghost" size="icon" onClick={() => setFilterAppId(null)} className="h-8 w-8 text-slate-400 hover:text-red-500">
@@ -1248,12 +1235,12 @@ export default function DeviceAssignments() {
                     <Filter className="w-4 h-4 text-slate-500" />
                     <span className="text-sm font-medium text-slate-700">סינון לפי אפליקציה בתוכנית:</span>
                     
-                    <Popover open={isProgramFilterPopoverOpen} onOpenChange={setIsProgramFilterPopoverOpen}>
-                      <PopoverTrigger asChild>
+                    <div ref={programFilterRef} className="relative inline-block text-right">
                         <Button
                           variant="outline"
                           role="combobox"
                           aria-expanded={isProgramFilterPopoverOpen}
+                          onClick={() => setIsProgramFilterPopoverOpen(!isProgramFilterPopoverOpen)}
                           className="w-[250px] justify-between h-9 bg-white text-right"
                         >
                           {programFilterAppId
@@ -1261,62 +1248,52 @@ export default function DeviceAssignments() {
                             : "בחר אפליקציה..."}
                           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-[250px] p-0 z-[200]">
-                        <Command>
-                          <CommandInput placeholder="חפש אפליקציה..." className="text-right" />
-                          <CommandList>
-                            <CommandEmpty>לא נמצאו אפליקציות.</CommandEmpty>
-                            <CommandGroup>
-                                <CommandItem
-                                  onSelect={() => {
-                                    setProgramFilterAppId(null);
-                                    setIsProgramFilterPopoverOpen(false);
-                                  }}
-                                  onMouseDown={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    setProgramFilterAppId(null);
-                                    setIsProgramFilterPopoverOpen(false);
-                                  }}
-                                  className="cursor-pointer"
-                                >
-                                  <Check
-                                    className={`ml-2 h-4 w-4 ${
-                                      programFilterAppId === null ? "opacity-100" : "opacity-0"
-                                    }`}
-                                  />
-                                  הכל (ללא סינון)
-                                </CommandItem>
-                              {allApps.map((app) => (
-                                <CommandItem
-                                  key={app.id}
-                                  value={app.name}
-                                  onSelect={() => {
-                                    setProgramFilterAppId(app.id === programFilterAppId ? null : app.id);
-                                    setIsProgramFilterPopoverOpen(false);
-                                  }}
-                                  onMouseDown={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    setProgramFilterAppId(app.id === programFilterAppId ? null : app.id);
-                                    setIsProgramFilterPopoverOpen(false);
-                                  }}
-                                  className="cursor-pointer"
-                                >
-                                  <Check
-                                    className={`ml-2 h-4 w-4 ${
-                                      programFilterAppId === app.id ? "opacity-100" : "opacity-0"
-                                    }`}
-                                  />
-                                  {app.name}
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
+                        
+                        {isProgramFilterPopoverOpen && (
+                            <div className="absolute top-full mt-1 w-[250px] z-[200] bg-white rounded-md border shadow-md max-h-[300px] overflow-auto">
+                                <Command>
+                                  <CommandInput placeholder="חפש אפליקציה..." className="text-right" />
+                                  <CommandList>
+                                    <CommandEmpty>לא נמצאו אפליקציות.</CommandEmpty>
+                                    <CommandGroup>
+                                        <CommandItem
+                                          onSelect={() => {
+                                            setProgramFilterAppId(null);
+                                            setIsProgramFilterPopoverOpen(false);
+                                          }}
+                                          className="cursor-pointer"
+                                        >
+                                          <Check
+                                            className={`ml-2 h-4 w-4 ${
+                                              programFilterAppId === null ? "opacity-100" : "opacity-0"
+                                            }`}
+                                          />
+                                          הכל (ללא סינון)
+                                        </CommandItem>
+                                      {allApps.map((app) => (
+                                        <CommandItem
+                                          key={app.id}
+                                          value={app.name}
+                                          onSelect={() => {
+                                            setProgramFilterAppId(app.id === programFilterAppId ? null : app.id);
+                                            setIsProgramFilterPopoverOpen(false);
+                                          }}
+                                          className="cursor-pointer"
+                                        >
+                                          <Check
+                                            className={`ml-2 h-4 w-4 ${
+                                              programFilterAppId === app.id ? "opacity-100" : "opacity-0"
+                                            }`}
+                                          />
+                                          {app.name}
+                                        </CommandItem>
+                                      ))}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                            </div>
+                        )}
+                    </div>
                     
                     {programFilterAppId && (
                         <Button variant="ghost" size="icon" onClick={() => setProgramFilterAppId(null)} className="h-8 w-8 text-slate-400 hover:text-red-500">
