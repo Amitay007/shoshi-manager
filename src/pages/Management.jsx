@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Card, CardTitle, CardContent, CardHeader } from "@/components/ui/card";
-import { Users, Wallet, FileText, BarChart3, Briefcase, Building2 } from "lucide-react";
+import { Users, Wallet, FileText, BarChart3, Briefcase, Building2, Calendar } from "lucide-react";
 import BackHomeButtons from "@/components/common/BackHomeButtons";
 
 export default function Management() {
@@ -26,6 +26,21 @@ export default function Management() {
 
         {/* Main Navigation Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+          {/* Scheduling Management - Added per request */}
+          <Link to={createPageUrl("ManagerScheduler")}>
+            <Card className="bg-amber-50 hover:bg-amber-100/50 hover:shadow-xl transition-all duration-300 border-amber-200 border cursor-pointer h-full group ring-1 ring-amber-100">
+              <CardContent className="p-6 flex flex-col items-center text-center gap-4">
+                <div className="w-16 h-16 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
+                  <Calendar className="w-8 h-8" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-amber-900">ניהול שיבוצים</h3>
+                  <p className="text-amber-700 mt-1">שיבוץ מורים ומשקפות</p>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
           
           {/* Finance */}
           <Link to={createPageUrl("CashFlow")}>

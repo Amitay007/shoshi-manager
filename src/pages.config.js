@@ -25,7 +25,6 @@ import GeneralApps from './pages/GeneralApps';
 import GeneralInfo from './pages/GeneralInfo';
 import Home from './pages/Home';
 import HoursReport from './pages/HoursReport';
-import Humanmanagement from './pages/Humanmanagement';
 import Management from './pages/Management';
 import ManagerScheduler from './pages/ManagerScheduler';
 import MasterSchedule from './pages/MasterSchedule';
@@ -45,6 +44,7 @@ import UpdateAppStatus from './pages/UpdateAppStatus';
 import UpdateAppsFromPDF from './pages/UpdateAppsFromPDF';
 import UploadLogo from './pages/UploadLogo';
 import Version2 from './pages/Version2';
+import RelationalCenter from './pages/RelationalCenter';
 import __Layout from './Layout.jsx';
 
 
@@ -76,7 +76,6 @@ export const PAGES = {
     "GeneralInfo": GeneralInfo,
     "Home": Home,
     "HoursReport": HoursReport,
-    "Humanmanagement": Humanmanagement,
     "Management": Management,
     "ManagerScheduler": ManagerScheduler,
     "MasterSchedule": MasterSchedule,
@@ -96,6 +95,7 @@ export const PAGES = {
     "UpdateAppsFromPDF": UpdateAppsFromPDF,
     "UploadLogo": UploadLogo,
     "Version2": Version2,
+    "RelationalCenter": RelationalCenter,
 }
 
 export const pagesConfig = {
