@@ -1,347 +1,381 @@
-import React, { useState, useMemo } from 'react';
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { format, addDays, startOfDay, isSameDay, parseISO, getHours, getMinutes, addMinutes } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, setMonth, setYear, parseISO, startOfDay } from "date-fns";
 import { he } from "date-fns/locale";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Loader2, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { cn } from "@/lib/utils";
-import AppointmentModal from "@/components/scheduler/AppointmentModal";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/components/ui/use-toast";
+import { ChevronRight, ChevronLeft, Plus, Calendar as CalendarIcon, Clock, School, Users, BookOpen } from "lucide-react";
 import BackHomeButtons from "@/components/common/BackHomeButtons";
-import { toast } from "sonner";
+import { useLoading } from "@/components/common/LoadingContext";
+import { with429Retry } from "@/components/utils/retry";
+import { cn } from "@/lib/utils";
 
-// Constants
-const START_HOUR = 8; // 08:00
-const END_HOUR = 18; // 18:00
-const CELL_HEIGHT = 60; // px
-const MINUTE_HEIGHT = CELL_HEIGHT / 60;
+const MONTHS = [
+  "ינואר", "פברואר", "מרץ", "אפריל", "מאי", "יוני",
+  "יולי", "אוגוסט", "ספטמבר", "אוקטובר", "נובמבר", "דצמבר"
+];
 
 export default function ManagerScheduler() {
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalDefaults, setModalDefaults] = useState(null);
+  const [assignments, setAssignments] = useState([]);
   
-  const queryClient = useQueryClient();
+  // Data for form
+  const [teachers, setTeachers] = useState([]);
+  const [schools, setSchools] = useState([]);
+  const [programs, setPrograms] = useState([]);
 
-  // --- Data Fetching ---
-  const { data: teachers = [], isLoading: loadingTeachers } = useQuery({
-    queryKey: ['teachers'],
-    queryFn: () => base44.entities.Teacher.list(),
+  // Form State
+  const [newAssignment, setNewAssignment] = useState({
+    teacherId: "",
+    schoolId: "",
+    programId: "",
+    targetClass: "",
+    sessionsCount: "",
+    time: "08:00"
   });
 
-  const { data: schools = [], isLoading: loadingSchools } = useQuery({
-    queryKey: ['schools'],
-    queryFn: () => base44.entities.EducationInstitution.list(),
-  });
+  const { toast } = useToast();
+  const { showLoader, hideLoader } = useLoading();
 
-  const { data: programs = [], isLoading: loadingPrograms } = useQuery({
-    queryKey: ['programs'],
-    queryFn: () => base44.entities.Syllabus.list(),
-  });
+  useEffect(() => {
+    loadData();
+  }, []);
 
-  const { data: assignments = [], isLoading: loadingAssignments } = useQuery({
-    queryKey: ['assignments', format(selectedDate, 'yyyy-MM-dd')],
-    queryFn: async () => {
-      // In a real app, we would filter by date range on the backend.
-      // Here we fetch all (or limit) and filter on frontend for simplicity demo, 
-      // but ideally: base44.entities.ScheduleEntry.filter({ start_datetime: { $gte: ..., $lte: ... } })
-      const all = await base44.entities.ScheduleEntry.list(); 
-      return all.filter(a => isSameDay(parseISO(a.start_datetime), selectedDate));
-    },
-  });
+  useEffect(() => {
+    fetchMonthlyAssignments();
+  }, [currentDate]);
 
-  const createAssignmentMutation = useMutation({
-    mutationFn: (data) => base44.entities.ScheduleEntry.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['assignments']);
-      setIsModalOpen(false);
-      toast.success("השיבוץ נשלח לאישור המורה");
-    },
-    onError: (err) => {
-      toast.error("שגיאה ביצירת שיבוץ: " + err.message);
+  const loadData = async () => {
+    showLoader();
+    try {
+      const [teachersData, schoolsData, programsData] = await Promise.all([
+        with429Retry(() => base44.entities.Teacher.list()),
+        with429Retry(() => base44.entities.EducationInstitution.list()),
+        with429Retry(() => base44.entities.Syllabus.list())
+      ]);
+      setTeachers(teachersData || []);
+      setSchools(schoolsData || []);
+      setPrograms(programsData || []);
+    } catch (error) {
+      console.error("Error loading initial data", error);
+    } finally {
+      hideLoader();
     }
-  });
+  };
 
-  // --- Handlers ---
-  
-  const handleSlotClick = (teacherId, hour) => {
-    // Check if teacher is already booked at this time (Basic conflict check)
-    // Note: Better to do overlapping check properly, but for click trigger:
-    const startTime = new Date(selectedDate);
-    startTime.setHours(hour, 0, 0, 0);
+  const fetchMonthlyAssignments = async () => {
+    // In a real app we'd filter by date range. For now fetching all and filtering in client
+    // or fetch with query if backend supports it efficiently.
+    // Fetching all for simplicity as per previous implementation pattern
+    const all = await with429Retry(() => base44.entities.ScheduleEntry.list());
+    setAssignments(all);
+  };
 
-    // Simple overlap check
-    const hasConflict = assignments.some(a => {
-      if (a.assigned_teacher_id !== teacherId) return false;
-      const aStart = parseISO(a.start_datetime);
-      const aEnd = parseISO(a.end_datetime);
-      return (startTime >= aStart && startTime < aEnd);
-    });
+  const handleMonthSelect = (monthIndex) => {
+    const newDate = new Date(currentDate);
+    newDate.setMonth(monthIndex);
+    setCurrentDate(newDate);
+  };
 
-    if (hasConflict) {
-      toast.warning("המורה כבר משובץ בשעה זו!");
-      return;
-    }
-
-    setModalDefaults({
-      teacherId,
-      date: selectedDate,
-      startTime: `${hour.toString().padStart(2, '0')}:00`,
-      endTime: `${(hour + 1).toString().padStart(2, '0')}:00`
-    });
+  const handleDayClick = (day) => {
+    setSelectedDate(day);
+    setNewAssignment(prev => ({ ...prev, sessionsCount: "" })); // Reset
     setIsModalOpen(true);
   };
 
-  const handleSaveAssignment = (data) => {
-    // Advanced Conflict Detection on Save
-    const start = new Date(data.start_datetime);
-    const end = new Date(data.end_datetime);
-
-    const conflicting = assignments.find(a => {
-      if (a.assigned_teacher_id !== data.assigned_teacher_id) return false;
-      const aStart = parseISO(a.start_datetime);
-      const aEnd = parseISO(a.end_datetime);
-      // Overlap logic: (StartA < EndB) and (EndA > StartB)
-      return (start < aEnd && end > aStart); 
-    });
-
-    if (conflicting) {
-      // Get school name for better error message
-      const school = schools.find(s => s.id === conflicting.institution_id);
-      toast.error(`שגיאה: המורה כבר משובץ ב-${school?.name || 'מקום אחר'} בשעות אלו!`);
+  const handleSaveAssignment = async () => {
+    if (!newAssignment.teacherId || !newAssignment.schoolId || !newAssignment.programId) {
+      toast({ title: "שגיאה", description: "נא למלא את כל שדות החובה", variant: "destructive" });
       return;
     }
 
-    createAssignmentMutation.mutate(data);
+    showLoader();
+    try {
+      // Construct datetime
+      const [hours, minutes] = newAssignment.time.split(':');
+      const startDateTime = new Date(selectedDate);
+      startDateTime.setHours(parseInt(hours), parseInt(minutes));
+      
+      const endDateTime = new Date(startDateTime);
+      endDateTime.setHours(startDateTime.getHours() + 1); // Default duration 1 hour
+
+      await base44.entities.ScheduleEntry.create({
+        program_id: newAssignment.programId,
+        institution_id: newAssignment.schoolId,
+        assigned_teacher_id: newAssignment.teacherId,
+        target_class: newAssignment.targetClass,
+        sessions_count: newAssignment.sessionsCount ? parseInt(newAssignment.sessionsCount) : 0,
+        start_datetime: startDateTime.toISOString(),
+        end_datetime: endDateTime.toISOString(),
+        status: "pending_teacher_approval"
+      });
+
+      toast({ title: "הצלחה", description: "השיבוץ נוצר בהצלחה" });
+      setIsModalOpen(false);
+      fetchMonthlyAssignments();
+      
+      // Reset form (keep some fields for easier entry if needed, but resetting here)
+      setNewAssignment({
+        teacherId: "",
+        schoolId: "",
+        programId: "",
+        targetClass: "",
+        sessionsCount: "",
+        time: "08:00"
+      });
+    } catch (error) {
+      console.error(error);
+      toast({ title: "שגיאה", description: "אירעה שגיאה בשמירת השיבוץ", variant: "destructive" });
+    } finally {
+      hideLoader();
+    }
   };
 
-  const nextDay = () => setSelectedDate(addDays(selectedDate, 1));
-  const prevDay = () => setSelectedDate(addDays(selectedDate, -1));
+  // Calendar Logic
+  const monthStart = startOfMonth(currentDate);
+  const monthEnd = endOfMonth(monthStart);
+  const calendarDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
-  // --- Rendering Helpers ---
-  
-  const hours = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => START_HOUR + i);
-
-  const getEventStyle = (assignment) => {
-    const start = parseISO(assignment.start_datetime);
-    const end = parseISO(assignment.end_datetime);
-    
-    // Calculate top offset relative to START_HOUR
-    const startHour = getHours(start);
-    const startMin = getMinutes(start);
-    const durationMin = (end - start) / (1000 * 60);
-    
-    const top = ((startHour - START_HOUR) * 60 + startMin) * MINUTE_HEIGHT;
-    const height = durationMin * MINUTE_HEIGHT;
-
-    let bgColor = "bg-yellow-100 border-yellow-300 text-yellow-900"; // Pending
-    if (assignment.status === 'approved' || assignment.confirmed) bgColor = "bg-green-100 border-green-300 text-green-900";
-    if (assignment.status === 'rejected') bgColor = "bg-red-100 border-red-300 text-red-900";
-    if (assignment.status === 'cancelled') bgColor = "bg-gray-100 border-gray-300 text-gray-500 line-through";
-
-    return {
-      top: `${top}px`,
-      height: `${height}px`,
-      className: `absolute left-1 right-1 rounded px-2 py-1 text-xs border shadow-sm z-10 overflow-hidden cursor-pointer hover:brightness-95 transition-all ${bgColor}`
-    };
+  // Get assignments for a specific day
+  const getDayAssignments = (day) => {
+    return assignments.filter(a => isSameDay(parseISO(a.start_datetime), day));
   };
-
-  if (loadingTeachers || loadingSchools || loadingPrograms) {
-    return <div className="h-screen flex items-center justify-center"><Loader2 className="animate-spin w-8 h-8 text-primary" /></div>;
-  }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans" dir="rtl">
-      
-      {/* Header */}
-      <div className="bg-white border-b border-slate-200 p-4 sticky top-0 z-20 shadow-sm">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-           <div>
-              <h1 className="text-2xl font-bold text-slate-800">לוח שיבוצים (מנהל)</h1>
-              <p className="text-slate-500 text-sm">ניהול שיבוצי מורים לאישור</p>
-           </div>
-
-           <div className="flex items-center gap-4 bg-slate-50 p-1 rounded-lg border border-slate-100">
-              <Button variant="ghost" size="icon" onClick={prevDay}>
-                 <ChevronRight className="w-5 h-5" />
-              </Button>
-              
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-[240px] justify-start text-left font-normal bg-white">
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {format(selectedDate, "PPP", { locale: he })}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={(date) => date && setSelectedDate(date)}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-
-              <Button variant="ghost" size="icon" onClick={nextDay}>
-                 <ChevronLeft className="w-5 h-5" />
-              </Button>
-           </div>
-
-           <BackHomeButtons />
+    <div className="min-h-screen bg-slate-50 p-4 md:p-6" dir="rtl">
+      <div className="max-w-7xl mx-auto space-y-6">
+        
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900">לוח שיבוצים</h1>
+            <p className="text-slate-600">ניהול מערכת שעות חודשית</p>
+          </div>
+          <BackHomeButtons backTo="Humanmanagement" />
         </div>
-      </div>
 
-      {/* Scheduler Grid */}
-      <div className="flex-1 overflow-auto p-4">
-        <div className="max-w-7xl mx-auto bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-           
-           {/* Header Row (Hours) */}
-           <div className="flex border-b border-slate-200 sticky top-0 bg-slate-50 z-10">
-              <div className="w-48 shrink-0 p-3 font-bold text-slate-700 border-l border-slate-200 bg-slate-50 sticky right-0 z-20">
-                 מורים
-              </div>
-              <div className="flex-1 flex relative min-w-[800px]"> 
-                {hours.map(hour => (
-                   <div key={hour} className="flex-1 border-l border-slate-100 text-center py-2 text-sm text-slate-500 font-medium">
-                      {hour.toString().padStart(2, '0')}:00
-                   </div>
-                ))}
-              </div>
-           </div>
+        {/* Month Selector Bar */}
+        <div className="bg-white rounded-xl shadow-sm border p-2 flex items-center gap-2 overflow-x-auto no-scrollbar">
+          <Button variant="ghost" size="icon" onClick={() => setCurrentDate(subMonths(currentDate, 1))}>
+            <ChevronRight className="w-5 h-5" />
+          </Button>
+          
+          <div className="flex-1 flex gap-2 overflow-x-auto px-2">
+            {MONTHS.map((month, index) => (
+              <button
+                key={month}
+                onClick={() => handleMonthSelect(index)}
+                className={cn(
+                  "px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap",
+                  currentDate.getMonth() === index
+                    ? "bg-purple-600 text-white shadow-md"
+                    : "hover:bg-slate-100 text-slate-600"
+                )}
+              >
+                {month}
+              </button>
+            ))}
+          </div>
 
-           {/* Resources Rows */}
-           <div>
-              {teachers.map(teacher => (
-                 <div key={teacher.id} className="flex border-b border-slate-100 hover:bg-slate-50/50 transition-colors group">
-                    
-                    {/* Teacher Name Column */}
-                    <div className="w-48 shrink-0 p-3 font-medium text-slate-800 border-l border-slate-200 bg-white sticky right-0 z-10 group-hover:bg-slate-50/50 flex flex-col justify-center">
-                       <div className="truncate">{teacher.name}</div>
-                       <div className="text-xs text-slate-400 truncate">{teacher.specialty}</div>
-                    </div>
+          <div className="text-lg font-bold px-4 border-r">
+            {currentDate.getFullYear()}
+          </div>
+          
+          <Button variant="ghost" size="icon" onClick={() => setCurrentDate(addMonths(currentDate, 1))}>
+            <ChevronLeft className="w-5 h-5" />
+          </Button>
+        </div>
 
-                    {/* Timeline Cells */}
-                    <div className="flex-1 relative h-[60px] min-w-[800px]">
-                       
-                       {/* Background Grid Cells (Clickable) */}
-                       <div className="absolute inset-0 flex">
-                          {hours.map(hour => (
-                             <div 
-                               key={hour} 
-                               className="flex-1 border-l border-slate-100 cursor-pointer hover:bg-blue-50/30 transition-colors"
-                               onClick={() => handleSlotClick(teacher.id, hour)}
-                               title={`שבץ את ${teacher.name} בשעה ${hour}:00`}
-                             ></div>
-                          ))}
-                       </div>
+        {/* Large Calendar Grid */}
+        <Card className="shadow-lg border-0 overflow-hidden">
+          <CardHeader className="bg-purple-600 text-white p-4">
+            <div className="flex justify-between items-center">
+              <CardTitle className="text-xl">
+                {format(currentDate, 'MMMM yyyy', { locale: he })}
+              </CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0">
+            {/* Weekday Headers */}
+            <div className="grid grid-cols-7 bg-slate-100 border-b">
+              {['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'].map(day => (
+                <div key={day} className="py-3 text-center font-bold text-slate-600 text-sm">
+                  {day}
+                </div>
+              ))}
+            </div>
 
-                       {/* Events */}
-                       {assignments
-                          .filter(a => a.assigned_teacher_id === teacher.id)
-                          .map(assignment => {
-                             const style = getEventStyle(assignment);
-                             const school = schools.find(s => s.id === assignment.institution_id);
-                             const program = programs.find(p => p.id === assignment.program_id);
-                             
-                             return (
-                                <div 
-                                   key={assignment.id}
-                                   style={{ top: 1, height: '58px', left: style.left, width: style.width, ...style }} // We calculated top/height for vertical list, wait.
-                                   // Correction: Resource View is usually Horizontal time axis. 
-                                   // My constants were CELL_HEIGHT (Vertical).
-                                   // Let's recalculate for HORIZONTAL layout.
-                                   className={style.className}
-                                >
-                                   {/* Recalculating inline to override style prop above */}
-                                </div>
-                             );
-                          })}
-
-                          {/* Re-rendering events with Horizontal Calculation */}
-                          {assignments
-                             .filter(a => a.assigned_teacher_id === teacher.id)
-                             .map(assignment => {
-                                const start = parseISO(assignment.start_datetime);
-                                const end = parseISO(assignment.end_datetime);
-                                
-                                const startTotalMinutes = (getHours(start) * 60) + getMinutes(start);
-                                const endTotalMinutes = (getHours(end) * 60) + getMinutes(end);
-                                const dayStartMinutes = START_HOUR * 60;
-                                const totalDayMinutes = (END_HOUR - START_HOUR) * 60;
-
-                                // Percentages
-                                const leftPercent = ((startTotalMinutes - dayStartMinutes) / totalDayMinutes) * 100;
-                                const widthPercent = ((endTotalMinutes - startTotalMinutes) / totalDayMinutes) * 100;
-
-                                // Colors again
-                                let bgColor = "bg-amber-100 border-amber-300 text-amber-900"; // Pending
-                                if (assignment.status === 'approved' || assignment.confirmed) bgColor = "bg-emerald-100 border-emerald-300 text-emerald-900";
-                                if (assignment.status === 'rejected') bgColor = "bg-rose-100 border-rose-300 text-rose-900";
-                                
-                                const school = schools.find(s => s.id === assignment.institution_id);
-
-                                return (
-                                   <div 
-                                      key={assignment.id}
-                                      className={`absolute top-1 bottom-1 rounded px-2 py-1 text-xs border shadow-sm z-10 overflow-hidden cursor-pointer hover:brightness-95 transition-all flex flex-col justify-center ${bgColor}`}
-                                      style={{ 
-                                          right: `${leftPercent}%`, 
-                                          width: `${widthPercent}%`,
-                                          // Note: In RTL, 'right' acts as 'left' in LTR timeline? 
-                                          // Actually for timeline: 08:00 is usually on the Right in RTL? 
-                                          // Or Left? Timelines are usually LTR even in Hebrew UI?
-                                          // Let's assume standard RTL: Start time is on the Right.
-                                          // So `right: ${leftPercent}%` places it from the right side.
-                                      }}
-                                      title={`${format(start, 'HH:mm')} - ${format(end, 'HH:mm')}: ${school?.name}`}
-                                   >
-                                      <div className="font-bold truncate">{school?.name}</div>
-                                      <div className="text-[10px] opacity-80 truncate">{format(start, 'HH:mm')}-{format(end, 'HH:mm')}</div>
-                                   </div>
-                                );
-                             })}
-                    </div>
-                 </div>
+            {/* Days Grid */}
+            <div className="grid grid-cols-7 auto-rows-[140px] md:auto-rows-[180px] bg-slate-200 gap-px">
+              {/* Empty cells for start of month offset if needed - simplistic approach here: 
+                  date-fns eachDayOfInterval returns actual days. 
+                  For a perfect grid we might need to pad the start.
+                  Let's just map the actual days for now. 
+               */}
+              {Array(monthStart.getDay()).fill(null).map((_, i) => (
+                 <div key={`empty-${i}`} className="bg-white/50" />
               ))}
 
-              {teachers.length === 0 && (
-                 <div className="p-8 text-center text-slate-400 italic">
-                    לא נמצאו מורים במערכת
-                 </div>
-              )}
-           </div>
-        </div>
-        
-        {/* Legend */}
-        <div className="max-w-7xl mx-auto mt-4 flex gap-4 text-sm px-4">
-           <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-amber-100 border border-amber-300 rounded"></div>
-              <span>ממתין לאישור מורה</span>
-           </div>
-           <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-emerald-100 border border-emerald-300 rounded"></div>
-              <span>מאושר</span>
-           </div>
-           <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-rose-100 border border-rose-300 rounded"></div>
-              <span>נדחה</span>
-           </div>
-        </div>
+              {calendarDays.map(day => {
+                const dayAssignments = getDayAssignments(day);
+                const isToday = isSameDay(day, new Date());
+
+                return (
+                  <div 
+                    key={day.toISOString()}
+                    onClick={() => handleDayClick(day)}
+                    className={cn(
+                      "bg-white p-2 relative group cursor-pointer hover:bg-purple-50 transition-colors",
+                      isToday && "bg-blue-50"
+                    )}
+                  >
+                    <div className={cn(
+                      "w-7 h-7 flex items-center justify-center rounded-full text-sm font-medium mb-1",
+                      isToday ? "bg-blue-600 text-white" : "text-slate-700 group-hover:bg-purple-200"
+                    )}>
+                      {format(day, 'd')}
+                    </div>
+
+                    <div className="space-y-1 overflow-y-auto max-h-[calc(100%-2rem)] pr-1 custom-scrollbar">
+                      {dayAssignments.map(assignment => {
+                         const teacher = teachers.find(t => t.id === assignment.assigned_teacher_id);
+                         const school = schools.find(s => s.id === assignment.institution_id);
+                         
+                         return (
+                           <div key={assignment.id} className="bg-purple-100 text-purple-900 text-xs p-1.5 rounded border border-purple-200 shadow-sm truncate">
+                             <div className="font-bold">{teacher?.name || 'מורה לא ידוע'}</div>
+                             <div className="text-purple-700">{school?.name}</div>
+                             {assignment.target_class && <div className="text-[10px] bg-white/50 inline-block px-1 rounded mt-0.5">{assignment.target_class}</div>}
+                           </div>
+                         );
+                      })}
+                    </div>
+
+                    <div className="absolute bottom-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button size="icon" className="h-6 w-6 rounded-full bg-purple-600 hover:bg-purple-700 text-white shadow">
+                        <Plus className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      <AppointmentModal 
-         isOpen={isModalOpen}
-         onClose={() => setIsModalOpen(false)}
-         onSave={handleSaveAssignment}
-         defaultValues={modalDefaults}
-         teachers={teachers}
-         schools={schools}
-         programs={programs}
-      />
+      {/* New Assignment Modal */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="max-w-lg" dir="rtl">
+          <DialogHeader>
+            <DialogTitle>שיבוץ חדש</DialogTitle>
+            <DialogDescription>
+              {selectedDate && format(selectedDate, 'EEEE, d בMMMM yyyy', { locale: he })}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>שעה</Label>
+                <div className="relative">
+                   <Clock className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                   <Input 
+                      type="time" 
+                      className="pr-9"
+                      value={newAssignment.time} 
+                      onChange={e => setNewAssignment({...newAssignment, time: e.target.value})}
+                   />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>מספר מפגשים</Label>
+                <Input 
+                  type="number" 
+                  placeholder="למשל: 5"
+                  value={newAssignment.sessionsCount} 
+                  onChange={e => setNewAssignment({...newAssignment, sessionsCount: e.target.value})}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>מורה</Label>
+              <Select 
+                value={newAssignment.teacherId} 
+                onValueChange={val => setNewAssignment({...newAssignment, teacherId: val})}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="בחר מורה" />
+                </SelectTrigger>
+                <SelectContent>
+                  {teachers.map(t => (
+                    <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>בית ספר / מוסד</Label>
+              <Select 
+                value={newAssignment.schoolId} 
+                onValueChange={val => setNewAssignment({...newAssignment, schoolId: val})}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="בחר מוסד" />
+                </SelectTrigger>
+                <SelectContent>
+                  {schools.map(s => (
+                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>כיתה</Label>
+                <Input 
+                  placeholder="למשל: ז'3"
+                  value={newAssignment.targetClass} 
+                  onChange={e => setNewAssignment({...newAssignment, targetClass: e.target.value})}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>תוכנית</Label>
+                <Select 
+                  value={newAssignment.programId} 
+                  onValueChange={val => setNewAssignment({...newAssignment, programId: val})}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="בחר תוכנית" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {programs.map(p => (
+                      <SelectItem key={p.id} value={p.id}>{p.title || p.course_topic || 'ללא שם'}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setIsModalOpen(false)}>ביטול</Button>
+            <Button onClick={handleSaveAssignment} className="bg-purple-600 hover:bg-purple-700">שמור שיבוץ</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

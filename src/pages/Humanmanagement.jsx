@@ -206,6 +206,15 @@ export default function Humanmanagement() {
 
         {/* Info Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Scheduling Management - Priority #1 */}
+          <Link to={createPageUrl("ManagerScheduler")}>
+            <Card className="bg-amber-50 border-amber-200 border shadow-md rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center hover:shadow-lg transition-shadow cursor-pointer h-full ring-2 ring-amber-100 ring-offset-2">
+              <Calendar className="w-12 h-12 text-amber-600" />
+              <CardTitle className="text-xl font-bold text-amber-900">ניהול שיבוצים</CardTitle>
+              <p className="text-sm text-amber-700 font-medium">שיבוץ מורים ומשקפות</p>
+            </Card>
+          </Link>
+
           <Link to={createPageUrl("CRMHub") + "?mode=hr"}>
             <Card className="bg-white shadow-md rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center hover:shadow-lg transition-shadow cursor-pointer h-full">
               <Users className="w-10 h-10 text-blue-600" />
@@ -230,21 +239,11 @@ export default function Humanmanagement() {
             </Card>
           </Link>
 
-
-
           <Link to={createPageUrl("Schools")}>
             <Card className="bg-white shadow-md rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center hover:shadow-lg transition-shadow cursor-pointer h-full">
               <Building2 className="w-10 h-10 text-indigo-600" />
               <CardTitle className="text-lg font-semibold text-slate-900">בתי ספר</CardTitle>
               <p className="text-sm text-slate-500">ניהול מוסדות</p>
-            </Card>
-          </Link>
-
-          <Link to={createPageUrl("ManagerScheduler")}>
-            <Card className="bg-white shadow-md rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center hover:shadow-lg transition-shadow cursor-pointer h-full">
-              <Calendar className="w-10 h-10 text-amber-600" />
-              <CardTitle className="text-lg font-semibold text-slate-900">ניהול שיבוצים</CardTitle>
-              <p className="text-sm text-slate-500">שיבוץ מורים ומשקפות</p>
             </Card>
           </Link>
 
