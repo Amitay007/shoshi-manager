@@ -230,13 +230,7 @@ export default function Humanmanagement() {
             </Card>
           </Link>
 
-          <Link to={createPageUrl("DeviceAssignments")}>
-            <Card className="bg-white shadow-md rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center hover:shadow-lg transition-shadow cursor-pointer h-full">
-              <FileText className="w-10 h-10 text-orange-600" />
-              <CardTitle className="text-lg font-semibold text-slate-900">שיבוצים</CardTitle>
-              <p className="text-sm text-slate-500">תכנון ושיבוץ</p>
-            </Card>
-          </Link>
+
 
           <Link to={createPageUrl("Schools")}>
             <Card className="bg-white shadow-md rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center hover:shadow-lg transition-shadow cursor-pointer h-full">
