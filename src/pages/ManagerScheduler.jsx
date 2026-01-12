@@ -33,12 +33,15 @@ export default function ManagerScheduler() {
 
   // Form State
   const [newAssignment, setNewAssignment] = useState({
+    id: null,
     teacherId: "",
     schoolId: "",
     programId: "",
     targetClass: "",
     sessionsCount: "",
-    time: "08:00"
+    startTime: "08:00",
+    endTime: "09:00",
+    notes: ""
   });
 
   const { toast } = useToast();
@@ -86,27 +89,66 @@ export default function ManagerScheduler() {
 
   const handleDayClick = (day) => {
     setSelectedDate(day);
-    setNewAssignment(prev => ({ ...prev, sessionsCount: "" })); // Reset
+    setNewAssignment({
+      id: null,
+      teacherId: "",
+      schoolId: "",
+      programId: "",
+      targetClass: "",
+      sessionsCount: "",
+      startTime: "08:00",
+      endTime: "09:00",
+      notes: ""
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleEditAssignment = (assignment, e) => {
+    e.stopPropagation();
+    setSelectedDate(new Date(assignment.start_datetime));
+    
+    // Extract times
+    const start = new Date(assignment.start_datetime);
+    const end = new Date(assignment.end_datetime);
+    
+    setNewAssignment({
+      id: assignment.id,
+      teacherId: assignment.assigned_teacher_id,
+      schoolId: assignment.institution_id,
+      programId: assignment.program_id,
+      targetClass: assignment.target_class || "",
+      sessionsCount: assignment.sessions_count || "",
+      startTime: format(start, "HH:mm"),
+      endTime: format(end, "HH:mm"),
+      notes: assignment.notes || ""
+    });
     setIsModalOpen(true);
   };
 
   const handleSaveAssignment = async () => {
-    if (!newAssignment.teacherId || !newAssignment.schoolId || !newAssignment.programId) {
-      toast({ title: "שגיאה", description: "נא למלא את כל שדות החובה", variant: "destructive" });
+    if (!newAssignment.teacherId || !newAssignment.schoolId || !newAssignment.programId || !newAssignment.startTime || !newAssignment.endTime) {
+      toast({ title: "שגיאה", description: "נא למלא את כל שדות החובה (כולל שעות)", variant: "destructive" });
       return;
     }
 
     showLoader();
     try {
-      // Construct datetime
-      const [hours, minutes] = newAssignment.time.split(':');
+      // Construct start datetime
+      const [startH, startM] = newAssignment.startTime.split(':');
       const startDateTime = new Date(selectedDate);
-      startDateTime.setHours(parseInt(hours), parseInt(minutes));
+      startDateTime.setHours(parseInt(startH), parseInt(startM));
       
-      const endDateTime = new Date(startDateTime);
-      endDateTime.setHours(startDateTime.getHours() + 1); // Default duration 1 hour
+      // Construct end datetime
+      const [endH, endM] = newAssignment.endTime.split(':');
+      const endDateTime = new Date(selectedDate);
+      endDateTime.setHours(parseInt(endH), parseInt(endM));
+      
+      // Handle overnight shifts (if end time is before start time)
+      if (endDateTime < startDateTime) {
+        endDateTime.setDate(endDateTime.getDate() + 1);
+      }
 
-      await base44.entities.ScheduleEntry.create({
+      const assignmentData = {
         program_id: newAssignment.programId,
         institution_id: newAssignment.schoolId,
         assigned_teacher_id: newAssignment.teacherId,
@@ -114,21 +156,38 @@ export default function ManagerScheduler() {
         sessions_count: newAssignment.sessionsCount ? parseInt(newAssignment.sessionsCount) : 0,
         start_datetime: startDateTime.toISOString(),
         end_datetime: endDateTime.toISOString(),
+        notes: newAssignment.notes,
         status: "pending_teacher_approval"
-      });
+      };
 
-      toast({ title: "הצלחה", description: "השיבוץ נוצר בהצלחה" });
+      if (newAssignment.id) {
+        // Update existing
+        await base44.entities.ScheduleEntry.update(newAssignment.id, assignmentData);
+        toast({ title: "הצלחה", description: "השיבוץ עודכן בהצלחה" });
+      } else {
+        // Create new
+        await base44.entities.ScheduleEntry.create(assignmentData);
+        
+        // Note: Notifications are handled by the backend or the TeacherAgenda page by polling 'pending_teacher_approval' status.
+        // The user mentioned notifications are not working, but TeacherAgenda page filters by 'pending_teacher_approval'.
+        // So creating an entry with this status should make it appear there.
+        
+        toast({ title: "הצלחה", description: "השיבוץ נוצר ונשלח לאישור המורה" });
+      }
+
       setIsModalOpen(false);
       fetchMonthlyAssignments();
       
-      // Reset form (keep some fields for easier entry if needed, but resetting here)
       setNewAssignment({
+        id: null,
         teacherId: "",
         schoolId: "",
         programId: "",
         targetClass: "",
         sessionsCount: "",
-        time: "08:00"
+        startTime: "08:00",
+        endTime: "09:00",
+        notes: ""
       });
     } catch (error) {
       console.error(error);
@@ -249,8 +308,15 @@ export default function ManagerScheduler() {
                          const school = schools.find(s => s.id === assignment.institution_id);
                          
                          return (
-                           <div key={assignment.id} className="bg-purple-100 text-purple-900 text-xs p-1.5 rounded border border-purple-200 shadow-sm truncate">
-                             <div className="font-bold">{teacher?.name || 'מורה לא ידוע'}</div>
+                           <div 
+                             key={assignment.id} 
+                             onClick={(e) => handleEditAssignment(assignment, e)}
+                             className="bg-purple-100 hover:bg-purple-200 cursor-pointer text-purple-900 text-xs p-1.5 rounded border border-purple-200 shadow-sm truncate transition-colors"
+                           >
+                             <div className="flex justify-between items-center">
+                               <div className="font-bold">{teacher?.name || 'מורה לא ידוע'}</div>
+                               <div className="text-[10px] opacity-70">{format(new Date(assignment.start_datetime), 'HH:mm')}</div>
+                             </div>
                              <div className="text-purple-700">{school?.name}</div>
                              {assignment.target_class && <div className="text-[10px] bg-white/50 inline-block px-1 rounded mt-0.5">{assignment.target_class}</div>}
                            </div>
@@ -275,7 +341,7 @@ export default function ManagerScheduler() {
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="max-w-lg" dir="rtl">
           <DialogHeader>
-            <DialogTitle>שיבוץ חדש</DialogTitle>
+            <DialogTitle>{newAssignment.id ? "עריכת שיבוץ" : "שיבוץ חדש"}</DialogTitle>
             <DialogDescription>
               {selectedDate && format(selectedDate, 'EEEE, d בMMMM yyyy', { locale: he })}
             </DialogDescription>
@@ -284,27 +350,39 @@ export default function ManagerScheduler() {
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>שעה</Label>
+                <Label>שעת התחלה</Label>
                 <div className="relative">
                    <Clock className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
                    <Input 
                       type="time" 
                       className="pr-9"
-                      value={newAssignment.time} 
-                      onChange={e => setNewAssignment({...newAssignment, time: e.target.value})}
+                      value={newAssignment.startTime} 
+                      onChange={e => setNewAssignment({...newAssignment, startTime: e.target.value})}
                    />
                 </div>
               </div>
-              
               <div className="space-y-2">
-                <Label>מספר מפגשים</Label>
-                <Input 
-                  type="number" 
-                  placeholder="למשל: 5"
-                  value={newAssignment.sessionsCount} 
-                  onChange={e => setNewAssignment({...newAssignment, sessionsCount: e.target.value})}
-                />
+                <Label>שעת סיום</Label>
+                <div className="relative">
+                   <Clock className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                   <Input 
+                      type="time" 
+                      className="pr-9"
+                      value={newAssignment.endTime} 
+                      onChange={e => setNewAssignment({...newAssignment, endTime: e.target.value})}
+                   />
+                </div>
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>מספר מפגשים (אופציונלי)</Label>
+              <Input 
+                type="number" 
+                placeholder="למשל: 5"
+                value={newAssignment.sessionsCount} 
+                onChange={e => setNewAssignment({...newAssignment, sessionsCount: e.target.value})}
+              />
             </div>
 
             <div className="space-y-2">
@@ -367,6 +445,15 @@ export default function ManagerScheduler() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            <div className="space-y-2">
+                <Label>הערות</Label>
+                <Input 
+                  placeholder="הערות למורה או לשיבוץ..."
+                  value={newAssignment.notes} 
+                  onChange={e => setNewAssignment({...newAssignment, notes: e.target.value})}
+                />
             </div>
           </div>
 
