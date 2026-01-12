@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,9 +13,7 @@ export default function TeacherSalaryTab({ teacher, onUpdate }) {
   const [isSaving, setIsSaving] = React.useState(false);
   
   // Stats State
-  const [loadingStats, setLoadingStats] = useState(false);
-  const [schedules, setSchedules] = useState([]);
-  const [reportedHours, setReportedHours] = useState([]);
+  // Removed heavy data fetching for performance optimization
   const [dateRange, setDateRange] = useState({
     from: format(startOfMonth(new Date()), 'yyyy-MM-dd'),
     to: format(endOfMonth(new Date()), 'yyyy-MM-dd')
@@ -29,78 +27,14 @@ export default function TeacherSalaryTab({ teacher, onUpdate }) {
     }
   });
 
-  // Fetch Stats Only When Component Mounts or Date Range Changes
-  const loadStats = async () => {
-    if (!teacher.id) return;
-    setLoadingStats(true);
-    try {
-      // Convert dates to ISO strings for filtering if needed, or just fetch all and filter client side if backend filtering is limited
-      // Note: Base44 filter usually supports basic equality. Range queries might need client-side filtering if not supported directly efficiently.
-      // To be safe and performant: Fetch records around the date range.
-      
-      // Fetching Schedules
-      const schedulesData = await base44.entities.ScheduleEntry.filter({
-        assigned_teacher_id: teacher.id
-      }, { start_datetime: -1 }, 500); // Fetch last 500
-
-      // Fetching Reports
-      const reportedHoursData = await base44.entities.ReportedHours.filter({
-        teacher_id: teacher.id
-      }, { date: -1 }, 500); // Fetch last 500
-
-      setSchedules(schedulesData);
-      setReportedHours(reportedHoursData);
-    } catch (error) {
-      console.error("Error loading payroll stats:", error);
-      toast({ title: "שגיאה בטעינת נתונים", description: "לא ניתן לטעון נתוני שכר", variant: "destructive" });
-    } finally {
-      setLoadingStats(false);
-    }
-  };
-
-  useEffect(() => {
-    loadStats();
-  }, [teacher.id]); // Reload when teacher changes, date filtering is client side for now to avoid complex queries
-
+  // Cosmetic Placeholder Stats (No actual data fetching)
   const payrollStats = useMemo(() => {
-    const fromDate = new Date(dateRange.from);
-    const toDate = new Date(dateRange.to);
-    toDate.setHours(23, 59, 59, 999); // End of day
-
-    // Filter Schedules
-    const relevantSchedules = schedules.filter(s => {
-      const sDate = new Date(s.start_datetime);
-      const inRange = sDate >= fromDate && sDate <= toDate;
-      const isPayable = ["approved", "done"].includes(s.status);
-      return inRange && isPayable;
-    });
-
-    const scheduleHours = relevantSchedules.reduce((acc, curr) => {
-       const start = new Date(curr.start_datetime);
-       const end = new Date(curr.end_datetime);
-       const hours = (end - start) / (1000 * 60 * 60);
-       return acc + (hours > 0 ? hours : 0);
-    }, 0);
-
-    // Filter Reported Hours
-    const relevantReports = reportedHours.filter(r => {
-      const rDate = new Date(r.date);
-      const inRange = rDate >= fromDate && rDate <= toDate;
-      const isPayable = ["approved", "verified"].includes(r.status);
-      return inRange && isPayable;
-    });
-
-    const reportedHoursTotal = relevantReports.reduce((acc, curr) => acc + (Number(curr.hours_amount) || 0), 0);
-
-    const totalHours = scheduleHours + reportedHoursTotal;
-    const hourlyRate = Number(teacher.hourlyRate) || 0;
-
     return {
-      totalHours: totalHours.toFixed(2),
-      totalPayment: (totalHours * hourlyRate).toFixed(2),
-      details: { scheduleCount: relevantSchedules.length, reportCount: relevantReports.length }
+      totalHours: "0.00",
+      totalPayment: "0.00",
+      details: { scheduleCount: 0, reportCount: 0 }
     };
-  }, [schedules, reportedHours, dateRange, teacher.hourlyRate]);
+  }, []);
 
   const onSubmit = async (data) => {
     setIsSaving(true);
@@ -149,12 +83,12 @@ export default function TeacherSalaryTab({ teacher, onUpdate }) {
         )}
       </form>
 
-      {/* Stats Section - Self Contained */}
+      {/* Stats Section - Cosmetic Only */}
       <div className="bg-white rounded-lg shadow-sm p-4">
         <div className="flex justify-between items-center border-b pb-4 mb-4">
-          <h3 className="text-lg font-semibold text-gray-800">יומן שעות ושכר</h3>
-          <Button variant="ghost" size="sm" onClick={loadStats} disabled={loadingStats}>
-            <RefreshCw className={`w-4 h-4 ${loadingStats ? 'animate-spin' : ''}`} />
+          <h3 className="text-lg font-semibold text-gray-800">יומן שעות ושכר (תצוגה בלבד)</h3>
+          <Button variant="ghost" size="sm" disabled={true} className="opacity-50 cursor-not-allowed">
+            <RefreshCw className="w-4 h-4" />
           </Button>
         </div>
         
@@ -179,14 +113,8 @@ export default function TeacherSalaryTab({ teacher, onUpdate }) {
                 />
              </div>
              <div className="mr-auto text-left">
-                {loadingStats ? (
-                  <div className="flex items-center text-sm text-gray-500"><Loader2 className="w-4 h-4 animate-spin mr-2" /> מחשב...</div>
-                ) : (
-                  <>
-                    <div className="text-2xl font-bold text-[var(--yoya-dark)]">₪{payrollStats.totalPayment}</div>
-                    <div className="text-sm text-gray-500">{payrollStats.totalHours} שעות סה"כ</div>
-                  </>
-                )}
+                <div className="text-2xl font-bold text-[var(--yoya-dark)]">₪{payrollStats.totalPayment}</div>
+                <div className="text-sm text-gray-500">{payrollStats.totalHours} שעות סה"כ</div>
              </div>
           </div>
           
