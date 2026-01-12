@@ -48,13 +48,13 @@ export default function TeacherProfile() {
       setTeacher(teacherData);
 
       // 2. Fetch Schedules (for payroll/stats)
-      const schedulesData = await base44.entities.ScheduleEntry.list({
+      const schedulesData = await base44.entities.ScheduleEntry.filter({
         assigned_teacher_id: teacherId
       }, { start_datetime: -1 }, 1000); // Fetch enough history
       setSchedules(schedulesData);
 
       // 3. Fetch Reported Hours (for payroll)
-      const reportedHoursData = await base44.entities.ReportedHours.list({
+      const reportedHoursData = await base44.entities.ReportedHours.filter({
         teacher_id: teacherId
       }, { date: -1 }, 1000);
       setReportedHours(reportedHoursData);
