@@ -26,10 +26,7 @@ export default function TeacherPersonalTab({ teacher, onUpdate }) {
       emergency_phone: teacher.emergency_phone || "",
       has_car: teacher.has_car || false,
       drivers_license_type: teacher.drivers_license_type || "",
-      police_clearance_url: teacher.police_clearance_url || "",
-      police_clearance_expiry_date: teacher.police_clearance_expiry_date || "",
-      sexual_harassment_form_signed: teacher.sexual_harassment_form_signed || false,
-      sexual_harassment_form_date_signed: teacher.sexual_harassment_form_date_signed || "",
+
       contract_url: teacher.contract_url || "",
     }
   });
@@ -138,33 +135,7 @@ export default function TeacherPersonalTab({ teacher, onUpdate }) {
         <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">מסמכים מחייבים</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-3 p-4 bg-gray-50 rounded-md border">
-            <h4 className="font-medium">אישור משטרה</h4>
-            <div className="grid gap-2">
-              <Label htmlFor="police_clearance_url">קישור לקובץ</Label>
-              <Input id="police_clearance_url" {...register("police_clearance_url")} placeholder="https://..." />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="police_clearance_expiry_date">תאריך תפוגה</Label>
-              <Input id="police_clearance_expiry_date" type="date" {...register("police_clearance_expiry_date")} />
-            </div>
-          </div>
 
-          <div className="space-y-3 p-4 bg-gray-50 rounded-md border">
-            <h4 className="font-medium">מניעת הטרדה מינית</h4>
-            <div className="flex items-center gap-2 mt-4">
-              <Checkbox 
-                id="sexual_harassment_form_signed" 
-                checked={watch("sexual_harassment_form_signed")} 
-                onCheckedChange={(checked) => setValue("sexual_harassment_form_signed", checked, { shouldDirty: true })}
-              />
-              <Label htmlFor="sexual_harassment_form_signed">הטופס נחתם</Label>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="sexual_harassment_form_date_signed">תאריך חתימה</Label>
-              <Input id="sexual_harassment_form_date_signed" type="date" {...register("sexual_harassment_form_date_signed")} />
-            </div>
-          </div>
 
           <div className="space-y-3 p-4 bg-gray-50 rounded-md border md:col-span-2">
             <h4 className="font-medium">חוזה העסקה</h4>
