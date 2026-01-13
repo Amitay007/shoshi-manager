@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, BorderStyle } from "npm:docx@8.5.0";
+import { Buffer } from "node:buffer";
 
 export const generateSyllabusDocx = async (req) => {
     try {
@@ -233,14 +234,8 @@ export const generateSyllabusDocx = async (req) => {
         // 4. Pack and Return
         const buffer = await Packer.toBuffer(doc);
         
-        // Convert to Base64 to avoid binary transport issues
-        let binary = '';
-        const bytes = new Uint8Array(buffer);
-        const len = bytes.byteLength;
-        for (let i = 0; i < len; i++) {
-            binary += String.fromCharCode(bytes[i]);
-        }
-        const base64 = btoa(binary);
+        // Convert to Base64 using Buffer (more efficient)
+        const base64 = Buffer.from(buffer).toString('base64');
 
         return Response.json({ 
             file_base64: base64,

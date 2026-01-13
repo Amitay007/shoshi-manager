@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -30,6 +30,18 @@ export default function SyllabusExportModal({ open, onOpenChange, syllabus }) {
         steps: true,
         worksheets: true
     });
+
+    const [appNames, setAppNames] = useState({});
+
+    useEffect(() => {
+        if (open) {
+            base44.entities.VRApp.list().then(apps => {
+                const map = {};
+                apps.forEach(app => map[app.id] = app.name);
+                setAppNames(map);
+            }).catch(console.error);
+        }
+    }, [open]);
 
     const toggleSession = (index) => {
         setSelectedSessions(prev => 
@@ -148,10 +160,16 @@ export default function SyllabusExportModal({ open, onOpenChange, syllabus }) {
                                 <h3 className="font-bold text-lg mb-2">מפגש {session.number}: {session.topic || "ללא נושא"}</h3>
                                 <div className="space-y-2 text-sm">
                                     {sessionContent.apps && session.app_ids?.length > 0 && (
-                                        <div><span className="font-bold">אפליקציות:</span> {session.app_ids.length} נבחרו</div>
+                                        <div>
+                                            <span className="font-bold">אפליקציות:</span>{' '}
+                                            {session.app_ids.map(id => appNames[id] || "טוען...").join(", ")}
+                                        </div>
                                     )}
                                     {sessionContent.experiences && session.experience_ids?.length > 0 && (
-                                        <div><span className="font-bold">חוויות:</span> {session.experience_ids.length} נבחרו</div>
+                                        <div>
+                                            <span className="font-bold">חוויות:</span>{' '}
+                                            {session.experience_ids.map(id => appNames[id] || "טוען...").join(", ")}
+                                        </div>
                                     )}
                                     {sessionContent.steps && session.steps?.length > 0 && (
                                         <div>
