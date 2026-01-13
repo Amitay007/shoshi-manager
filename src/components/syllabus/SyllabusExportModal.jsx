@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { FileDown, Loader2, FileText, Gift, Layers, AppWindow, List, StickyNote } from "lucide-react";
+import { FileDown, Loader2, FileText, Gift, Layers, AppWindow, List, StickyNote, Eye, X } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
@@ -12,6 +12,7 @@ import { useToast } from "@/components/ui/use-toast";
 export default function SyllabusExportModal({ open, onOpenChange, syllabus }) {
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
+    const [showPreview, setShowPreview] = useState(false);
     
     // Selection States
     const [general, setGeneral] = useState(true);
@@ -63,26 +64,33 @@ export default function SyllabusExportModal({ open, onOpenChange, syllabus }) {
                 options
             });
             
-            // Handle binary response
-            const blob = new Blob([response.data], { 
-                type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" 
-            });
-            
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `Syllabus_Proposal_${syllabus.title || "Draft"}.docx`;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            a.remove();
-            
-            toast({
-                title: "הייצוא הושלם בהצלחה",
-                description: "קובץ ה-Word ירד למחשב שלך",
-                variant: "success"
-            });
-            onOpenChange(false);
+            if (response.data && response.data.file_base64) {
+                // Handle Base64 response
+                const binaryString = atob(response.data.file_base64);
+                const bytes = new Uint8Array(binaryString.length);
+                for (let i = 0; i < binaryString.length; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                const blob = new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+                
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = response.data.filename || `Syllabus_Proposal.docx`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                a.remove();
+                
+                toast({
+                    title: "הייצוא הושלם בהצלחה",
+                    description: "קובץ ה-Word ירד למחשב שלך",
+                    variant: "success"
+                });
+                onOpenChange(false);
+            } else {
+                throw new Error("Invalid response from server");
+            }
 
         } catch (error) {
             console.error("Export failed:", error);
@@ -94,6 +102,84 @@ export default function SyllabusExportModal({ open, onOpenChange, syllabus }) {
         } finally {
             setLoading(false);
         }
+    };
+
+    const PreviewContent = () => {
+        const selectedSessionData = (syllabus.sessions || [])
+            .filter((_, idx) => selectedSessions.includes(idx))
+            .sort((a, b) => a.number - b.number);
+
+        return (
+            <div className="space-y-6 font-sans text-right" dir="rtl">
+                <div className="text-center border-b pb-4">
+                    <h1 className="text-2xl font-bold">{syllabus.title || "הצעת תוכן - סילבוס VR"}</h1>
+                </div>
+
+                {general && (
+                    <div className="space-y-2">
+                        <h2 className="text-xl font-bold text-slate-800 border-b pb-1">פרטים כלליים</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div><span className="font-bold">שם המורה/מחבר:</span> {syllabus.teacher_name}</div>
+                            <div><span className="font-bold">נושא הקורס:</span> {syllabus.course_topic}</div>
+                            <div><span className="font-bold">תחום דעת:</span> {syllabus.subject}</div>
+                            <div><span className="font-bold">קהל יעד:</span> {(syllabus.target_audience || []).join(", ")}</div>
+                            <div><span className="font-bold">סוג פעילות:</span> {syllabus.activity_type}</div>
+                        </div>
+                    </div>
+                )}
+
+                {gifts && (
+                    <div className="space-y-2">
+                        <h2 className="text-xl font-bold text-slate-800 border-b pb-1">מתנות הלמידה</h2>
+                        <ul className="list-disc list-inside space-y-1 text-sm">
+                            {syllabus.gift_knowledge && <li><span className="font-bold">ידע:</span> {syllabus.gift_knowledge}</li>}
+                            {syllabus.gift_skill && <li><span className="font-bold">מיומנות:</span> {syllabus.gift_skill}</li>}
+                            {syllabus.gift_understanding && <li><span className="font-bold">הבנה:</span> {syllabus.gift_understanding}</li>}
+                            {syllabus.final_product && <li><span className="font-bold">תוצר סופי:</span> {syllabus.final_product}</li>}
+                        </ul>
+                    </div>
+                )}
+
+                {(selectedSessionData.length > 0) && (
+                    <div className="space-y-4">
+                        <h2 className="text-xl font-bold text-slate-800 border-b pb-1">פירוט המפגשים</h2>
+                        {selectedSessionData.map((session, i) => (
+                            <div key={i} className="bg-slate-50 p-4 rounded-lg border">
+                                <h3 className="font-bold text-lg mb-2">מפגש {session.number}: {session.topic || "ללא נושא"}</h3>
+                                <div className="space-y-2 text-sm">
+                                    {sessionContent.apps && session.app_ids?.length > 0 && (
+                                        <div><span className="font-bold">אפליקציות:</span> {session.app_ids.length} נבחרו</div>
+                                    )}
+                                    {sessionContent.experiences && session.experience_ids?.length > 0 && (
+                                        <div><span className="font-bold">חוויות:</span> {session.experience_ids.length} נבחרו</div>
+                                    )}
+                                    {sessionContent.steps && session.steps?.length > 0 && (
+                                        <div>
+                                            <span className="font-bold">מהלך השיעור:</span>
+                                            <ol className="list-decimal list-inside mt-1 pr-4">
+                                                {session.steps.map((step, idx) => (
+                                                    <li key={idx}>{step}</li>
+                                                ))}
+                                            </ol>
+                                        </div>
+                                    )}
+                                    {sessionContent.worksheets && session.worksheet_urls?.length > 0 && (
+                                        <div>
+                                            <span className="font-bold">דפי עבודה:</span>
+                                            <ul className="list-disc list-inside mt-1 pr-4 text-blue-600">
+                                                {session.worksheet_urls.map((ws, idx) => (
+                                                    <li key={idx}>{ws.name || ws.url}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        );
     };
 
     if (!syllabus) return null;
@@ -192,8 +278,18 @@ export default function SyllabusExportModal({ open, onOpenChange, syllabus }) {
                     </div>
                 </ScrollArea>
 
-                <DialogFooter className="p-4 bg-gray-50 border-t rounded-b-lg gap-2 sm:gap-0">
-                    <Button variant="outline" onClick={() => onOpenChange(false)}>ביטול</Button>
+                <DialogFooter className="p-4 bg-gray-50 border-t rounded-b-lg gap-2 sm:gap-0 justify-between sm:justify-between flex-row">
+                     <div className="flex gap-2">
+                        <Button variant="outline" onClick={() => onOpenChange(false)}>ביטול</Button>
+                        <Button 
+                            variant="outline"
+                            onClick={() => setShowPreview(true)}
+                            className="gap-2"
+                        >
+                            <Eye className="w-4 h-4" />
+                            תצוגה מקדימה
+                        </Button>
+                    </div>
                     <Button 
                         onClick={handleExport} 
                         disabled={loading || (!general && !gifts && selectedSessions.length === 0)}
@@ -205,5 +301,26 @@ export default function SyllabusExportModal({ open, onOpenChange, syllabus }) {
                 </DialogFooter>
             </DialogContent>
         </Dialog>
+
+        {/* Preview Dialog */}
+        <Dialog open={showPreview} onOpenChange={setShowPreview}>
+            <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col p-0 bg-white" dir="rtl">
+                <DialogHeader className="p-4 border-b flex flex-row items-center justify-between space-y-0">
+                    <DialogTitle className="flex items-center gap-2">
+                        <Eye className="w-5 h-5 text-blue-600" />
+                        תצוגה מקדימה להצעה
+                    </DialogTitle>
+                </DialogHeader>
+                <ScrollArea className="flex-1 p-6 bg-slate-50">
+                    <div className="bg-white p-8 shadow-sm rounded-lg min-h-[500px] max-w-[21cm] mx-auto border">
+                        <PreviewContent />
+                    </div>
+                </ScrollArea>
+                <DialogFooter className="p-4 border-t bg-gray-50">
+                    <Button onClick={() => setShowPreview(false)}>סגור תצוגה מקדימה</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+        </>
     );
 }

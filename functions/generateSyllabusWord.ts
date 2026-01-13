@@ -233,11 +233,18 @@ export const generateSyllabusDocx = async (req) => {
         // 4. Pack and Return
         const buffer = await Packer.toBuffer(doc);
         
-        return new Response(buffer, {
-            headers: {
-                "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                "Content-Disposition": `attachment; filename="syllabus_proposal.docx"`,
-            },
+        // Convert to Base64 to avoid binary transport issues
+        let binary = '';
+        const bytes = new Uint8Array(buffer);
+        const len = bytes.byteLength;
+        for (let i = 0; i < len; i++) {
+            binary += String.fromCharCode(bytes[i]);
+        }
+        const base64 = btoa(binary);
+
+        return Response.json({ 
+            file_base64: base64,
+            filename: `Syllabus_Proposal_${(syllabus.title || "draft").replace(/[^a-z0-9\u0590-\u05FF]/gi, "_")}.docx`
         });
 
     } catch (error) {
