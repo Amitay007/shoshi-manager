@@ -1,6 +1,15 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, BorderStyle } from "npm:docx@8.5.0";
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, BorderStyle, AlignmentType } from "npm:docx@8.5.0";
 import { Buffer } from "node:buffer";
+
+// Yoya Brand Colors
+const COLORS = {
+    PURPLE: "6B46C1",
+    DARK: "2D1B69",
+    CYAN: "00D4FF",
+    BLACK: "000000",
+    GRAY: "666666"
+};
 
 export const generateSyllabusDocx = async (req) => {
     try {
@@ -26,28 +35,35 @@ export const generateSyllabusDocx = async (req) => {
             });
         }
 
-        // 2. Build Document Sections
-        const children = [];
+        // 2. Build Content
+        const sections = [];
 
-        // --- Header / Title ---
-        children.push(
+        // Title
+        sections.push(
             new Paragraph({
                 text: syllabus.title || "הצעת תוכן - סילבוס VR",
                 heading: HeadingLevel.TITLE,
-                alignment: "center",
+                alignment: AlignmentType.CENTER,
                 bidirectional: true,
+                spacing: { after: 400 },
+                run: {
+                    color: COLORS.DARK,
+                    font: "Assistant"
+                }
             }),
             new Paragraph({ text: "", spacing: { after: 200 } })
         );
 
-        // --- General Info (Opening) ---
+        // General Details
         if (options.general) {
-            children.push(
+            sections.push(
                 new Paragraph({
                     text: "פרטים כלליים",
                     heading: HeadingLevel.HEADING_1,
                     bidirectional: true,
-                    spacing: { before: 200, after: 100 }
+                    spacing: { before: 200, after: 200 },
+                    run: { color: COLORS.PURPLE, font: "Assistant" },
+                    border: { bottom: { color: COLORS.CYAN, space: 1, style: BorderStyle.SINGLE, size: 6 } }
                 })
             );
 
@@ -61,28 +77,30 @@ export const generateSyllabusDocx = async (req) => {
 
             details.forEach(item => {
                 if (item.value) {
-                    children.push(
+                    sections.push(
                         new Paragraph({
                             children: [
-                                new TextRun({ text: item.label + " ", bold: true, size: 24, font: "Arial" }),
-                                new TextRun({ text: item.value, size: 24, font: "Arial" })
+                                new TextRun({ text: item.label + " ", bold: true, size: 24, font: "Assistant", color: COLORS.DARK }),
+                                new TextRun({ text: item.value, size: 24, font: "Assistant" })
                             ],
                             bidirectional: true,
-                            spacing: { after: 100 }
+                            spacing: { after: 120 }
                         })
                     );
                 }
             });
         }
 
-        // --- Learning Gifts ---
+        // Gifts
         if (options.gifts) {
-            children.push(
+            sections.push(
                 new Paragraph({
                     text: "מתנות הלמידה",
                     heading: HeadingLevel.HEADING_1,
                     bidirectional: true,
-                    spacing: { before: 400, after: 100 }
+                    spacing: { before: 400, after: 200 },
+                    run: { color: COLORS.PURPLE, font: "Assistant" },
+                    border: { bottom: { color: COLORS.CYAN, space: 1, style: BorderStyle.SINGLE, size: 6 } }
                 })
             );
 
@@ -95,28 +113,30 @@ export const generateSyllabusDocx = async (req) => {
 
             gifts.forEach(item => {
                 if (item.value) {
-                    children.push(
+                    sections.push(
                         new Paragraph({
                             children: [
-                                new TextRun({ text: "• " + item.label + " ", bold: true, size: 24, font: "Arial" }),
-                                new TextRun({ text: item.value, size: 24, font: "Arial" })
+                                new TextRun({ text: "• " + item.label + " ", bold: true, size: 24, font: "Assistant", color: COLORS.DARK }),
+                                new TextRun({ text: item.value, size: 24, font: "Assistant" })
                             ],
                             bidirectional: true,
-                            spacing: { after: 100 }
+                            spacing: { after: 120 }
                         })
                     );
                 }
             });
         }
 
-        // --- Sessions ---
+        // Sessions
         if (options.sessions && options.sessions.length > 0) {
-            children.push(
+            sections.push(
                 new Paragraph({
                     text: "פירוט המפגשים",
                     heading: HeadingLevel.HEADING_1,
                     bidirectional: true,
-                    spacing: { before: 400, after: 200 }
+                    spacing: { before: 400, after: 300 },
+                    run: { color: COLORS.PURPLE, font: "Assistant" },
+                    border: { bottom: { color: COLORS.CYAN, space: 1, style: BorderStyle.SINGLE, size: 6 } }
                 })
             );
 
@@ -124,31 +144,31 @@ export const generateSyllabusDocx = async (req) => {
                 .filter((_, index) => options.sessions.includes(index))
                 .sort((a, b) => a.number - b.number);
 
-            selectedSessions.forEach(session => {
+            selectedSessions.forEach((session) => {
                 // Session Header
-                children.push(
+                sections.push(
                     new Paragraph({
                         text: `מפגש ${session.number}: ${session.topic || "ללא נושא"}`,
                         heading: HeadingLevel.HEADING_2,
                         bidirectional: true,
-                        spacing: { before: 300, after: 100 },
-                        border: { bottom: { color: "auto", space: 1, style: BorderStyle.SINGLE, size: 6 } }
+                        spacing: { before: 300, after: 150 },
+                        run: { color: COLORS.DARK, font: "Assistant" },
+                        shading: { fill: "F8F9FA", color: "auto" }
                     })
                 );
 
-                // Session Content
-                
                 // Apps
                 if (options.sessionContent?.apps && session.app_ids?.length > 0) {
                     const appNames = session.app_ids.map(id => appMap[id] || "Unknown App").join(", ");
-                    children.push(
+                    sections.push(
                         new Paragraph({
                             children: [
-                                new TextRun({ text: "אפליקציות: ", bold: true, font: "Arial", size: 22 }),
-                                new TextRun({ text: appNames, font: "Arial", size: 22 })
+                                new TextRun({ text: "אפליקציות: ", bold: true, font: "Assistant", size: 22, color: COLORS.PURPLE }),
+                                new TextRun({ text: appNames, font: "Assistant", size: 22 })
                             ],
                             bidirectional: true,
-                            spacing: { after: 100 }
+                            spacing: { after: 100 },
+                            indent: { start: 300 }
                         })
                     );
                 }
@@ -156,39 +176,42 @@ export const generateSyllabusDocx = async (req) => {
                 // Experiences
                 if (options.sessionContent?.experiences && session.experience_ids?.length > 0) {
                     const expNames = session.experience_ids.map(id => appMap[id] || "Unknown Experience").join(", ");
-                    children.push(
+                    sections.push(
                         new Paragraph({
                             children: [
-                                new TextRun({ text: "חוויות: ", bold: true, font: "Arial", size: 22 }),
-                                new TextRun({ text: expNames, font: "Arial", size: 22 })
+                                new TextRun({ text: "חוויות: ", bold: true, font: "Assistant", size: 22, color: COLORS.PURPLE }),
+                                new TextRun({ text: expNames, font: "Assistant", size: 22 })
                             ],
                             bidirectional: true,
-                            spacing: { after: 100 }
+                            spacing: { after: 100 },
+                            indent: { start: 300 }
                         })
                     );
                 }
 
-                // Steps (Mahlach)
+                // Steps
                 if (options.sessionContent?.steps && session.steps?.length > 0) {
-                    children.push(
+                    sections.push(
                         new Paragraph({
                             text: "מהלך השיעור:",
                             bold: true,
-                            font: "Arial",
+                            font: "Assistant",
                             size: 22,
+                            color: COLORS.DARK,
                             bidirectional: true,
-                            spacing: { before: 100 }
+                            spacing: { before: 100, after: 50 },
+                            indent: { start: 300 }
                         })
                     );
                     
                     session.steps.forEach((step, idx) => {
-                        children.push(
+                        sections.push(
                             new Paragraph({
                                 text: `${idx + 1}. ${step}`,
-                                font: "Arial",
+                                font: "Assistant",
                                 size: 22,
                                 bidirectional: true,
-                                indent: { start: 300 },
+                                indent: { start: 600 },
                                 spacing: { after: 50 }
                             })
                         );
@@ -197,25 +220,27 @@ export const generateSyllabusDocx = async (req) => {
 
                 // Worksheets
                 if (options.sessionContent?.worksheets && session.worksheet_urls?.length > 0) {
-                     children.push(
+                     sections.push(
                         new Paragraph({
                             text: "דפי עבודה:",
                             bold: true,
-                            font: "Arial",
+                            font: "Assistant",
                             size: 22,
+                            color: COLORS.DARK,
                             bidirectional: true,
-                            spacing: { before: 100 }
+                            spacing: { before: 100, after: 50 },
+                            indent: { start: 300 }
                         })
                     );
                     session.worksheet_urls.forEach(ws => {
-                        children.push(
+                        sections.push(
                             new Paragraph({
-                                text: `• ${ws.name || "קובץ"}: ${ws.url}`,
-                                font: "Arial",
+                                text: `• ${ws.name || "קובץ"} - ${ws.url}`,
+                                font: "Assistant",
                                 size: 20,
                                 color: "0000FF",
                                 bidirectional: true,
-                                indent: { start: 300 }
+                                indent: { start: 600 }
                             })
                         );
                     });
@@ -223,18 +248,16 @@ export const generateSyllabusDocx = async (req) => {
             });
         }
 
-        // 3. Create Document
+        // Generate Doc
         const doc = new Document({
             sections: [{
                 properties: {},
-                children: children,
+                children: sections,
             }],
         });
 
-        // 4. Pack and Return
+        // Pack
         const buffer = await Packer.toBuffer(doc);
-        
-        // Convert to Base64 using Buffer (more efficient)
         const base64 = Buffer.from(buffer).toString('base64');
 
         return Response.json({ 
