@@ -19,6 +19,8 @@ import { with429Retry } from "@/components/utils/retry";
 import { createPageUrl } from "@/utils";
 import { Link, useNavigate } from "react-router-dom";
 import LinkInput from "@/components/syllabus/LinkInput";
+import SyllabusExportModal from "@/components/syllabus/SyllabusExportModal";
+import { FileDown } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
 export default function SyllabusWizard() {
@@ -29,6 +31,7 @@ export default function SyllabusWizard() {
 
   const [saving, setSaving] = React.useState(false);
   const [printOpen, setPrintOpen] = React.useState(false);
+  const [showExportModal, setShowExportModal] = React.useState(false);
 
   const [apps, setApps] = React.useState([]);
   const [topics, setTopics] = React.useState([]);
@@ -281,7 +284,7 @@ export default function SyllabusWizard() {
                 <Button variant="outline" className="gap-2 shadow-md"><ArrowRight className="w-4 h-4" /> חזרה לתוכנית</Button>
               </Link>
               <Button variant="outline" onClick={() => setPrintOpen(true)} className="gap-2 shadow-md"><Printer className="w-4 h-4" /> הדפס/ PDF</Button>
-              <Button variant="outline" onClick={exportWord} className="gap-2 shadow-md"><FileText className="w-4 h-4" /> Word</Button>
+              <Button variant="outline" onClick={() => setShowExportModal(true)} className="gap-2 shadow-md"><FileDown className="w-4 h-4" /> צור הצעת תוכן</Button>
             </div>
           </div>
         </div>
@@ -296,7 +299,7 @@ export default function SyllabusWizard() {
               <Button variant="outline" className="gap-2 shadow-md"><Home className="w-4 h-4" /> מסך ראשי</Button>
             </Link>
             <Button variant="outline" onClick={() => setPrintOpen(true)} className="gap-2 shadow-md"><Printer className="w-4 h-4" /> הדפס/PDF</Button>
-            <Button variant="outline" onClick={exportWord} className="gap-2 shadow-md"><FileText className="w-4 h-4" /> Word</Button>
+            <Button variant="outline" onClick={() => setShowExportModal(true)} className="gap-2 shadow-md"><FileDown className="w-4 h-4" /> צור הצעת תוכן</Button>
             <Button variant="outline" onClick={saveDraft} disabled={saving} className="gap-2 shadow-md"><Save className="w-4 h-4" /> שמור טיוטה</Button>
             <Button onClick={saveFinal} disabled={saving} className="gap-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 shadow-lg"><Save className="w-4 h-4" /> שמור וסיום</Button>
           </div>
@@ -397,7 +400,7 @@ export default function SyllabusWizard() {
               <div><strong>תחום דעת:</strong> {data.content_areas || "—"}</div>
               <div><strong>סוג פעילות:</strong> {data.activity_type || "—"}</div>
               {/* Changed purposes display from join to direct string */}
-              <div><strong>מטרות חינוכיות:</strong> {data.purposes || "—"}</div>
+              {/* Purposes removed */}
               <div>
                 <strong>כלים טכנולוגיים:</strong> {(data.technology_tools || []).join(", ") || "—"}
               </div>
@@ -809,15 +812,7 @@ export default function SyllabusWizard() {
                   className="text-right shadow-sm min-h-[80px]"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">מטרות חינוכיות</label>
-                <Textarea
-                  placeholder="תיאור חופשי של המטרות החינוכיות..."
-                  value={data.purposes}
-                  onChange={(e) => setField("purposes", e.target.value)}
-                  className="text-right shadow-sm min-h-[80px]"
-                />
-              </div>
+              {/* Purposes removed */}
             </div>
           </CardContent>
         </Card>
@@ -1016,7 +1011,7 @@ export default function SyllabusWizard() {
             <Button variant="outline" onClick={saveDraft} disabled={saving} className="gap-2 shadow-md"><Save className="w-4 h-4" /> שמור טיוטה</Button>
             <Button onClick={saveFinal} disabled={saving} className="gap-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 shadow-lg"><Save className="w-4 h-4" /> שמור וסיום</Button>
             <Button variant="outline" onClick={() => setPrintOpen(true)} className="gap-2 shadow-md"><Printer className="w-4 h-4" /> הדפס/PDF</Button>
-            <Button variant="outline" onClick={exportWord} className="gap-2 shadow-md"><FileText className="w-4 h-4" /> Word</Button>
+            <Button variant="outline" onClick={() => setShowExportModal(true)} className="gap-2 shadow-md"><FileDown className="w-4 h-4" /> צור הצעת תוכן</Button>
           </CardContent>
         </Card>
       </div>
@@ -1186,7 +1181,7 @@ function renderPrintableHTML(data, apps) {
       <div><strong>קהל יעד / רמת גיל:</strong> ${escapeHtml(targetAudienceDisplay)}</div>
       <div><strong>תחום דעת:</strong> ${escapeHtml(data.content_areas || "—")}</div>
       <div><strong>סוג פעילות:</strong> ${escapeHtml(data.activity_type || "—")}</div>
-      <div><strong>מטרות חינוכיות:</strong> ${escapeHtml(data.purposes || "—")}</div>
+      
       <div><strong>כלים טכנולוגיים:</strong> ${(data.technology_tools || []).map(escapeHtml).join(", ") || "—"}</div>
 
       <hr />
