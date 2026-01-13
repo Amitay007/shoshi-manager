@@ -1,71 +1,93 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, BorderStyle } from "npm:docx@8.5.0";
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, BorderStyle, AlignmentType } from "npm:docx@8.5.0";
+import { Buffer } from "node:buffer";
 
-// שימוש בשיטה המובנית של Deno להמרת Base64 כדי למנוע תקלות Buffer
-function arrayBufferToBase64(buffer) {
-    let binary = '';
-    const bytes = new Uint8Array(buffer);
-    const len = bytes.byteLength;
-    for (let i = 0; i < len; i++) {
-        binary += String.fromCharCode(bytes[i]);
+// Yoya Brand Colors
+const COLORS = {
+    PURPLE: "6B46C1",
+    DARK: "2D1B69",
+    CYAN: "00D4FF",
+    BLACK: "000000",
+    GRAY: "666666"
+};
+
+// Helper function to log diagnostics
+async function logToDiagnostics(base44, type, source, message, duration) {
+    try {
+        // These data are collected for the System Agent to analyze load and bugs
+        await base44.entities.SystemDiagnostics.create({
+            type,
+            source,
+            message,
+            duration,
+            timestamp: new Date().toISOString()
+        });
+    } catch (err) {
+        console.error("Failed to log diagnostic:", err);
     }
-    return btoa(binary);
 }
 
-// שים לב: שיניתי את השם ל-generateSyllabusWord כדי שיתאים לקריאה מהפרונטנד
-export const generateSyllabusWord = async (req) => {
+export const generateSyllabusDocx = async (req) => {
+    const start = performance.now();
+    let base44;
+
     try {
         if (req.method !== 'POST') {
             return new Response('Method not allowed', { status: 405 });
         }
 
-        const base44 = createClientFromRequest(req);
+        base44 = createClientFromRequest(req);
         const { syllabusId, options } = await req.json();
 
-        // 1. שליפת הנתונים
+        // 1. Fetch Data
         const syllabus = await base44.entities.Syllabus.get(syllabusId);
         if (!syllabus) {
-            return new Response(JSON.stringify({ error: 'Syllabus not found' }), { status: 404 });
+            throw new Error('Syllabus not found');
         }
 
-        // מיפוי אפליקציות לשמות
+        // Fetch related apps for names if needed
         let appMap = {};
-        try {
+        if (options.sessionContent?.apps || options.sessionContent?.experiences) {
             const apps = await base44.entities.VRApp.list();
             apps.forEach(app => {
                 appMap[app.id] = app.name;
             });
-        } catch (e) {
-            console.error("Could not fetch apps, continuing without names");
         }
 
-        // 2. בניית תוכן המסמך
-        const children = [];
+        // 2. Build Content
+        const sections = [];
 
-        // כותרת ראשית
-        children.push(
+        // Title
+        sections.push(
             new Paragraph({
                 text: syllabus.title || "הצעת תוכן - סילבוס VR",
                 heading: HeadingLevel.TITLE,
-                alignment: "center",
-                bidirectional: true, // תמיכה בעברית
+                alignment: AlignmentType.CENTER,
+                bidirectional: true,
+                spacing: { after: 400 },
+                run: {
+                    color: COLORS.DARK,
+                    font: "Assistant"
+                }
             }),
-            new Paragraph({ text: "" })
+            new Paragraph({ text: "", spacing: { after: 200 } })
         );
 
-        // פרטים כלליים
+        // General Details
         if (options.general) {
-            children.push(
+            sections.push(
                 new Paragraph({
                     text: "פרטים כלליים",
                     heading: HeadingLevel.HEADING_1,
                     bidirectional: true,
-                    spacing: { before: 400, after: 200 }
+                    spacing: { before: 200, after: 200 },
+                    run: { color: COLORS.PURPLE, font: "Assistant" },
+                    border: { bottom: { color: COLORS.CYAN, space: 1, style: BorderStyle.SINGLE, size: 6 } }
                 })
             );
 
             const details = [
-                { label: "שם המורה:", value: syllabus.teacher_name },
+                { label: "שם המורה/מחבר:", value: syllabus.teacher_name },
                 { label: "נושא הקורס:", value: syllabus.course_topic },
                 { label: "תחום דעת:", value: syllabus.subject },
                 { label: "קהל יעד:", value: (syllabus.target_audience || []).join(", ") },
@@ -74,11 +96,11 @@ export const generateSyllabusWord = async (req) => {
 
             details.forEach(item => {
                 if (item.value) {
-                    children.push(
+                    sections.push(
                         new Paragraph({
                             children: [
-                                new TextRun({ text: item.label + " ", bold: true, size: 24 }),
-                                new TextRun({ text: String(item.value), size: 24 })
+                                new TextRun({ text: item.label + " ", bold: true, size: 24, font: "Assistant", color: COLORS.DARK }),
+                                new TextRun({ text: item.value, size: 24, font: "Assistant" })
                             ],
                             bidirectional: true,
                             spacing: { after: 120 }
@@ -88,40 +110,156 @@ export const generateSyllabusWord = async (req) => {
             });
         }
 
-        // מפגשים
+        // Gifts
+        if (options.gifts) {
+            sections.push(
+                new Paragraph({
+                    text: "מתנות הלמידה",
+                    heading: HeadingLevel.HEADING_1,
+                    bidirectional: true,
+                    spacing: { before: 400, after: 200 },
+                    run: { color: COLORS.PURPLE, font: "Assistant" },
+                    border: { bottom: { color: COLORS.CYAN, space: 1, style: BorderStyle.SINGLE, size: 6 } }
+                })
+            );
+
+            const gifts = [
+                { label: "ידע:", value: syllabus.gift_knowledge },
+                { label: "מיומנות:", value: syllabus.gift_skill },
+                { label: "הבנה:", value: syllabus.gift_understanding },
+                { label: "תוצר סופי:", value: syllabus.final_product }
+            ];
+
+            gifts.forEach(item => {
+                if (item.value) {
+                    sections.push(
+                        new Paragraph({
+                            children: [
+                                new TextRun({ text: "• " + item.label + " ", bold: true, size: 24, font: "Assistant", color: COLORS.DARK }),
+                                new TextRun({ text: item.value, size: 24, font: "Assistant" })
+                            ],
+                            bidirectional: true,
+                            spacing: { after: 120 }
+                        })
+                    );
+                }
+            });
+        }
+
+        // Sessions
         if (options.sessions && options.sessions.length > 0) {
-            children.push(
+            sections.push(
                 new Paragraph({
                     text: "פירוט המפגשים",
                     heading: HeadingLevel.HEADING_1,
                     bidirectional: true,
-                    spacing: { before: 600, after: 300 }
+                    spacing: { before: 400, after: 300 },
+                    run: { color: COLORS.PURPLE, font: "Assistant" },
+                    border: { bottom: { color: COLORS.CYAN, space: 1, style: BorderStyle.SINGLE, size: 6 } }
                 })
             );
 
             const selectedSessions = (syllabus.sessions || [])
                 .filter((_, index) => options.sessions.includes(index))
-                .sort((a, b) => (a.number || 0) - (b.number || 0));
+                .sort((a, b) => a.number - b.number);
 
-            selectedSessions.forEach(session => {
-                children.push(
+            selectedSessions.forEach((session) => {
+                // Session Header
+                sections.push(
                     new Paragraph({
-                        text: `מפגש ${session.number || ''}: ${session.topic || "ללא נושא"}`,
+                        text: `מפגש ${session.number}: ${session.topic || "ללא נושא"}`,
                         heading: HeadingLevel.HEADING_2,
                         bidirectional: true,
                         spacing: { before: 300, after: 150 },
+                        run: { color: COLORS.DARK, font: "Assistant" },
+                        shading: { fill: "F8F9FA", color: "auto" }
                     })
                 );
 
+                // Apps
+                if (options.sessionContent?.apps && session.app_ids?.length > 0) {
+                    const appNames = session.app_ids.map(id => appMap[id] || "Unknown App").join(", ");
+                    sections.push(
+                        new Paragraph({
+                            children: [
+                                new TextRun({ text: "אפליקציות: ", bold: true, font: "Assistant", size: 22, color: COLORS.PURPLE }),
+                                new TextRun({ text: appNames, font: "Assistant", size: 22 })
+                            ],
+                            bidirectional: true,
+                            spacing: { after: 100 },
+                            indent: { start: 300 }
+                        })
+                    );
+                }
+
+                // Experiences
+                if (options.sessionContent?.experiences && session.experience_ids?.length > 0) {
+                    const expNames = session.experience_ids.map(id => appMap[id] || "Unknown Experience").join(", ");
+                    sections.push(
+                        new Paragraph({
+                            children: [
+                                new TextRun({ text: "חוויות: ", bold: true, font: "Assistant", size: 22, color: COLORS.PURPLE }),
+                                new TextRun({ text: expNames, font: "Assistant", size: 22 })
+                            ],
+                            bidirectional: true,
+                            spacing: { after: 100 },
+                            indent: { start: 300 }
+                        })
+                    );
+                }
+
+                // Steps
                 if (options.sessionContent?.steps && session.steps?.length > 0) {
-                    children.push(new Paragraph({ text: "מהלך השיעור:", bold: true, bidirectional: true }));
+                    sections.push(
+                        new Paragraph({
+                            text: "מהלך השיעור:",
+                            bold: true,
+                            font: "Assistant",
+                            size: 22,
+                            color: COLORS.DARK,
+                            bidirectional: true,
+                            spacing: { before: 100, after: 50 },
+                            indent: { start: 300 }
+                        })
+                    );
+                    
                     session.steps.forEach((step, idx) => {
-                        children.push(
+                        sections.push(
                             new Paragraph({
                                 text: `${idx + 1}. ${step}`,
+                                font: "Assistant",
+                                size: 22,
                                 bidirectional: true,
-                                indent: { start: 400 },
-                                spacing: { after: 80 }
+                                indent: { start: 600 },
+                                spacing: { after: 50 }
+                            })
+                        );
+                    });
+                }
+
+                // Worksheets
+                if (options.sessionContent?.worksheets && session.worksheet_urls?.length > 0) {
+                     sections.push(
+                        new Paragraph({
+                            text: "דפי עבודה:",
+                            bold: true,
+                            font: "Assistant",
+                            size: 22,
+                            color: COLORS.DARK,
+                            bidirectional: true,
+                            spacing: { before: 100, after: 50 },
+                            indent: { start: 300 }
+                        })
+                    );
+                    session.worksheet_urls.forEach(ws => {
+                        sections.push(
+                            new Paragraph({
+                                text: `• ${ws.name || "קובץ"} - ${ws.url}`,
+                                font: "Assistant",
+                                size: 20,
+                                color: "0000FF",
+                                bidirectional: true,
+                                indent: { start: 600 }
                             })
                         );
                     });
@@ -129,41 +267,42 @@ export const generateSyllabusWord = async (req) => {
             });
         }
 
-        // 3. יצירת הקובץ
+        // Generate Doc
         const doc = new Document({
             sections: [{
-                properties: {
-                    type: "nextPage",
-                    page: { margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 } }
-                },
-                children: children,
+                properties: {},
+                children: sections,
             }],
         });
 
-        // 4. אריזה והחזרה
-        const buffer = await Packer.toUint8Array(doc); // שימוש ב-Uint8Array עבור Deno
-        const base64 = arrayBufferToBase64(buffer);
+        // Pack
+        const buffer = await Packer.toBuffer(doc);
+        const base64 = Buffer.from(buffer).toString('base64');
 
-        return new Response(JSON.stringify({ 
+        // Log Success Performance
+        const duration = performance.now() - start;
+        if (base44) {
+            await logToDiagnostics(base44, 'Performance', 'SyllabusExport', 'Export completed successfully', duration);
+        }
+
+        return Response.json({ 
             file_base64: base64,
-            filename: `Syllabus_${syllabusId}.docx`
-        }), {
-            headers: { "Content-Type": "application/json" }
+            filename: `Syllabus_Proposal_${(syllabus.title || "draft").replace(/[^a-z0-9\u0590-\u05FF]/gi, "_")}.docx`
         });
 
     } catch (error) {
-        console.error("CRITICAL ERROR:", error);
-        return new Response(JSON.stringify({ 
-            error: error.message,
-            stack: error.stack 
-        }), {
+        // Log Error
+        const duration = performance.now() - start;
+        if (base44) {
+            await logToDiagnostics(base44, 'Error', 'SyllabusExport', error.message || String(error), duration);
+        }
+
+        console.error("Error generating DOCX:", error);
+        return new Response(JSON.stringify({ error: error.message }), {
             status: 500,
             headers: { "Content-Type": "application/json" }
         });
     }
 };
 
-// חובה ב-Base44: לרשום את הפונקציה לשירות
-Deno.serve(async (req) => {
-  return await generateSyllabusWord(req);
-});
+Deno.serve(generateSyllabusDocx);
