@@ -312,11 +312,11 @@ export default function SyllabusExportModal({ open, onOpenChange, syllabus }) {
                         תצוגה מקדימה להצעה
                     </DialogTitle>
                 </DialogHeader>
-                <ScrollArea className="flex-1 p-6 bg-slate-50">
+                <div className="flex-1 overflow-y-auto p-6 bg-slate-50">
                     <div className="bg-white p-8 shadow-sm rounded-lg min-h-[500px] max-w-[21cm] mx-auto border">
                         <PreviewContent />
                     </div>
-                </ScrollArea>
+                </div>
                 <DialogFooter className="p-4 border-t bg-gray-50">
                     <Button onClick={() => setShowPreview(false)}>סגור תצוגה מקדימה</Button>
                 </DialogFooter>
