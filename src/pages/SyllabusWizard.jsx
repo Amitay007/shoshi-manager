@@ -662,7 +662,8 @@ export default function SyllabusWizard() {
           }
         </div>
 
-        <Dialog open={printOpen} onOpenChange={setPrintOpen}>
+        <SyllabusExportModal open={showExportModal} onOpenChange={setShowExportModal} syllabus={data} />
+      <Dialog open={printOpen} onOpenChange={setPrintOpen}>
           <DialogContent dir="rtl" className="max-w-3xl">
             <DialogHeader><DialogTitle>תצוגה להדפסה</DialogTitle></DialogHeader>
             <div className="max-h-[70vh] overflow-y-auto">
@@ -1017,6 +1018,7 @@ export default function SyllabusWizard() {
       </div>
 
       {/* Print dialog */}
+      <SyllabusExportModal open={showExportModal} onOpenChange={setShowExportModal} syllabus={data} />
       <Dialog open={printOpen} onOpenChange={setPrintOpen}>
         <DialogContent dir="rtl" className="max-w-3xl">
           <DialogHeader><DialogTitle>תצוגה להדפסה</DialogTitle></DialogHeader>
