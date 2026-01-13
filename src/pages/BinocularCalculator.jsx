@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calculator, Glasses, X, RefreshCw, Calendar, BookOpen, Layers, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Calculator, Glasses, X, RefreshCw, Calendar, BookOpen, Layers, CheckCircle2, AlertCircle } from "lucide-react";
 import { with429Retry } from "@/components/utils/retry";
 import { createPageUrl } from "@/utils";
 import { Link } from "react-router-dom";
@@ -65,6 +65,7 @@ export default function BinocularCalculator() {
 
   // --- LOGIC ENGINE ---
 
+  // 1. Generate Dropdown Options based on Mode
   const options = useMemo(() => {
     if (mode === "syllabi") {
       return syllabi.map(s => ({
@@ -119,6 +120,7 @@ export default function BinocularCalculator() {
     return [];
   }, [mode, instPrograms, syllabi, schools]);
 
+  // 2. Fetch Devices for a Selection
   const getSelectionDevices = (selectionId) => {
     if (!selectionId) return [];
 
@@ -144,10 +146,12 @@ export default function BinocularCalculator() {
       .sort((a, b) => (Number(a.binocular_number) || 0) - (Number(b.binocular_number) || 0));
   };
 
+  // 3. Memoize Device Lists
   const devices1 = useMemo(() => getSelectionDevices(col1), [col1, mode, devices, instPrograms, syllabi]);
   const devices2 = useMemo(() => getSelectionDevices(col2), [col2, mode, devices, instPrograms, syllabi]);
   const devices3 = useMemo(() => getSelectionDevices(col3), [col3, mode, devices, instPrograms, syllabi]);
 
+  // 4. Calculate Conflicts
   const conflictSet = useMemo(() => {
     const counts = {};
     [devices1, devices2, devices3].forEach(list => {
@@ -161,51 +165,53 @@ export default function BinocularCalculator() {
     Object.entries(counts).forEach(([id, count]) => {
       if (count > 1) conflicts.add(id);
     });
-    
     return conflicts;
   }, [devices1, devices2, devices3]);
 
   // --- UI COMPONENTS ---
 
-  const DeviceGrid = ({ deviceList, colorTheme }) => {
+  const DeviceGrid = ({ deviceList, themeColor }) => {
     if (!deviceList || deviceList.length === 0) {
       return (
-        <div className="h-48 flex flex-col items-center justify-center text-slate-400 bg-slate-50 rounded-lg border border-slate-100">
+        <div className="h-48 flex flex-col items-center justify-center text-gray-400 border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
           <Glasses className="w-8 h-8 mb-2 opacity-20" />
-          <span className="text-sm">אין נתונים להצגה</span>
+          <span className="text-sm">אין משקפות להצגה</span>
         </div>
       );
     }
 
     return (
-      <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 p-2 max-h-[400px] overflow-y-auto custom-scrollbar">
+      <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2 p-4 bg-gray-50 rounded-xl border border-gray-100 max-h-[350px] overflow-y-auto custom-scrollbar">
         {deviceList.map(dev => {
           const isConflict = conflictSet.has(dev.id);
           const isDisabled = dev.is_disabled || ["מושבת", "בתיקון", "בתחזוקה"].includes(dev.status);
           const num = dev.binocular_number;
 
-          let baseClasses = "relative aspect-square rounded-lg flex flex-col items-center justify-center border transition-all cursor-default";
+          // Static styling logic - NO animations
+          let bgClass = "bg-white border-gray-200 text-gray-700 hover:border-gray-300"; // Default
           
           if (isDisabled) {
-            baseClasses += " bg-slate-100 border-slate-200 text-slate-400";
+            bgClass = "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed";
           } else if (isConflict) {
-            baseClasses += " bg-red-50 border-red-200 text-red-600 font-bold shadow-sm";
+            bgClass = "bg-red-50 border-red-200 text-red-600 font-bold ring-1 ring-red-100";
           } else {
-            // Safe
-            if (colorTheme === 'purple') baseClasses += " bg-purple-50 border-purple-100 text-purple-700 hover:bg-purple-100";
-            if (colorTheme === 'blue') baseClasses += " bg-blue-50 border-blue-100 text-blue-700 hover:bg-blue-100";
-            if (colorTheme === 'teal') baseClasses += " bg-teal-50 border-teal-100 text-teal-700 hover:bg-teal-100";
+            // Theme accents for valid items
+            if (themeColor === "purple") bgClass = "bg-purple-50 border-purple-100 text-purple-700 hover:border-purple-200";
+            if (themeColor === "blue") bgClass = "bg-blue-50 border-blue-100 text-blue-700 hover:border-blue-200";
+            if (themeColor === "teal") bgClass = "bg-teal-50 border-teal-100 text-teal-700 hover:border-teal-200";
           }
 
           return (
             <Link key={dev.id} to={createPageUrl(`DeviceInfo?id=${num}`)} target="_blank">
               <div 
-                className={baseClasses}
-                title={`משקפת ${num}${isDisabled ? " (מושבת)" : ""}${isConflict ? " (מתנגש)" : ""}`}
+                className={`
+                  relative aspect-square rounded-lg flex flex-col items-center justify-center border transition-all duration-200 shadow-sm
+                  ${bgClass}
+                `}
+                title={`משקפת ${num}${isDisabled ? " (מושבת)" : ""}${isConflict ? " (מתנגש!)" : ""}`}
               >
                 {isDisabled && <X className="w-3 h-3 absolute top-1 right-1 opacity-50" />}
-                {isConflict && <AlertTriangle className="w-3 h-3 absolute top-1 right-1 text-red-500" />}
-                <span className="text-sm">#{num}</span>
+                <span className="text-xs font-semibold">#{num}</span>
               </div>
             </Link>
           );
@@ -219,41 +225,47 @@ export default function BinocularCalculator() {
     value, 
     onChange, 
     deviceList, 
-    colorTheme,
-    accentColor
+    themeColor, 
+    icon: Icon 
   }) => {
+    // Subtle accents
+    const accents = {
+      purple: "border-purple-500",
+      blue: "border-blue-500",
+      teal: "border-teal-500"
+    };
+
     return (
-      <Card className="shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
-        <CardHeader className={`pb-3 border-b border-slate-50 bg-gradient-to-l ${
-            colorTheme === 'purple' ? 'from-purple-50/50' : 
-            colorTheme === 'blue' ? 'from-blue-50/50' : 
-            'from-teal-50/50'
-          } to-transparent`}>
+      <Card className={`border-t-4 ${accents[themeColor]} shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden`}>
+        <CardHeader className="bg-gray-50/50 pb-4 border-b border-gray-100">
           <div className="flex items-center justify-between">
-            <Badge variant="outline" className="bg-white text-slate-500 font-normal">
+            <div className="flex items-center gap-2">
+              <div className={`p-1.5 rounded-md bg-white border border-gray-200 shadow-sm text-gray-600`}>
+                <Icon className="w-4 h-4" />
+              </div>
+              <CardTitle className="text-base font-bold text-gray-800">{title}</CardTitle>
+            </div>
+            <Badge variant="secondary" className="font-mono text-xs bg-white border-gray-200 text-gray-600">
               {deviceList.length} משקפות
             </Badge>
-            <CardTitle className={`text-base font-bold ${accentColor}`}>
-              {title}
-            </CardTitle>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4 pt-4">
+        <CardContent className="p-4 space-y-4">
           <Select value={value} onValueChange={onChange} dir="rtl">
-            <SelectTrigger className="h-10 bg-white border-slate-200 text-right">
+            <SelectTrigger className="h-11 bg-white border-gray-200 focus:ring-2 focus:ring-gray-100 text-right">
               <SelectValue placeholder="בחר להשוואה..." />
             </SelectTrigger>
             <SelectContent className="max-h-[300px]">
               <div className="p-2 sticky top-0 bg-white z-10 border-b mb-1">
-                <p className="text-xs text-slate-400 font-medium">
-                  {options.length} אפשרויות זמינות
+                <p className="text-xs text-gray-400 font-medium px-1">
+                  מציג {options.length} אפשרויות
                 </p>
               </div>
               {options.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value} className="py-2.5">
-                  <div className="flex flex-col gap-0.5 text-right">
-                    <span className="font-medium text-slate-700">{opt.label}</span>
-                    <span className="text-xs text-slate-400">{opt.subLabel}</span>
+                <SelectItem key={opt.value} value={opt.value} className="py-2.5 border-b border-gray-50 last:border-0 cursor-pointer">
+                  <div className="flex flex-col gap-0.5 text-right w-full">
+                    <span className="font-medium text-gray-700 text-sm">{opt.label}</span>
+                    <span className="text-[10px] text-gray-400">{opt.subLabel}</span>
                   </div>
                 </SelectItem>
               ))}
@@ -261,10 +273,10 @@ export default function BinocularCalculator() {
           </Select>
 
           {value ? (
-            <DeviceGrid deviceList={deviceList} colorTheme={colorTheme} />
+            <DeviceGrid deviceList={deviceList} themeColor={themeColor} />
           ) : (
-            <div className="h-48 flex items-center justify-center text-slate-400 bg-slate-50 rounded-lg border border-slate-100">
-              <span className="text-sm">אנא בחר אפשרות</span>
+            <div className="h-48 flex items-center justify-center text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+              <span className="text-xs">לא נבחרה אפשרות</span>
             </div>
           )}
         </CardContent>
@@ -274,59 +286,55 @@ export default function BinocularCalculator() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <RefreshCw className="w-6 h-6 text-slate-400 animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <RefreshCw className="w-8 h-8 text-pink-500 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50/50 p-6 rtl" dir="rtl">
+    <div className="min-h-screen bg-gray-50 p-4 lg:p-8" dir="rtl">
       <div className="max-w-[1600px] mx-auto space-y-6">
         
         {/* HEADER */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center shadow-sm">
-              <Calculator className="w-5 h-5 text-white" />
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col lg:flex-row justify-between items-center gap-6">
+          <div className="flex items-center gap-4 w-full lg:w-auto">
+            <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-600 rounded-xl flex items-center justify-center shadow-md text-white">
+              <Calculator className="w-6 h-6" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-slate-900">מחשבון משקפות</h1>
-              <p className="text-sm text-slate-500">בדיקת היתכנות וזמינות ציוד</p>
+              <h1 className="text-2xl font-bold text-gray-900">מחשבון משקפות</h1>
+              <p className="text-gray-500 text-sm">בדיקת היתכנות וזמינות ציוד</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-lg">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => { setMode("syllabi"); setCol1(""); setCol2(""); setCol3(""); }}
-              className={`text-sm ${mode === "syllabi" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
-            >
-              <BookOpen className="w-4 h-4 ml-2" />
-              סילבוסים
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => { setMode("programs"); setCol1(""); setCol2(""); setCol3(""); }}
-              className={`text-sm ${mode === "programs" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
-            >
-              <Layers className="w-4 h-4 ml-2" />
-              תוכניות
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => { setMode("sessions"); setCol1(""); setCol2(""); setCol3(""); }}
-              className={`text-sm ${mode === "sessions" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
-            >
-              <Calendar className="w-4 h-4 ml-2" />
-              מפגשים
-            </Button>
+          <div className="flex bg-gray-100 p-1 rounded-lg w-full lg:w-auto">
+            {[
+              { id: "programs", label: "תוכניות", icon: Layers },
+              { id: "sessions", label: "מפגשים", icon: Calendar },
+              { id: "syllabi", label: "סילבוסים", icon: BookOpen },
+            ].map((tab) => {
+              const isActive = mode === tab.id;
+              const TabIcon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => { setMode(tab.id); setCol1(""); setCol2(""); setCol3(""); }}
+                  className={`
+                    flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200
+                    ${isActive ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700 hover:bg-gray-200/50"}
+                  `}
+                >
+                  <TabIcon className="w-4 h-4" />
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
           
-          <BackHomeButtons />
+          <div className="hidden lg:block">
+            <BackHomeButtons />
+          </div>
         </div>
 
         {/* COLUMNS */}
@@ -336,70 +344,73 @@ export default function BinocularCalculator() {
             value={col1} 
             onChange={setCol1} 
             deviceList={devices1} 
-            colorTheme="purple"
-            accentColor="text-purple-600"
+            themeColor="purple"
+            icon={Glasses}
           />
           <SelectionColumn 
             title="אפשרות ב'" 
             value={col2} 
             onChange={setCol2} 
             deviceList={devices2} 
-            colorTheme="blue"
-            accentColor="text-blue-600"
+            themeColor="blue"
+            icon={Glasses}
           />
           <SelectionColumn 
             title="אפשרות ג'" 
             value={col3} 
             onChange={setCol3} 
             deviceList={devices3} 
-            colorTheme="teal"
-            accentColor="text-teal-600"
+            themeColor="teal"
+            icon={Glasses}
           />
         </div>
 
-        {/* STATUS FOOTER */}
-        {(col1 || col2 || col3) && (
-          <Card className={`border shadow-sm ${conflictSet.size > 0 ? "bg-red-50 border-red-200" : "bg-white border-slate-200"}`}>
-            <CardContent className="p-6">
-              <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-                
-                <div className="flex items-center gap-4">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center ${conflictSet.size > 0 ? "bg-red-100 text-red-600" : "bg-green-100 text-green-600"}`}>
-                    {conflictSet.size > 0 ? <AlertTriangle className="w-6 h-6" /> : <CheckCircle2 className="w-6 h-6" />}
-                  </div>
-                  <div>
-                    <h3 className={`text-lg font-bold ${conflictSet.size > 0 ? "text-red-700" : "text-slate-800"}`}>
-                      {conflictSet.size > 0 ? `נמצאו ${conflictSet.size} התנגשויות` : "הכל תקין - אין חפיפה"}
-                    </h3>
-                    <p className={`text-sm ${conflictSet.size > 0 ? "text-red-600" : "text-slate-500"}`}>
-                      {conflictSet.size > 0 
-                        ? "ישנן משקפות המופיעות במספר עמודות במקביל" 
-                        : "ניתן לבצע את השיבוץ בבטחה, אין כפילויות ציוד"}
-                    </p>
-                  </div>
+        {/* SUMMARY FOOTER */}
+        <Card className="border-none shadow-md bg-white overflow-hidden">
+          <div className="h-1 w-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500"></div>
+          <CardContent className="p-6 lg:p-8">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+              
+              <div className="flex items-center gap-6">
+                <div className={`
+                  w-16 h-16 rounded-full flex items-center justify-center border-4 
+                  ${conflictSet.size > 0 ? "border-red-100 bg-red-50 text-red-500" : "border-green-100 bg-green-50 text-green-500"}
+                `}>
+                  {conflictSet.size > 0 ? <AlertCircle className="w-8 h-8" /> : <CheckCircle2 className="w-8 h-8" />}
                 </div>
-
-                {conflictSet.size > 0 && (
-                   <div className="flex flex-wrap gap-2 justify-center max-w-xl">
-                      {Array.from(conflictSet).sort((a,b) => {
-                         const da = devices.find(d=>d.id===a);
-                         const db = devices.find(d=>d.id===b);
-                         return (Number(da?.binocular_number)||0) - (Number(db?.binocular_number)||0);
-                      }).map(id => {
-                        const dev = devices.find(d => d.id === id);
-                        return (
-                          <Badge key={id} variant="outline" className="bg-white border-red-300 text-red-600 font-mono">
-                            #{dev?.binocular_number}
-                          </Badge>
-                        );
-                      })}
-                   </div>
-                )}
-                
+                <div>
+                  <h3 className={`text-xl font-bold mb-1 ${conflictSet.size > 0 ? "text-red-600" : "text-green-600"}`}>
+                    {conflictSet.size > 0 ? `נמצאו ${conflictSet.size} התנגשויות` : "אין התנגשויות"}
+                  </h3>
+                  <p className="text-gray-500 text-sm">
+                    {conflictSet.size > 0 
+                      ? "חלק מהמשקפות מופיעות ביותר מרשימה אחת בו-זמנית."
+                      : "כל המשקפות שנבחרו פנויות לשיבוץ במקביל."}
+                  </p>
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        )}
+
+              {/* Static Legend */}
+              <div className="flex items-center gap-6 bg-gray-50 px-6 py-3 rounded-xl border border-gray-100">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-red-500 rounded-sm"></div>
+                  <span className="text-sm text-gray-600">התנגשות</span>
+                </div>
+                <div className="w-px h-4 bg-gray-300"></div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-gray-300 rounded-sm"></div>
+                  <span className="text-sm text-gray-600">מושבת</span>
+                </div>
+                <div className="w-px h-4 bg-gray-300"></div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-purple-500 rounded-sm"></div>
+                  <span className="text-sm text-gray-600">תקין</span>
+                </div>
+              </div>
+
+            </div>
+          </CardContent>
+        </Card>
 
       </div>
     </div>
