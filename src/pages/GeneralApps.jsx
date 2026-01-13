@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import { VRApp } from "@/entities/VRApp";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate, Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import BackHomeButtons from "@/components/common/BackHomeButtons";
-import { Trash2, Users, Wifi, WifiOff, Pencil, MoreVertical, Tags, X, Plus, Filter, AppWindow, Grid, List } from "lucide-react";
+import { Trash2, Users, Wifi, WifiOff, Pencil, MoreVertical, Tags, X, Plus, Filter, AppWindow, Grid, List, Search } from "lucide-react";
 import { format } from "date-fns";
 import { DeviceApp } from "@/entities/DeviceApp";
 import AppFilterBar from "@/components/filters/AppFilterBar";
@@ -67,6 +67,30 @@ export default function GeneralApps() {
   const [viewMode, setViewMode] = useState("cards"); // "cards" or "columns"
 
   const navigate = useNavigate();
+
+  // --- NEW SEARCH LOGIC START ---
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const searchRef = useRef(null);
+
+  // 1. Calculate results BEFORE rendering to prevent ReferenceError
+  const searchOptions = useMemo(() => {
+    if (!filters.search || filters.search.length < 1) return [];
+    return apps
+      .filter(app => (app.name || "").toLowerCase().includes(filters.search.toLowerCase()))
+      .slice(0, 5); // Limit to 5 results
+  }, [apps, filters.search]);
+
+  // 2. Click Outside Listener (Fixes the "Ghost Click" / Locking issue)
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setIsSearchOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+  // --- NEW SEARCH LOGIC END ---
 
   useEffect(() => {
     load();
@@ -839,6 +863,44 @@ export default function GeneralApps() {
             </div>
           }
         </div>
+
+        {/* --- ROBUST SEARCH BAR --- */}
+        <div className="relative mb-4 w-full max-w-md" ref={searchRef}>
+          <div className="relative">
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <Input
+              placeholder="חפש אפליקציה..."
+              className="pr-10 bg-white shadow-sm border-slate-200 focus:ring-2 focus:ring-cyan-500"
+              value={filters.search}
+              onChange={(e) => {
+                setFilters(prev => ({ ...prev, search: e.target.value }));
+                setIsSearchOpen(true);
+              }}
+              onFocus={() => setIsSearchOpen(true)}
+            />
+          </div>
+
+          {/* DROPDOWN RESULTS */}
+          {isSearchOpen && searchOptions.length > 0 && (
+            <div className="absolute top-full right-0 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-xl z-50 overflow-hidden">
+              {searchOptions.map((app) => (
+                <div
+                  key={app.id}
+                  className="px-4 py-3 hover:bg-slate-50 cursor-pointer flex items-center gap-3 border-b border-slate-50 last:border-0"
+                  onMouseDown={() => {
+                     // CRITICAL FIX: onMouseDown guarantees the click registers before focus is lost
+                     navigate(createPageUrl(`AppDetailsPage?name=${encodeURIComponent(app.name)}`));
+                     setIsSearchOpen(false);
+                  }}
+                >
+                   <AppWindow className="w-4 h-4 text-slate-400" />
+                   <span className="text-sm font-medium text-slate-700">{app.name}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        {/* ------------------------- */}
 
         <div className="mb-4">
           <AppFilterBar allApps={apps} onChange={(f) => setFilters((prev) => ({ ...prev, ...f }))} />
