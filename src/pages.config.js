@@ -6,6 +6,7 @@ import AddNewHeadset from './pages/AddNewHeadset';
 import AppDetailsPage from './pages/AppDetailsPage';
 import AppDevices from './pages/AppDevices';
 import AssignmentDetails from './pages/AssignmentDetails';
+import BinocularCalculator from './pages/BinocularCalculator';
 import BulkDataLoader from './pages/BulkDataLoader';
 import CRMHub from './pages/CRMHub';
 import CashFlow from './pages/CashFlow';
@@ -45,7 +46,6 @@ import UpdateAppStatus from './pages/UpdateAppStatus';
 import UpdateAppsFromPDF from './pages/UpdateAppsFromPDF';
 import UploadLogo from './pages/UploadLogo';
 import Version2 from './pages/Version2';
-import BinocularCalculator from './pages/BinocularCalculator';
 import __Layout from './Layout.jsx';
 
 
@@ -58,6 +58,7 @@ export const PAGES = {
     "AppDetailsPage": AppDetailsPage,
     "AppDevices": AppDevices,
     "AssignmentDetails": AssignmentDetails,
+    "BinocularCalculator": BinocularCalculator,
     "BulkDataLoader": BulkDataLoader,
     "CRMHub": CRMHub,
     "CashFlow": CashFlow,
@@ -97,7 +98,6 @@ export const PAGES = {
     "UpdateAppsFromPDF": UpdateAppsFromPDF,
     "UploadLogo": UploadLogo,
     "Version2": Version2,
-    "BinocularCalculator": BinocularCalculator,
 }
 
 export const pagesConfig = {
