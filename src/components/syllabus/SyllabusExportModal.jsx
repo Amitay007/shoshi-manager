@@ -185,6 +185,7 @@ export default function SyllabusExportModal({ open, onOpenChange, syllabus }) {
     if (!syllabus) return null;
 
     return (
+        <>
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0 bg-gray-50/95 backdrop-blur-sm rtl" dir="rtl">
                 <DialogHeader className="p-6 pb-2 border-b bg-white rounded-t-lg">
