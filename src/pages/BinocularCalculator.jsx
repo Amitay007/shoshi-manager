@@ -256,6 +256,53 @@ export default function BinocularCalculator() {
     return overlapping;
   }, [selectedProgram1, selectedProgram2, selectedProgram3, program1Devices, program2Devices, program3Devices]);
 
+  const availableOptions = useMemo(() => {
+    if (comparisonMode === 'syllabi') return programs;
+    
+    if (comparisonMode === 'sessions') {
+      // Return a flat list of sessions from active programs
+      // Structure: { id: "programId_sessionIndex", title: "Program Name - Session X" }
+      const options = [];
+      instPrograms.forEach(ip => {
+        // Filter by status if needed, but maybe show all for sessions? Let's respect the filter
+        if (programStatusFilter !== 'all') {
+          const st = ip.status || 'פעילה';
+          if (programStatusFilter === 'active' && st !== 'פעילה') return;
+          if (programStatusFilter === 'inactive' && st !== 'לא פעילה') return;
+          if (programStatusFilter === 'shelf' && st !== 'מדף') return;
+        }
+
+        const syllabus = programs.find(p => p.id === ip.program_id);
+        if (syllabus && syllabus.sessions) {
+           const school = schools.find(s => s.id === ip.institution_id);
+           const progName = syllabus.title || syllabus.course_topic || "תוכנית";
+           const schoolName = school ? school.name : "";
+           
+           syllabus.sessions.forEach((session, idx) => {
+             options.push({
+               id: `${ip.id}_${idx}`, // Composite ID
+               title: `${progName} (${schoolName}) - מפגש ${session.number || idx + 1}: ${session.topic || "ללא נושא"}`,
+               // Helper props for selection display logic if needed (handled in getSelectionTitle usually)
+               original_program_id: ip.program_id,
+               original_institution_id: ip.institution_id
+             });
+           });
+        }
+      });
+      return options;
+    }
+
+    // For programs (InstitutionProgram), apply status filter
+    return instPrograms.filter(ip => {
+      if (programStatusFilter === 'all') return true;
+      const st = ip.status || 'פעילה';
+      if (programStatusFilter === 'active') return st === 'פעילה';
+      if (programStatusFilter === 'inactive') return st === 'לא פעילה';
+      if (programStatusFilter === 'shelf') return st === 'מדף';
+      return true;
+    });
+  }, [comparisonMode, programs, instPrograms, programStatusFilter, schools]);
+
   // Get item title based on mode
   const getSelectionTitle = (id) => {
     if (!id) return "";
@@ -344,53 +391,6 @@ export default function BinocularCalculator() {
   ];
 
   const modeLabel = comparisonMode === 'syllabi' ? 'סילבוס' : (comparisonMode === 'sessions' ? 'מפגש' : 'תוכנית');
-  
-  const availableOptions = useMemo(() => {
-    if (comparisonMode === 'syllabi') return programs;
-    
-    if (comparisonMode === 'sessions') {
-      // Return a flat list of sessions from active programs
-      // Structure: { id: "programId_sessionIndex", title: "Program Name - Session X" }
-      const options = [];
-      instPrograms.forEach(ip => {
-        // Filter by status if needed, but maybe show all for sessions? Let's respect the filter
-        if (programStatusFilter !== 'all') {
-          const st = ip.status || 'פעילה';
-          if (programStatusFilter === 'active' && st !== 'פעילה') return;
-          if (programStatusFilter === 'inactive' && st !== 'לא פעילה') return;
-          if (programStatusFilter === 'shelf' && st !== 'מדף') return;
-        }
-
-        const syllabus = programs.find(p => p.id === ip.program_id);
-        if (syllabus && syllabus.sessions) {
-           const school = schools.find(s => s.id === ip.institution_id);
-           const progName = syllabus.title || syllabus.course_topic || "תוכנית";
-           const schoolName = school ? school.name : "";
-           
-           syllabus.sessions.forEach((session, idx) => {
-             options.push({
-               id: `${ip.id}_${idx}`, // Composite ID
-               title: `${progName} (${schoolName}) - מפגש ${session.number || idx + 1}: ${session.topic || "ללא נושא"}`,
-               // Helper props for selection display logic if needed (handled in getSelectionTitle usually)
-               original_program_id: ip.program_id,
-               original_institution_id: ip.institution_id
-             });
-           });
-        }
-      });
-      return options;
-    }
-
-    // For programs (InstitutionProgram), apply status filter
-    return instPrograms.filter(ip => {
-      if (programStatusFilter === 'all') return true;
-      const st = ip.status || 'פעילה';
-      if (programStatusFilter === 'active') return st === 'פעילה';
-      if (programStatusFilter === 'inactive') return st === 'לא פעילה';
-      if (programStatusFilter === 'shelf') return st === 'מדף';
-      return true;
-    });
-  }, [comparisonMode, programs, instPrograms, programStatusFilter, schools]);
 
   if (loading) {
     return (
