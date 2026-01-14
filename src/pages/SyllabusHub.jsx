@@ -1,8 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Syllabus } from "@/entities/Syllabus";
-import { EducationInstitution } from "@/entities/EducationInstitution";
-import { InstitutionProgram } from "@/entities/InstitutionProgram";
-import { Teacher } from "@/entities/Teacher";
+import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,10 +39,10 @@ export default function SyllabusHub() {
     try {
       await measureAsync("SyllabusHub", "Load All Data", async () => {
           const [syllabiData, schoolsData, teachersData, instProgramsData] = await Promise.all([
-            with429Retry(() => Syllabus.list()),
-            with429Retry(() => EducationInstitution.list()),
-            with429Retry(() => Teacher.list()),
-            with429Retry(() => InstitutionProgram.list())
+            with429Retry(() => base44.entities.Syllabus.list()),
+            with429Retry(() => base44.entities.EducationInstitution.list()),
+            with429Retry(() => base44.entities.Teacher.list()),
+            with429Retry(() => base44.entities.InstitutionProgram.list())
           ]);
           
           setSyllabi(syllabiData || []);
@@ -77,7 +74,7 @@ export default function SyllabusHub() {
     if (!confirm(`האם למחוק את הסילבוס "${syllabus.title || syllabus.course_topic || syllabus.subject}"? פעולה זו אינה הפיכה.`)) return;
 
     try {
-      await with429Retry(() => Syllabus.delete(syllabus.id));
+      await with429Retry(() => base44.entities.Syllabus.delete(syllabus.id));
       setSyllabi(prev => prev.filter(s => s.id !== syllabus.id));
       toast({ title: "הסילבוס נמחק בהצלחה" });
     } catch (error) {
