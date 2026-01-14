@@ -13,40 +13,35 @@ import {
     Activity,
     ArrowLeft,
     Zap,
-    Clock
+    Clock,
+    Glasses
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ShoshiBrainChat from "@/components/home/ShoshiBrainChat";
 
-// Helper for Hebrew Date
-const getHebrewDate = () => {
-    return new Intl.DateTimeFormat('he-IL', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    }).format(new Date());
-};
-
-const MetricCard = ({ title, value, icon: Icon, color, subtext }) => (
-    <Card className="border-0 shadow-md hover:shadow-lg transition-all duration-200 overflow-hidden relative group">
-        <div className={`absolute top-0 right-0 w-1.5 h-full ${color}`} />
-        <CardContent className="p-5 flex items-center justify-between">
-            <div>
-                <p className="text-sm font-medium text-slate-500 mb-1">{title}</p>
-                <div className="flex items-baseline gap-2">
-                    <h3 className="text-2xl font-bold text-slate-800">{value}</h3>
-                    {subtext && <span className="text-xs text-slate-400">{subtext}</span>}
+const MetricCard = ({ title, value, icon: Icon, color, subtext, onClick, className }) => {
+    const CardComp = (
+        <Card className={`border-0 shadow-md hover:shadow-lg transition-all duration-200 overflow-hidden relative group cursor-pointer ${className}`}>
+            <div className={`absolute top-0 right-0 w-1.5 h-full ${color}`} />
+            <CardContent className="p-5 flex items-center justify-between">
+                <div>
+                    <p className="text-sm font-medium text-slate-500 mb-1">{title}</p>
+                    <div className="flex items-baseline gap-2">
+                        <h3 className="text-2xl font-bold text-slate-800">{value}</h3>
+                        {subtext && <span className="text-xs text-slate-400">{subtext}</span>}
+                    </div>
                 </div>
-            </div>
-            <div className={`p-3 rounded-full bg-slate-50 group-hover:bg-slate-100 transition-colors`}>
-                <Icon className={`w-6 h-6 ${color.replace('bg-', 'text-')}`} />
-            </div>
-        </CardContent>
-    </Card>
-);
+                <div className={`p-3 rounded-full bg-slate-50 group-hover:bg-slate-100 transition-colors`}>
+                    <Icon className={`w-6 h-6 ${color.replace('bg-', 'text-')}`} />
+                </div>
+            </CardContent>
+        </Card>
+    );
+
+    return CardComp;
+};
 
 const AlertItem = ({ title, time, type }) => (
     <div className="flex items-start gap-3 p-3 rounded-lg bg-red-50/50 border border-red-100 mb-2 last:mb-0">
@@ -76,19 +71,40 @@ const UpdateItem = ({ title, date, tag }) => (
 export default function Home() {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [metrics, setMetrics] = useState({
+        activeDevices: 0,
+        faults: 0,
+        apps: 45, // Placeholder
+        programs: 12 // Placeholder
+    });
 
     useEffect(() => {
-        const loadUser = async () => {
+        const loadData = async () => {
             try {
-                const currentUser = await base44.auth.me();
+                const [currentUser, devices] = await Promise.all([
+                    base44.auth.me(),
+                    base44.entities.VRDevice.list()
+                ]);
+                
                 setUser(currentUser);
+
+                // Calculate metrics
+                const activeCount = devices.filter(d => ['זמין', 'בשימוש'].includes(d.status)).length;
+                const faultCount = devices.filter(d => ['בתיקון', 'מושבת'].includes(d.status) || d.is_disabled).length;
+
+                setMetrics(prev => ({
+                    ...prev,
+                    activeDevices: activeCount,
+                    faults: faultCount
+                }));
+
             } catch (e) {
-                console.error("Error loading user", e);
+                console.error("Error loading home data", e);
             } finally {
                 setLoading(false);
             }
         };
-        loadUser();
+        loadData();
     }, []);
 
     const firstName = user?.full_name?.split(' ')[0] || "אורח";
@@ -97,37 +113,7 @@ export default function Home() {
         <div className="min-h-screen bg-slate-50/50 p-4 sm:p-6 lg:p-8 font-sans" dir="rtl">
             <div className="max-w-7xl mx-auto space-y-6">
                 
-                {/* 1. Top Metrics Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <MetricCard 
-                        title="תקלות פתוחות" 
-                        value="3" 
-                        icon={AlertTriangle} 
-                        color="bg-red-500" 
-                        subtext="דחוף: 1"
-                    />
-                    <MetricCard 
-                        title="משפחות פעילות" 
-                        value="128" 
-                        icon={Users} 
-                        color="bg-purple-500" 
-                        subtext="+12 החודש"
-                    />
-                    <MetricCard 
-                        title="אפליקציות" 
-                        value="45" 
-                        icon={AppWindow} 
-                        color="bg-cyan-500"
-                    />
-                    <MetricCard 
-                        title="תוכניות לימוד" 
-                        value="12" 
-                        icon={Layers} 
-                        color="bg-blue-500"
-                    />
-                </div>
-
-                {/* 2. Greeting Bar */}
+                {/* 1. Greeting Bar (Moved Top) */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <Card className="md:col-span-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-0 shadow-lg relative overflow-hidden">
                         {/* Decorative circles */}
@@ -144,14 +130,53 @@ export default function Home() {
 
                     <Card className="bg-white border-0 shadow-md flex items-center justify-center">
                         <CardContent className="p-6 text-center">
-                            <p className="text-sm text-slate-500 mb-1">היום יום {new Intl.DateTimeFormat('he-IL', { weekday: 'long' }).format(new Date())}</p>
-                            <h2 className="text-xl font-bold text-slate-800">{getHebrewDate()}</h2>
+                            <p className="text-sm text-slate-500 mb-1">היום</p>
+                            <h2 className="text-xl font-bold text-slate-800">
+                                {new Intl.DateTimeFormat('he-IL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).format(new Date())}
+                            </h2>
                             <div className="flex items-center justify-center gap-2 mt-2 text-xs text-slate-400">
                                 <Clock className="w-3 h-3" />
                                 {new Date().toLocaleTimeString('he-IL', {hour: '2-digit', minute:'2-digit'})}
                             </div>
                         </CardContent>
                     </Card>
+                </div>
+
+                {/* 2. Top Metrics Grid (Moved Below Greeting) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Faults - Clickable Link */}
+                    <Link to={createPageUrl("DeviceInfo") + "?status=in_repair"}>
+                        <MetricCard 
+                            title="תקלות" 
+                            value={metrics.faults} 
+                            icon={AlertTriangle} 
+                            color="bg-red-500" 
+                            subtext="לחץ לפירוט"
+                            className="h-full"
+                        />
+                    </Link>
+                    
+                    {/* Active Headsets - Real Data */}
+                    <MetricCard 
+                        title="משקפות פעילות" 
+                        value={metrics.activeDevices} 
+                        icon={Glasses} 
+                        color="bg-purple-500" 
+                        subtext="מתוך המלאי"
+                    />
+                    
+                    <MetricCard 
+                        title="אפליקציות" 
+                        value={metrics.apps} 
+                        icon={AppWindow} 
+                        color="bg-cyan-500"
+                    />
+                    <MetricCard 
+                        title="תוכניות לימוד" 
+                        value={metrics.programs} 
+                        icon={Layers} 
+                        color="bg-blue-500"
+                    />
                 </div>
 
                 {/* 3. Main Split View */}
