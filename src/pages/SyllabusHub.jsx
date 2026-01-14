@@ -73,9 +73,9 @@ export default function SyllabusHub() {
       toast({ title: "מעבד נתונים...", description: "ה-AI מנתח את הסילבוס שלך (זה עשוי לקחת כדקה)" });
 
       // 2. Process File
-      const response = await base44.functions.invoke('processSyllabusFile', { file_url });
+      const { data } = await base44.functions.invoke('processSyllabusFile', { file_url });
       
-      if (response.error) throw new Error(response.error);
+      if (data?.error) throw new Error(data.error);
 
       toast({ 
         title: "הייבוא הושלם בהצלחה!", 
