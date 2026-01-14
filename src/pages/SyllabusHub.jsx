@@ -166,6 +166,27 @@ export default function SyllabusHub() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              className="hidden" 
+              accept=".pdf,.docx,.txt,.md" 
+              onChange={handleFileUpload}
+            />
+            <Button 
+              variant="outline" 
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isImporting}
+              className="border-purple-200 text-purple-700 hover:bg-purple-50 hidden sm:flex"
+            >
+              {isImporting ? (
+                <Loader2 className="w-5 h-5 ml-2 animate-spin" />
+              ) : (
+                <UploadCloud className="w-5 h-5 ml-2" />
+              )}
+              {isImporting ? "מעבד..." : "ייבוא מקובץ"}
+            </Button>
+
             <Link to={createPageUrl("SyllabusWizard")} className="flex-1 sm:flex-none">
               <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg gap-2 w-full sm:w-auto">
                 <Plus className="w-4 h-4" />
