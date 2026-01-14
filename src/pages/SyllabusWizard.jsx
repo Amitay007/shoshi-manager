@@ -295,7 +295,7 @@ export default function SyllabusWizard() {
       <div className="sticky top-0 z-20 bg-white/95 backdrop-blur border-b shadow-sm mb-4">
         <div className="max-w-7xl mx-auto p-3 flex flex-wrap items-center gap-2 justify-between">
           <div className="flex items-center gap-2">
-            <Link to={createPageUrl("Home")}>
+            <Link to={createPageUrl("Dashboard")}>
               <Button variant="outline" className="gap-2 shadow-md"><Home className="w-4 h-4" /> מסך ראשי</Button>
             </Link>
             <Button variant="outline" onClick={() => setPrintOpen(true)} className="gap-2 shadow-md"><Printer className="w-4 h-4" /> הדפס/PDF</Button>

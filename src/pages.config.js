@@ -24,7 +24,6 @@ import DeviceMenu from './pages/DeviceMenu';
 import EditHeadset from './pages/EditHeadset';
 import GeneralApps from './pages/GeneralApps';
 import GeneralInfo from './pages/GeneralInfo';
-import Home from './pages/Home';
 import HoursReport from './pages/HoursReport';
 import Management from './pages/Management';
 import ManagerScheduler from './pages/ManagerScheduler';
@@ -76,7 +75,6 @@ export const PAGES = {
     "EditHeadset": EditHeadset,
     "GeneralApps": GeneralApps,
     "GeneralInfo": GeneralInfo,
-    "Home": Home,
     "HoursReport": HoursReport,
     "Management": Management,
     "ManagerScheduler": ManagerScheduler,
@@ -101,7 +99,7 @@ export const PAGES = {
 }
 
 export const pagesConfig = {
-    mainPage: "Home",
+    mainPage: "AccountsAndUsers",
     Pages: PAGES,
     Layout: __Layout,
 };
