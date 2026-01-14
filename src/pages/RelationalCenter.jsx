@@ -13,6 +13,7 @@ import { Search, Building2, Users, FileText, Calendar, Plus, Trash2, Eye, Mail, 
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useLoading } from "@/components/common/LoadingContext";
+import { usePerformanceTracker, measureAsync } from "@/components/utils/diagnostics";
 import { with429Retry } from "@/components/utils/retry";
 import BackHomeButtons from "@/components/common/BackHomeButtons";
 
@@ -44,6 +45,9 @@ export default function RelationalCenter() {
   const { toast } = useToast();
   const { showLoader, hideLoader } = useLoading();
 
+  // Diagnostic Tracker
+  usePerformanceTracker("RelationalCenter", loading);
+
   useEffect(() => {
     loadAllData();
   }, []);
@@ -52,27 +56,29 @@ export default function RelationalCenter() {
     showLoader();
     setLoading(true);
     try {
-      const [schoolsData, teachersData, programsData, devicesData, contactsData, activitiesData, syllabiData, logsData, userData] = await Promise.all([
-        with429Retry(() => base44.entities.EducationInstitution.list()),
-        with429Retry(() => base44.entities.Teacher.list()),
-        with429Retry(() => base44.entities.InstitutionProgram.list()),
-        with429Retry(() => base44.entities.VRDevice.list()),
-        with429Retry(() => base44.entities.Contact.list()),
-        with429Retry(() => base44.entities.ActivityLog.list()),
-        with429Retry(() => base44.entities.Syllabus.list()),
-        with429Retry(() => base44.entities.InteractionLog.list()),
-        base44.auth.me()
-      ]);
-      
-      setSchools(schoolsData || []);
-      setTeachers(teachersData || []);
-      setPrograms(programsData || []);
-      setDevices(devicesData || []);
-      setContacts(contactsData || []);
-      setActivities(activitiesData || []);
-      setSyllabi(syllabiData || []);
-      setInteractionLogs(logsData || []);
-      setCurrentUser(userData);
+      await measureAsync("RelationalCenter", "Load All Relational Data", async () => {
+          const [schoolsData, teachersData, programsData, devicesData, contactsData, activitiesData, syllabiData, logsData, userData] = await Promise.all([
+            with429Retry(() => base44.entities.EducationInstitution.list()),
+            with429Retry(() => base44.entities.Teacher.list()),
+            with429Retry(() => base44.entities.InstitutionProgram.list()),
+            with429Retry(() => base44.entities.VRDevice.list()),
+            with429Retry(() => base44.entities.Contact.list()),
+            with429Retry(() => base44.entities.ActivityLog.list()),
+            with429Retry(() => base44.entities.Syllabus.list()),
+            with429Retry(() => base44.entities.InteractionLog.list()),
+            base44.auth.me()
+          ]);
+          
+          setSchools(schoolsData || []);
+          setTeachers(teachersData || []);
+          setPrograms(programsData || []);
+          setDevices(devicesData || []);
+          setContacts(contactsData || []);
+          setActivities(activitiesData || []);
+          setSyllabi(syllabiData || []);
+          setInteractionLogs(logsData || []);
+          setCurrentUser(userData);
+      });
     } catch (error) {
       console.error("Error loading data:", error);
       toast({

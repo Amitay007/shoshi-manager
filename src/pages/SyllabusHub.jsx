@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { usePerformanceTracker, measureAsync } from "@/components/utils/diagnostics";
 import { BookOpen, Plus, Filter, Search, Calendar, Users, GraduationCap, Trash2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import BackHomeButtons from "@/components/common/BackHomeButtons";
@@ -29,6 +30,9 @@ export default function SyllabusHub() {
   const [filterTeacher, setFilterTeacher] = useState("all");
   const [filterActivityType, setFilterActivityType] = useState("all");
 
+  // Diagnostic Tracker
+  usePerformanceTracker("SyllabusHub", loading);
+
   useEffect(() => {
     loadData();
   }, []);
@@ -36,17 +40,19 @@ export default function SyllabusHub() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [syllabiData, schoolsData, teachersData, instProgramsData] = await Promise.all([
-        with429Retry(() => Syllabus.list()),
-        with429Retry(() => EducationInstitution.list()),
-        with429Retry(() => Teacher.list()),
-        with429Retry(() => InstitutionProgram.list())
-      ]);
-      
-      setSyllabi(syllabiData || []);
-      setSchools(schoolsData || []);
-      setTeachers(teachersData || []);
-      setInstPrograms(instProgramsData || []);
+      await measureAsync("SyllabusHub", "Load All Data", async () => {
+          const [syllabiData, schoolsData, teachersData, instProgramsData] = await Promise.all([
+            with429Retry(() => Syllabus.list()),
+            with429Retry(() => EducationInstitution.list()),
+            with429Retry(() => Teacher.list()),
+            with429Retry(() => InstitutionProgram.list())
+          ]);
+          
+          setSyllabi(syllabiData || []);
+          setSchools(schoolsData || []);
+          setTeachers(teachersData || []);
+          setInstPrograms(instProgramsData || []);
+      });
     } catch (error) {
       console.error("Error loading data:", error);
     }

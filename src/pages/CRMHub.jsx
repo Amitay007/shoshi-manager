@@ -16,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createPageUrl } from "@/utils";
 import { Link, useSearchParams } from "react-router-dom";
+import { usePerformanceTracker, measureAsync } from "@/components/utils/diagnostics";
 import { 
   Building2, Users, BookOpen, TrendingUp, 
   Phone, Mail, MapPin, Calendar, Plus,
@@ -56,6 +57,9 @@ export default function CRMHub() {
 
   // Activity dialog removed
 
+  // Diagnostic Tracker
+  usePerformanceTracker("CRMHub", loading);
+
   useEffect(() => {
     loadData();
   }, []);
@@ -63,13 +67,15 @@ export default function CRMHub() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [schoolsData, contactsData] = await Promise.all([
-        with429Retry(() => EducationInstitution.list()),
-        with429Retry(() => Contact.list())
-      ]);
-      
-      setSchools(schoolsData || []);
-      setContacts(contactsData || []);
+      await measureAsync("CRMHub", "Fetch CRM Data", async () => {
+          const [schoolsData, contactsData] = await Promise.all([
+            with429Retry(() => EducationInstitution.list()),
+            with429Retry(() => Contact.list())
+          ]);
+          
+          setSchools(schoolsData || []);
+          setContacts(contactsData || []);
+      });
     } catch (error) {
       console.error("Error loading CRM data:", error);
     }

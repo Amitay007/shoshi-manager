@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Star, ArrowLeft, ArrowRight, Mail, Calendar, Hash, AppWindow, Plus, Edit, Save, X, Clock, MapPin, AlertCircle, CheckCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { usePerformanceTracker, measureAsync } from "@/components/utils/diagnostics";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -45,43 +46,48 @@ export default function DeviceInfo() {
   const urlParams = new URLSearchParams(window.location.search);
   const deviceId = urlParams.get('id');
 
+  // Diagnostic Tracker
+  usePerformanceTracker("DeviceInfo", isLoading);
+
   const loadDeviceData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const deviceResults = await with429Retry(() => VRDevice.filter({ binocular_number: Number(deviceId) }));
-      if (!deviceResults || deviceResults.length === 0) {
-        console.error(`Device with binocular_number ${deviceId} not found`);
-        navigate(createPageUrl("Home"));
-        return;
-      }
-      const deviceData = deviceResults[0];
+      await measureAsync("DeviceInfo", "Load Device Full Data", async () => {
+          const deviceResults = await with429Retry(() => VRDevice.filter({ binocular_number: Number(deviceId) }));
+          if (!deviceResults || deviceResults.length === 0) {
+            console.error(`Device with binocular_number ${deviceId} not found`);
+            navigate(createPageUrl("Home"));
+            return;
+          }
+          const deviceData = deviceResults[0];
 
-      const accounts = await with429Retry(() => DeviceLinkedAccount.filter({ device_id: deviceData.id }));
+          const accounts = await with429Retry(() => DeviceLinkedAccount.filter({ device_id: deviceData.id }));
 
-      const [installedDeviceApps, allApps] = await Promise.all([
-        with429Retry(() => DeviceApp.filter({ device_id: deviceData.id })),
-        with429Retry(() => VRApp.list())
-      ]);
-      const appById = new Map((allApps || []).map(a => [a.id, a]));
+          const [installedDeviceApps, allApps] = await Promise.all([
+            with429Retry(() => DeviceApp.filter({ device_id: deviceData.id })),
+            with429Retry(() => VRApp.list())
+          ]);
+          const appById = new Map((allApps || []).map(a => [a.id, a]));
 
-      const installedAppsDetails = [];
-      for (const da of installedDeviceApps) {
-        const app = appById.get(da.app_id);
-        if (app) {
-          installedAppsDetails.push(app);
-        } else {
-          console.warn(`Orphan DeviceApp relation found (device_id=${da.device_id}, app_id=${da.app_id}). Deleting.`);
-          await with429Retry(() => DeviceApp.delete(da.id));
-        }
-      }
+          const installedAppsDetails = [];
+          for (const da of installedDeviceApps) {
+            const app = appById.get(da.app_id);
+            if (app) {
+              installedAppsDetails.push(app);
+            } else {
+              console.warn(`Orphan DeviceApp relation found (device_id=${da.device_id}, app_id=${da.app_id}). Deleting.`);
+              await with429Retry(() => DeviceApp.delete(da.id));
+            }
+          }
 
-      setDevice(deviceData);
-      setDeviceAccounts(accounts);
-      setDeviceApps(installedAppsDetails);
-      setEditGeneralData(deviceData);
-      setDisableReason(deviceData.disable_reason || "");
-      const platforms = await with429Retry(() => PlatformOption.list());
-      setPlatformOptions(platforms || []);
+          setDevice(deviceData);
+          setDeviceAccounts(accounts);
+          setDeviceApps(installedAppsDetails);
+          setEditGeneralData(deviceData);
+          setDisableReason(deviceData.disable_reason || "");
+          const platforms = await with429Retry(() => PlatformOption.list());
+          setPlatformOptions(platforms || []);
+      });
     } catch (error) {
       console.error("Error loading device data:", error);
       navigate(createPageUrl("Home"));
