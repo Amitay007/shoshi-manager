@@ -8,38 +8,24 @@ import GenericEntityForm from "@/components/data/GenericEntityForm";
 import { Orbit, AppWindow, Link2, KeyRound, GraduationCap, Tags, Layers, Users, Network, ShoppingCart, ArrowRight, Plus, RefreshCw, Pencil, Trash2, UserCircle, Target, Briefcase, Wrench } from "lucide-react";
 import { with429Retry } from "@/components/utils/retry";
 
-import { VRDevice } from "@/entities/VRDevice";
-import { VRApp } from "@/entities/VRApp";
-import { DeviceApp } from "@/entities/DeviceApp";
-import { DeviceLinkedAccount } from "@/entities/DeviceLinkedAccount";
-import { EducationInstitution } from "@/entities/EducationInstitution";
-import { GenreOption } from "@/entities/GenreOption";
-import { EducationFieldOption } from "@/entities/EducationFieldOption";
-import { PlatformOption } from "@/entities/PlatformOption";
-import { PlayerCountOption } from "@/entities/PlayerCountOption";
-import { InternetRequirementOption } from "@/entities/InternetRequirementOption";
-import { PurchaseTypeOption } from "@/entities/PurchaseTypeOption";
-import { Teacher } from "@/entities/Teacher";
-import { TargetAudienceOption } from "@/entities/TargetAudienceOption";
-import { ActivityTypeOption } from "@/entities/ActivityTypeOption";
-import { TechnologyToolOption } from "@/entities/TechnologyToolOption";
+import { base44 } from "@/api/base44Client";
 
 const ENTITY_MAP = {
-  VRDevice: { sdk: VRDevice, label: "משקפות (VRDevice)", icon: <Orbit className="w-5 h-5" /> },
-  VRApp: { sdk: VRApp, label: "אפליקציות (VRApp)", icon: <AppWindow className="w-5 h-5" /> },
-  DeviceApp: { sdk: DeviceApp, label: "שיוך משקפות-אפליקציות (DeviceApp)", icon: <Link2 className="w-5 h-5" /> },
-  DeviceLinkedAccount: { sdk: DeviceLinkedAccount, label: "חשבונות מקושרים (DeviceLinkedAccount)", icon: <KeyRound className="w-5 h-5" /> },
-  EducationInstitution: { sdk: EducationInstitution, label: "מוסדות חינוך (EducationInstitution)", icon: <GraduationCap className="w-5 h-5" /> },
-  Teacher: { sdk: Teacher, label: "מורים (Teacher)", icon: <UserCircle className="w-5 h-5" /> },
-  GenreOption: { sdk: GenreOption, label: "אפשרויות ז'אנר (GenreOption)", icon: <Tags className="w-5 h-5" /> },
-  EducationFieldOption: { sdk: EducationFieldOption, label: "אפשרויות תחום חינוכי", icon: <GraduationCap className="w-5 h-5" /> },
-  PlatformOption: { sdk: PlatformOption, label: "אפשרויות פלטפורמה", icon: <Layers className="w-5 h-5" /> },
-  PlayerCountOption: { sdk: PlayerCountOption, label: "אפשרויות מספר שחקנים", icon: <Users className="w-5 h-5" /> },
-  InternetRequirementOption: { sdk: InternetRequirementOption, label: "אפשרויות אינטרנט", icon: <Network className="w-5 h-5" /> },
-  PurchaseTypeOption: { sdk: PurchaseTypeOption, label: "אפשרויות סוג רכישה", icon: <ShoppingCart className="w-5 h-5" /> },
-  TargetAudienceOption: { sdk: TargetAudienceOption, label: "קהל יעד", icon: <Target className="w-5 h-5 text-purple-700" /> },
-  ActivityTypeOption: { sdk: ActivityTypeOption, label: "סוג פעילות", icon: <Briefcase className="w-5 h-5 text-purple-700" /> },
-  TechnologyToolOption: { sdk: TechnologyToolOption, label: "כלים טכנולוגיים", icon: <Wrench className="w-5 h-5 text-purple-700" /> }
+  VRDevice: { sdk: base44.entities.VRDevice, label: "משקפות (VRDevice)", icon: <Orbit className="w-5 h-5" /> },
+  VRApp: { sdk: base44.entities.VRApp, label: "אפליקציות (VRApp)", icon: <AppWindow className="w-5 h-5" /> },
+  DeviceApp: { sdk: base44.entities.DeviceApp, label: "שיוך משקפות-אפליקציות (DeviceApp)", icon: <Link2 className="w-5 h-5" /> },
+  DeviceLinkedAccount: { sdk: base44.entities.DeviceLinkedAccount, label: "חשבונות מקושרים (DeviceLinkedAccount)", icon: <KeyRound className="w-5 h-5" /> },
+  EducationInstitution: { sdk: base44.entities.EducationInstitution, label: "מוסדות חינוך (EducationInstitution)", icon: <GraduationCap className="w-5 h-5" /> },
+  Teacher: { sdk: base44.entities.Teacher, label: "מורים (Teacher)", icon: <UserCircle className="w-5 h-5" /> },
+  GenreOption: { sdk: base44.entities.GenreOption, label: "אפשרויות ז'אנר (GenreOption)", icon: <Tags className="w-5 h-5" /> },
+  EducationFieldOption: { sdk: base44.entities.EducationFieldOption, label: "אפשרויות תחום חינוכי", icon: <GraduationCap className="w-5 h-5" /> },
+  PlatformOption: { sdk: base44.entities.PlatformOption, label: "אפשרויות פלטפורמה", icon: <Layers className="w-5 h-5" /> },
+  PlayerCountOption: { sdk: base44.entities.PlayerCountOption, label: "אפשרויות מספר שחקנים", icon: <Users className="w-5 h-5" /> },
+  InternetRequirementOption: { sdk: base44.entities.InternetRequirementOption, label: "אפשרויות אינטרנט", icon: <Network className="w-5 h-5" /> },
+  PurchaseTypeOption: { sdk: base44.entities.PurchaseTypeOption, label: "אפשרויות סוג רכישה", icon: <ShoppingCart className="w-5 h-5" /> },
+  TargetAudienceOption: { sdk: base44.entities.TargetAudienceOption, label: "קהל יעד", icon: <Target className="w-5 h-5 text-purple-700" /> },
+  ActivityTypeOption: { sdk: base44.entities.ActivityTypeOption, label: "סוג פעילות", icon: <Briefcase className="w-5 h-5 text-purple-700" /> },
+  TechnologyToolOption: { sdk: base44.entities.TechnologyToolOption, label: "כלים טכנולוגיים", icon: <Wrench className="w-5 h-5 text-purple-700" /> }
 };
 
 export default function DataRepositoryList() {
