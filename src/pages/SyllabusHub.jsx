@@ -8,6 +8,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { usePerformanceTracker, measureAsync } from "@/components/utils/diagnostics";
+import { UploadCloud, FileText, Loader2 } from "lucide-react";
 import { BookOpen, Plus, Filter, Search, Calendar, Users, GraduationCap, Trash2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import BackHomeButtons from "@/components/common/BackHomeButtons";
@@ -20,6 +21,8 @@ export default function SyllabusHub() {
   const [teachers, setTeachers] = useState([]);
   const [instPrograms, setInstPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isImporting, setIsImporting] = useState(false);
+  const fileInputRef = React.useRef(null);
   
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -54,6 +57,46 @@ export default function SyllabusHub() {
       console.error("Error loading data:", error);
     }
     setLoading(false);
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    try {
+      toast({ title: "מעלה קובץ...", description: "אנא המתן" });
+      
+      // 1. Upload File
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      
+      toast({ title: "מעבד נתונים...", description: "ה-AI מנתח את הסילבוס שלך (זה עשוי לקחת כדקה)" });
+
+      // 2. Process File
+      const response = await base44.functions.invoke('processSyllabusFile', { file_url });
+      
+      if (response.error) throw new Error(response.error);
+
+      toast({ 
+        title: "הייבוא הושלם בהצלחה!", 
+        description: "הסילבוס החדש נוסף לרשימה כטיוטה.",
+        className: "bg-green-50 border-green-200"
+      });
+
+      // 3. Refresh List
+      await loadData();
+
+    } catch (error) {
+      console.error("Import failed:", error);
+      toast({ 
+        title: "שגיאה בייבוא", 
+        description: error.message || "אירעה תקלה בעת עיבוד הקובץ",
+        variant: "destructive"
+      });
+    } finally {
+      setIsImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   };
 
   const handleDelete = async (syllabus, e) => {
