@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { LoadingProvider, useLoading } from "@/components/common/LoadingContext";
 import YoyaLoader from "@/components/common/YoyaLoader";
 import {
-  Home, Code, BookOpen, School, Users, Calculator, ChevronRight, KeyRound, Stamp, Layers, GraduationCap, Briefcase, Menu, X
+  Home, Code, BookOpen, School, Users, Calculator, ChevronRight, KeyRound, Stamp, Layers, GraduationCap, Briefcase, Menu, X, Brain
 } from "lucide-react";
 import VRIcon from "@/components/icons/VRIcon";
 import { cn } from "@/lib/utils";
@@ -28,9 +28,22 @@ function LayoutContent({ children, currentPageName }) {
     'DeviceAssignments': 'silshuch',
     'SyllabusHub': 'syllabus',
     'SyllabusWizard': 'syllabus',
-    'RelationalCenter': 'communication',
-    'SchoolDetails': 'schools',
+
+    'RelationalCenter': 'relational',
+    'TeacherAgenda': 'relational',
+    'HoursReport': 'relational',
+
+    'CRMHub': 'communication',
+
     'Schools': 'schools',
+    'SchoolDetails': 'schools',
+
+    'Management': 'management',
+    'CashFlow': 'management',
+    'TeachersList': 'management',
+    'TeacherProfile': 'management',
+    'ManagerScheduler': 'management',
+
     'BinocularCalculator': 'calculator', 
     'AccountsAndUsers': 'accounts',
     'Programs': 'programs',
@@ -76,7 +89,9 @@ function LayoutContent({ children, currentPageName }) {
     {
       section: "ניהול מערכות ואנשים",
       items: [
-        { id: "communication", label: "מרכז תקשורת", icon: Users, page: "RelationalCenter" },
+        { id: "relational", label: "יחסי אנוש", icon: Brain, page: "RelationalCenter" },
+        { id: "communication", label: "מרכז תקשורת", icon: Users, page: "CRMHub" },
+        { id: "management", label: "ניהול", icon: Briefcase, page: "Management" },
         { id: "schools", label: "בתי ספר", icon: School, page: "Schools" },
       ]
     },
