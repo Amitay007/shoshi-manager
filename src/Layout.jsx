@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { LoadingProvider, useLoading } from "@/components/common/LoadingContext";
 import YoyaLoader from "@/components/common/YoyaLoader";
 import {
-  Home, Code, BookOpen, School, Users, Calculator, ChevronRight, KeyRound, Stamp, Layers, GraduationCap, Briefcase, Menu, X
+  Home, Code, BookOpen, School, Users, Calculator, ChevronRight, KeyRound, Stamp, Layers, GraduationCap, Menu, X
 } from "lucide-react";
 import VRIcon from "@/components/icons/VRIcon";
 import { cn } from "@/lib/utils";
@@ -33,17 +33,11 @@ function LayoutContent({ children, currentPageName }) {
 
 
 
+    'CRMHub': 'communication',
     'Schools': 'schools',
     'SchoolDetails': 'schools',
 
-    'Management': 'management',
-    'CashFlow': 'management',
-    'TeachersList': 'management',
-    'TeacherProfile': 'management',
-    'ManagerScheduler': 'management',
-
-    'BinocularCalculator': 'calculator', 
-    'AccountsAndUsers': 'accounts',
+    'BinocularCalculator': 'calculator',
     'Programs': 'programs',
     'ProgramView': 'programs',
     'Version2': 'version2'
@@ -87,9 +81,7 @@ function LayoutContent({ children, currentPageName }) {
     {
       section: "ניהול מערכות ואנשים",
       items: [
-
-
-
+        { id: "communication", label: "מרכז תקשורת", icon: Users, page: "CRMHub" },
         { id: "schools", label: "בתי ספר", icon: School, page: "Schools" },
       ]
     },
