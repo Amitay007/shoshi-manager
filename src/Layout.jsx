@@ -109,7 +109,7 @@ function LayoutContent({ children, currentPageName }) {
         </div>
       )}
       
-      <div dir="rtl" className="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
+      <div dir="rtl" className="min-h-screen bg-slate-50 text-slate-900 flex flex-col lg:flex-row">
         {/* Style block from original file */}
         <style>{`
             @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap');
@@ -178,100 +178,102 @@ function LayoutContent({ children, currentPageName }) {
                 color: inherit;
             }
           `}</style>
-        
-        {showSidebar && (
-            <>
-                {/* Mobile Header & Toggle Button */}
-                <header className="lg:hidden fixed top-0 right-0 left-0 bg-white/80 backdrop-blur-xl border-b border-slate-200 shadow-sm z-50">
-                    <div className="flex items-center justify-between px-4 h-16">
-                    <button
-                        onClick={() => setSidebarOpen(!sidebarOpen)}
-                        className="p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 text-slate-700"
-                    >
-                        {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-                    </button>
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-lg flex items-center justify-center shadow-md">
-                        <span className="text-white font-bold text-lg">Y</span>
-                        </div>
-                        <h1 className="text-xl font-bold text-slate-800">Yoya</h1>
-                    </div>
-                    </div>
-                </header>
 
-                {/* Sidebar */}
-                <aside
-                    className={cn(
-                    "fixed top-0 h-full w-72 bg-gradient-to-b from-slate-800 to-slate-900 shadow-2xl z-40 transform transition-transform duration-300",
-                    "lg:translate-x-0 lg:right-0", // Always visible on desktop, stuck to right
-                    sidebarOpen ? "translate-x-0 right-0" : "translate-x-full right-0" // Mobile: slide in/out from right
-                    )}
-                >
-                    <div className="p-6 border-b border-slate-700">
+        {/* Floating Menu Button - Only visible on mobile when sidebar is closed */}
+        {showSidebar && !sidebarOpen && (
+          <div className="lg:hidden fixed top-4 right-4 z-50">
+             <button
+                onClick={() => setSidebarOpen(true)}
+                className="p-3 rounded-full bg-white shadow-md text-slate-700 hover:bg-slate-50 border border-slate-100 flex items-center justify-center"
+              >
+                <Menu className="w-6 h-6" />
+              </button>
+          </div>
+        )}
+
+        {/* Sidebar Overlay */}
+        {showSidebar && sidebarOpen && (
+            <div 
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+                onClick={() => setSidebarOpen(false)}
+            />
+        )}
+        
+        {/* Sidebar */}
+        {showSidebar && (
+            <aside
+                className={cn(
+                    "fixed top-0 right-0 h-full bg-gradient-to-b from-slate-800 to-slate-900 shadow-2xl z-50 transition-transform duration-300 ease-in-out",
+                    "w-64", // Fixed width 256px for both mobile and desktop
+                    "lg:translate-x-0", // Always visible on desktop
+                    sidebarOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0" // Mobile slide
+                )}
+            >
+                <div className="p-6 border-b border-slate-700 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">
-                        <span className="text-white font-bold text-2xl">Y</span>
+                        <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-lg flex items-center justify-center shadow-lg">
+                        <span className="text-white font-bold text-xl">Y</span>
                         </div>
                         <div>
-                        <h2 className="text-white font-bold text-xl">Yoya</h2>
-                        <p className="text-purple-300 text-xs">VR Management</p>
+                        <h2 className="text-white font-bold text-lg">Yoya</h2>
                         </div>
                     </div>
-                    </div>
+                    {/* Close Button Inside Sidebar */}
+                    <button
+                        onClick={() => setSidebarOpen(false)}
+                        className="lg:hidden p-2 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                    >
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
 
-                    {/* Navigation */}
-                    <nav className="flex-1 py-6 px-3 overflow-y-auto h-[calc(100vh-140px)]">
-                    <div className="space-y-6">
-                        {menuSections.map((section) => (
-                        <div key={section.section}>
-                            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 px-4">
-                            {section.section}
-                            </h3>
-                            <div className="space-y-1">
-                            {section.items.map((item) => {
-                                const Icon = item.icon;
-                                const active = isActive(item.page, item.id);
-                                return (
-                                <Link
-                                    key={item.id}
-                                    to={createPageUrl(item.page)}
-                                    onClick={() => setSidebarOpen(false)}
-                                    className={cn(
-                                    "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
-                                    active
-                                        ? "bg-gradient-to-r from-purple-600 to-cyan-600 text-white shadow-lg"
-                                        : "text-slate-300 hover:bg-slate-700 hover:text-white"
-                                    )}
-                                >
-                                    <Icon className="w-5 h-5" />
-                                    <span className="font-medium text-sm">{item.label}</span>
-                                    {active && <ChevronRight className="w-4 h-4 mr-auto" />}
-                                </Link>
-                                );
-                            })}
-                            </div>
+                {/* Navigation */}
+                <nav className="flex-1 py-6 px-3 overflow-y-auto h-[calc(100vh-140px)]">
+                <div className="space-y-6">
+                    {menuSections.map((section) => (
+                    <div key={section.section}>
+                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 px-4">
+                        {section.section}
+                        </h3>
+                        <div className="space-y-1">
+                        {section.items.map((item) => {
+                            const Icon = item.icon;
+                            const active = isActive(item.page, item.id);
+                            return (
+                            <Link
+                                key={item.id}
+                                to={createPageUrl(item.page)}
+                                onClick={() => setSidebarOpen(false)}
+                                className={cn(
+                                "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
+                                active
+                                    ? "bg-gradient-to-r from-purple-600 to-cyan-600 text-white shadow-lg"
+                                    : "text-slate-300 hover:bg-slate-700 hover:text-white"
+                                )}
+                            >
+                                <Icon className="w-5 h-5" />
+                                <span className="font-medium text-sm">{item.label}</span>
+                                {active && <ChevronRight className="w-4 h-4 mr-auto" />}
+                            </Link>
+                            );
+                        })}
                         </div>
-                        ))}
                     </div>
-                    </nav>
-                    
-                    <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-700 text-center bg-slate-900">
-                        <p className="text-slate-500 text-xs">© 2026 Yoya</p>
-                    </div>
-                </aside>
-
-                {/* Overlay for Mobile */}
-                {sidebarOpen && (
-                    <div
-                    className="fixed inset-0 bg-black/40 backdrop-blur-sm z-30 lg:hidden"
-                    onClick={() => setSidebarOpen(false)}
-                    />
-                )}
-            </>
+                    ))}
+                </div>
+                </nav>
+                
+                <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-700 text-center bg-slate-900/50">
+                    <p className="text-slate-500 text-xs">© 2026 Yoya</p>
+                </div>
+            </aside>
         )}
         
         {/* Main Content */}
-        <div className={`flex-1 transition-all duration-300 ${showSidebar ? "lg:mr-72 pt-16 lg:pt-0" : ""}`}>
+        <div className={cn(
+          "flex-1 transition-all duration-300 min-h-screen",
+          showSidebar ? "lg:mr-64" : "" // Push content on desktop
+        )}>
           <div className="p-4 lg:p-8 max-w-full mx-auto">
             {children}
           </div>
