@@ -83,7 +83,7 @@ export default function Dashboard() {
             try {
                 const [currentUser, devices] = await Promise.all([
                     base44.auth.me(),
-                    base44.entities.VRDevice.list()
+                    base44.entities.VRDevice.list(undefined, 1000)
                 ]);
                 
                 setUser(currentUser);
