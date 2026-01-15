@@ -21,19 +21,10 @@ export default function ShoshiBrainChat() {
                 const conversations = await base44.agents.listConversations({ agent_name: "qa_expert" });
                 let convId;
                 
-                // Always create a new conversation to ensure responsiveness and fresh context
-                // This fixes issues where old conversations might get stuck or have stale context
-                if (true) {
-                    const newConv = await base44.agents.createConversation({
-                        agent_name: "qa_expert",
-                        metadata: { name: "Shoshi Brain Chat " + new Date().toLocaleString() }
-                    });
-                    convId = newConv.id;
-                    // Add greeting
-                    setMessages([{
-                        role: "assistant",
-                        content: "היי פרופסור, כאן מומחה ה-QA והביצועים שלך. אני מנטר את SystemDiagnostics ואת כלל ישויות המערכת באופן שוטף. שלח לי לוג או תרחיש, ואנתח אותו מיד."
-                    }]);
+                if (conversations && conversations.length > 0) {
+                    // Use the most recent conversation
+                    convId = conversations[0].id;
+                    setMessages(conversations[0].messages || []);
                 } else {
                     // Create new
                     const newConv = await base44.agents.createConversation({

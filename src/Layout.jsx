@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { LoadingProvider, useLoading } from "@/components/common/LoadingContext";
 import YoyaLoader from "@/components/common/YoyaLoader";
 import {
-  Code, BookOpen, School, Users, Calculator, ChevronRight, KeyRound, Stamp, Layers, GraduationCap, Menu, X
+  Home, Code, BookOpen, School, Users, Calculator, ChevronRight, KeyRound, Stamp, Layers, GraduationCap, Briefcase, Menu, X
 } from "lucide-react";
 import VRIcon from "@/components/icons/VRIcon";
 import { cn } from "@/lib/utils";
@@ -28,17 +28,15 @@ function LayoutContent({ children, currentPageName }) {
     'DeviceAssignments': 'silshuch',
     'SyllabusHub': 'syllabus',
     'SyllabusWizard': 'syllabus',
-
-
-
-
-
-    'CRMHub': 'communication',
-    'ContactDetails': 'communication',
-    'Schools': 'schools',
+    'RelationalCenter': 'schools',
     'SchoolDetails': 'schools',
-
-    'BinocularCalculator': 'calculator',
+    'Management': 'management',
+    'CRMHub': 'management',
+    'CashFlow': 'management',
+    'TeachersList': 'management',
+    'TeacherProfile': 'management',
+    'BinocularCalculator': 'calculator', 
+    'AccountsAndUsers': 'accounts',
     'Programs': 'programs',
     'ProgramView': 'programs',
     'Version2': 'version2'
@@ -61,7 +59,7 @@ function LayoutContent({ children, currentPageName }) {
     {
       section: "ראשי",
       items: [
-        { id: "dashboard", label: "שושי 2.1", icon: Layers, page: "Dashboard" },
+        { id: "dashboard", label: "שושי 2.1", icon: Home, page: "Dashboard" },
       ]
     },
     {
@@ -82,8 +80,8 @@ function LayoutContent({ children, currentPageName }) {
     {
       section: "ניהול מערכות ואנשים",
       items: [
-        { id: "communication", label: "אנשי קשר", icon: Users, page: "CRMHub" },
-        { id: "schools", label: "בתי ספר", icon: School, page: "Schools" },
+        { id: "schools", label: "יחסי אנוש", icon: School, page: "RelationalCenter" },
+        { id: "management", label: "ניהול", icon: Briefcase, page: "Management" },
       ]
     },
     {
@@ -206,7 +204,7 @@ function LayoutContent({ children, currentPageName }) {
             <aside
                 className={cn(
                     "fixed top-0 right-0 h-full bg-gradient-to-b from-slate-800 to-slate-900 shadow-2xl z-50 transition-transform duration-300 ease-in-out",
-                    "w-48", // Fixed width 192px for both mobile and desktop
+                    "w-64", // Fixed width 256px for both mobile and desktop
                     "lg:translate-x-0", // Always visible on desktop
                     sidebarOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0" // Mobile slide
                 )}
@@ -274,7 +272,7 @@ function LayoutContent({ children, currentPageName }) {
         {/* Main Content */}
         <div className={cn(
           "flex-1 transition-all duration-300 min-h-screen",
-          showSidebar ? "lg:mr-48" : "" // Push content on desktop
+          showSidebar ? "lg:mr-64" : "" // Push content on desktop
         )}>
           <div className="p-4 lg:p-8 max-w-full mx-auto">
             {children}

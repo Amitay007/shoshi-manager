@@ -1,7 +1,7 @@
+
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { VRDevice } from "@/entities/VRDevice";
 import { VRApp } from "@/entities/VRApp";
-import { DeviceApp } from "@/entities/DeviceApp"; // הוספנו את הישות הזו
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -17,12 +17,11 @@ import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Orbit, Mail, AppWindow, FileText, X, Plus } from "lucide-react";
-import { with429Retry } from "@/components/utils/retry";
+import { installationData } from "@/components/InstallationData";
 
 export default function EditHeadset() {
   const urlParams = new URLSearchParams(window.location.search);
   const deviceId = urlParams.get("id");
-  
   const [device, setDevice] = useState(null);
   const [form, setForm] = useState({
     binocular_number: "",
@@ -35,15 +34,11 @@ export default function EditHeadset() {
     purchase_date: null,
     notes: "",
   });
-  
   const [errors, setErrors] = useState({ id: "", email: "" });
   const [appsDialogOpen, setAppsDialogOpen] = useState(false);
   const [appsSearch, setAppsSearch] = useState("");
-  
   const [allApps, setAllApps] = useState([]);
-  const [selectedApps, setSelectedApps] = useState([]); // רשימת האפליקציות שנבחרו (אובייקטים)
-  const [originalAppIds, setOriginalAppIds] = useState(new Set()); // כדי לדעת מה לשמור/למחוק
-  
+  const [selectedApps, setSelectedApps] = useState([]); // objects
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -52,50 +47,42 @@ export default function EditHeadset() {
       navigate(createPageUrl("GeneralInfo"));
       return;
     }
-    
-    try {
-      // 1. טעינת המכשיר, האפליקציות וטבלת הקשר (DeviceApp)
-      const [d, apps, deviceAppsRel] = await Promise.all([
-        with429Retry(() => VRDevice.get(deviceId)),
-        with429Retry(() => VRApp.list()),
-        with429Retry(() => DeviceApp.filter({ device_id: deviceId }))
-      ]);
+    const d = await VRDevice.get(deviceId);
+    const apps = await VRApp.list();
+    setAllApps(apps);
 
-      setAllApps(apps || []);
+    if (d) {
+      setDevice(d);
+      setForm({
+        binocular_number: String(d.binocular_number || ""),
+        serial_number: d.serial_number || "",
+        headset_type: d.headset_type || "",
+        other_type: d.headset_type === "אחר" ? (d.model || "") : "",
+        model: d.model || "",
+        primary_email: d.primary_email || "",
+        nickname: d.device_name || "",
+        purchase_date: d.purchase_date ? new Date(d.purchase_date) : null,
+        notes: d.notes || "",
+      });
 
-      if (d) {
-        setDevice(d);
-        setForm({
-          binocular_number: String(d.binocular_number || ""),
-          serial_number: d.serial_number || "",
-          headset_type: d.headset_type || "",
-          other_type: d.headset_type === "אחר" ? (d.model || "") : "",
-          model: d.model || "",
-          primary_email: d.primary_email || "",
-          nickname: d.device_name || "",
-          purchase_date: d.purchase_date ? new Date(d.purchase_date) : null,
-          notes: d.notes || "",
-        });
-
-        // 2. זיהוי האפליקציות המותקנות בפועל לפי ה-DB
-        const installedAppIds = new Set((deviceAppsRel || []).map(r => r.app_id));
-        setOriginalAppIds(installedAppIds);
-
-        const installedAppsList = (apps || []).filter(app => installedAppIds.has(app.id));
-        setSelectedApps(installedAppsList);
-
-      } else {
-        navigate(createPageUrl("GeneralInfo"));
+      // Build selected apps by installationData mapping (by binocular number)
+      const currentNumber = d.binocular_number;
+      const installed = [];
+      for (const [name, nums] of Object.entries(installationData)) {
+        if ((nums || []).includes(currentNumber)) {
+          const found = apps.find(a => a.name === name);
+          if (found) installed.push(found);
+        }
       }
-    } catch (error) {
-      console.error("Error loading headset details:", error);
-      toast({ title: "שגיאה בטעינת הנתונים", variant: "destructive" });
+      setSelectedApps(installed);
+    } else {
+      navigate(createPageUrl("GeneralInfo"));
     }
-  }, [deviceId, navigate, toast]);
+  }, [deviceId, navigate, setAllApps, setDevice, setForm, setSelectedApps]); // Add all dependencies required by the load function
 
   useEffect(() => {
     load();
-  }, [load]);
+  }, [load]); // Now 'load' is a stable function thanks to useCallback, so it can be a dependency
 
   const filteredApps = useMemo(() => {
     const q = (appsSearch || "").toLowerCase();
@@ -112,13 +99,11 @@ export default function EditHeadset() {
   const validate = () => {
     const newErr = { id: "", email: "" };
     if (!form.binocular_number) newErr.id = "יש להזין מזהה משקפת";
-    // הסרנו את חובת האימייל אם זה לא קריטי, אבל נשאיר אם תרצה
-    // if (!form.primary_email) newErr.email = "יש להזין כתובת Gmail"; 
+    if (!form.primary_email) newErr.email = "יש להזין כתובת Gmail";
     setErrors(newErr);
-    return !newErr.id;
+    return !newErr.id && !newErr.email;
   };
 
-  // הוספה/הסרה של אפליקציה מהרשימה המקומית (לפני שמירה)
   const toggleApp = (app) => {
     const exists = selectedApps.find(a => a.id === app.id);
     if (exists) {
@@ -131,81 +116,58 @@ export default function EditHeadset() {
   const save = async () => {
     if (!validate()) return;
 
-    try {
-      const newNumber = Number(form.binocular_number);
+    const originalNumber = device.binocular_number;
+    const newNumber = Number(form.binocular_number);
 
-      // 1. עדכון פרטי המכשיר (VRDevice)
-      await with429Retry(() => VRDevice.update(device.id, {
-        device_name: form.nickname || `משקפת ${newNumber}`,
-        binocular_number: newNumber,
-        serial_number: form.serial_number || undefined,
-        headset_type: form.headset_type || undefined,
-        model: form.headset_type === "אחר" ? (form.other_type || form.model || "אחר") : form.model || undefined,
-        primary_email: form.primary_email,
-        purchase_date: form.purchase_date || undefined,
-        notes: form.notes || undefined,
-      }));
+    // Update VRDevice
+    await VRDevice.update(device.id, {
+      device_name: form.nickname || `משקפת ${newNumber}`,
+      binocular_number: newNumber,
+      serial_number: form.serial_number || undefined,
+      headset_type: form.headset_type || undefined,
+      model: form.headset_type === "אחר" ? (form.other_type || form.model || "אחר") : form.model || undefined,
+      primary_email: form.primary_email,
+      purchase_date: form.purchase_date || undefined,
+      notes: form.notes || undefined,
+    });
 
-      // 2. סנכרון אפליקציות (DeviceApp)
-      // אילו אפליקציות נבחרו כעת?
-      const currentSelectedIds = new Set(selectedApps.map(a => a.id));
-
-      // א. מה צריך להוסיף? (נבחר כעת, אבל לא היה במקור)
-      const toAdd = [...currentSelectedIds].filter(id => !originalAppIds.has(id));
-      
-      // ב. מה צריך למחוק? (היה במקור, אבל לא נבחר כעת)
-      const toRemove = [...originalAppIds].filter(id => !currentSelectedIds.has(id));
-
-      // ביצוע הוספות
-      if (toAdd.length > 0) {
-        const createPayload = toAdd.map(appId => ({
-          device_id: device.id,
-          app_id: appId,
-          installation_date: new Date().toISOString().split('T')[0]
-        }));
-        await with429Retry(() => DeviceApp.bulkCreate(createPayload));
+    // Sync installationData with selected apps and number changes
+    // 1) Ensure all selected apps include the (possibly new) number
+    const selectedNames = selectedApps.map(a => a.name);
+    selectedNames.forEach((name) => {
+      if (!installationData[name]) installationData[name] = [];
+      if (!installationData[name].includes(newNumber)) {
+        installationData[name].push(newNumber);
+        installationData[name].sort((a, b) => a - b);
       }
-
-      // ביצוע מחיקות (דורש למצוא את ה-ID של הקשר ב-DeviceApp)
-      if (toRemove.length > 0) {
-        // צריך לשלוף את ה-ID הספציפי של השורה בטבלת DeviceApp כדי למחוק
-        const relationsToDelete = await with429Retry(() => DeviceApp.filter({ 
-          device_id: device.id,
-          app_id: { $in: toRemove } // (בהנחה שה-SDK תומך ב-$in, אחרת נמחק בלולאה)
-        }));
-        
-        // אם הסינון המורכב לא נתמך, נשלוף שוב הכל ונסנן ידנית (בטוח יותר)
-        // אבל לצורך היעילות ננסה מחיקה בלולאה אם ה-API פשוט
-        
-        // גיבוי: מחיקה בלולאה
-        for (const appId of toRemove) {
-           const rels = await with429Retry(() => DeviceApp.filter({ device_id: device.id, app_id: appId }));
-           for (const rel of rels) {
-             await with429Retry(() => DeviceApp.delete(rel.id));
-           }
+    });
+    // 2) Remove number from apps that were previously installed but now unselected
+    for (const [name, nums] of Object.entries(installationData)) {
+      const had = (nums || []).includes(originalNumber);
+      const shouldKeep = selectedNames.includes(name);
+      if (had && !shouldKeep) {
+        installationData[name] = nums.filter(n => n !== originalNumber && n !== newNumber);
+      }
+    }
+    // 3) If number changed, move mapping from originalNumber to newNumber for all remaining apps
+    if (originalNumber !== newNumber) {
+      for (const key of Object.keys(installationData)) {
+        const arr = installationData[key] || [];
+        if (arr.includes(originalNumber)) {
+          installationData[key] = Array.from(new Set(arr.map(n => (n === originalNumber ? newNumber : n)))).sort((a, b) => a - b);
         }
       }
-
-      // 3. עדכון סטטוס is_installed באפליקציות (אופציונלי, לצורך תצוגה)
-      // זה קצת כבד לעשות על כל האפליקציות כל הזמן, אז נעשה רק למה שהשתנה
-      const changedAppIds = [...toAdd, ...toRemove];
-      for (const appId of changedAppIds) {
-         // בדיקה האם האפליקציה עדיין מותקנת איפשהו
-         const installations = await with429Retry(() => DeviceApp.filter({ app_id: appId }));
-         await with429Retry(() => VRApp.update(appId, { is_installed: installations.length > 0 }));
-      }
-
-      toast({ title: "המשקפת נשמרה בהצלחה!" });
-      navigate(createPageUrl("GeneralInfo"));
-
-    } catch (error) {
-      console.error("Error saving headset:", error);
-      toast({ 
-        title: "שגיאה בשמירה", 
-        description: error.message || "נסה שוב מאוחר יותר",
-        variant: "destructive" 
-      });
     }
+
+    // NEW: toggle VRApp.is_installed for all apps based on current installationData mapping
+    await Promise.all(
+      allApps.map((app) =>
+        VRApp.update(app.id, { is_installed: (installationData[app.name] || []).length > 0 })
+      )
+    );
+
+    toast({ title: "המשקפת נשמרה בהצלחה!" });
+    navigate(createPageUrl("GeneralInfo"));
   };
 
   if (!device) {
@@ -288,7 +250,7 @@ export default function EditHeadset() {
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
                 <Input
-                  placeholder="כתובת Gmail"
+                  placeholder="כתובת Gmail (חובה)"
                   value={form.primary_email}
                   onChange={(e) => setForm((p) => ({ ...p, primary_email: e.target.value }))}
                 />
@@ -328,15 +290,15 @@ export default function EditHeadset() {
           <CardContent className="space-y-4">
             <Button type="button" variant="outline" className="gap-2" onClick={() => setAppsDialogOpen(true)}>
               <Plus className="w-4 h-4" />
-              הוסף/הסר אפליקציה
+              הוסף אפליקציה
             </Button>
 
             {selectedApps.length > 0 ? (
               <div className="flex flex-wrap gap-2">
                 {selectedApps.map((app) => (
-                  <Badge key={app.id} variant="secondary" className="flex items-center gap-1 pl-1">
+                  <Badge key={app.id} variant="secondary" className="flex items-center gap-1">
                     {app.name}
-                    <button className="p-1 hover:bg-slate-200 rounded-full" onClick={() => toggleApp(app)}>
+                    <button className="ml-1 text-slate-600 hover:text-slate-900" onClick={() => toggleApp(app)}>
                       <X className="w-3 h-3" />
                     </button>
                   </Badge>
@@ -368,13 +330,12 @@ export default function EditHeadset() {
 
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={() => navigate(createPageUrl("GeneralInfo"))}>ביטול</Button>
-          <Button className="bg-green-600 hover:bg-green-700" onClick={save}>שמור שינויים</Button>
+          <Button className="bg-green-600 hover:bg-green-700" onClick={save}>שמור</Button>
         </div>
       </div>
 
-      {/* דיאלוג בחירת אפליקציות */}
       <Dialog open={appsDialogOpen} onOpenChange={setAppsDialogOpen}>
-        <DialogContent className="max-w-2xl" dir="rtl">
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>בחר אפליקציות</DialogTitle>
           </DialogHeader>
@@ -384,23 +345,23 @@ export default function EditHeadset() {
               value={appsSearch}
               onChange={(e) => setAppsSearch(e.target.value)}
             />
-            <div className="max-h-72 overflow-y-auto space-y-2 border rounded p-2">
+            <div className="max-h-72 overflow-y-auto space-y-2">
               {filteredApps.map((app) => {
                 const checked = !!selectedApps.find(a => a.id === app.id);
                 return (
-                  <label key={app.id} className="flex items-center gap-3 p-2 border-b last:border-0 hover:bg-slate-50 cursor-pointer">
+                  <label key={app.id} className="flex items-center gap-3 p-2 border rounded-md">
                     <Checkbox checked={checked} onCheckedChange={() => toggleApp(app)} />
                     <div className="flex-1">
                       <div className="font-medium">{app.name}</div>
-                      <div className="text-xs text-slate-500 line-clamp-1">{app.description || "—"}</div>
+                      <div className="text-xs text-slate-500 line-clamp-2">{app.description || "—"}</div>
                     </div>
                   </label>
                 );
               })}
-              {filteredApps.length === 0 && <div className="text-center text-gray-500">לא נמצאו אפליקציות</div>}
             </div>
             <div className="flex justify-end gap-2">
-              <Button onClick={() => setAppsDialogOpen(false)}>סגור</Button>
+              <Button variant="outline" onClick={() => setAppsDialogOpen(false)}>ביטול</Button>
+              <Button onClick={() => setAppsDialogOpen(false)}>שמור</Button>
             </div>
           </div>
         </DialogContent>

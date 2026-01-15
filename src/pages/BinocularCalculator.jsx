@@ -3,7 +3,6 @@ import { InstitutionProgram } from "@/entities/InstitutionProgram";
 import { Syllabus } from "@/entities/Syllabus";
 import { VRDevice } from "@/entities/VRDevice";
 import { EducationInstitution } from "@/entities/EducationInstitution";
-import { VRApp } from "@/entities/VRApp";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,19 +23,14 @@ export default function BinocularCalculator() {
   const [syllabi, setSyllabi] = useState([]);
   const [schools, setSchools] = useState([]);
   const [devices, setDevices] = useState([]);
-  const [apps, setApps] = useState([]);
   
   // UI State
-  const [mode, setMode] = useState("programs"); // 'programs' | 'syllabi' | 'sessions' | 'apps'
+  const [mode, setMode] = useState("programs"); // 'programs' | 'syllabi' | 'sessions'
   
   // Selections
   const [col1, setCol1] = useState("");
   const [col2, setCol2] = useState("");
   const [col3, setCol3] = useState("");
-  
-  // App Comparison State
-  const [app1Id, setApp1Id] = useState("");
-  const [app2Id, setApp2Id] = useState("");
 
   // --- INIT ---
   useEffect(() => {
@@ -46,18 +40,16 @@ export default function BinocularCalculator() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [pData, sData, iData, dData, aData] = await Promise.all([
+      const [pData, sData, iData, dData] = await Promise.all([
         with429Retry(() => InstitutionProgram.list()),
         with429Retry(() => Syllabus.list()),
         with429Retry(() => EducationInstitution.list()),
         with429Retry(() => VRDevice.list()),
-        with429Retry(() => VRApp.list()),
       ]);
 
       setInstPrograms(pData || []);
       setSyllabi(sData || []);
       setSchools(iData || []);
-      setApps(aData || []);
       
       // Sort devices by number for cleaner display
       const sortedDevices = (dData || []).sort((a, b) => 
@@ -321,7 +313,6 @@ export default function BinocularCalculator() {
               { id: "programs", label: "תוכניות", icon: Layers },
               { id: "sessions", label: "מפגשים", icon: Calendar },
               { id: "syllabi", label: "סילבוסים", icon: BookOpen },
-              { id: "apps", label: "השוואת אפליקציות", icon: Calculator },
             ].map((tab) => {
               const isActive = mode === tab.id;
               const TabIcon = tab.icon;
@@ -346,169 +337,80 @@ export default function BinocularCalculator() {
           </div>
         </div>
 
-        {mode === 'apps' ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {[
-                    { val: app1Id, set: setApp1Id, label: "אפליקציה 1", color: "purple" },
-                    { val: app2Id, set: setApp2Id, label: "אפליקציה 2", color: "blue" }
-                ].map((item, idx) => {
-                    const app = apps.find(a => a.id === item.val);
-                    const colorClass = item.color === "purple" ? "text-purple-600 bg-purple-50 border-purple-200" : "text-blue-600 bg-blue-50 border-blue-200";
-                    
-                    return (
-                        <Card key={idx} className="border-t-4 border-t-transparent shadow-md hover:shadow-lg transition-shadow overflow-hidden" style={{borderTopColor: item.color === 'purple' ? '#9333ea' : '#2563eb'}}>
-                            <CardHeader className="bg-slate-50/50 pb-4 border-b border-gray-100">
-                                <CardTitle className="text-lg">{item.label}</CardTitle>
-                                <Select value={item.val} onValueChange={item.set} dir="rtl">
-                                    <SelectTrigger className="h-11 bg-white mt-2">
-                                        <SelectValue placeholder="בחר אפליקציה..." />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {apps.map(a => (
-                                            <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </CardHeader>
-                            <CardContent className="p-6 space-y-6">
-                                {app ? (
-                                    <>
-                                        <div className="flex items-start gap-4">
-                                            {app.custom_icon_url ? (
-                                                <img src={app.custom_icon_url} alt={app.name} className="w-20 h-20 rounded-2xl object-cover shadow-sm border border-slate-100" />
-                                            ) : (
-                                                <div className={`w-20 h-20 rounded-2xl flex items-center justify-center text-3xl font-bold shadow-sm border ${colorClass}`}>
-                                                    {app.name[0]}
-                                                </div>
-                                            )}
-                                            <div>
-                                                <h3 className="font-bold text-xl text-slate-800">{app.name}</h3>
-                                                <p className="text-sm text-slate-500 mt-1 line-clamp-2">{app.description}</p>
-                                            </div>
-                                        </div>
-                                        
-                                        <div className="space-y-4">
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                                                    <span className="text-xs text-slate-400 block mb-1">מפתח</span>
-                                                    <span className="font-medium text-slate-700">{app.developer || "-"}</span>
-                                                </div>
-                                                <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                                                    <span className="text-xs text-slate-400 block mb-1">סוג רכישה</span>
-                                                    <span className="font-medium text-slate-700">{app.purchase_type || "-"}</span>
-                                                </div>
-                                            </div>
-                                            
-                                            <div className="space-y-2">
-                                                <div className="flex justify-between p-2 border-b border-slate-50">
-                                                    <span className="text-slate-500 text-sm">אינטרנט</span>
-                                                    <Badge variant={app.internet_required ? "destructive" : "secondary"}>
-                                                        {app.internet_required ? "חובה" : "לא חובה"}
-                                                    </Badge>
-                                                </div>
-                                                <div className="flex justify-between p-2 border-b border-slate-50">
-                                                    <span className="text-slate-500 text-sm">מעקב ידיים</span>
-                                                    <Badge variant={app.hand_tracking ? "default" : "outline"}>
-                                                        {app.hand_tracking ? "נתמך" : "לא נתמך"}
-                                                    </Badge>
-                                                </div>
-                                                <div className="flex justify-between p-2 border-b border-slate-50">
-                                                    <span className="text-slate-500 text-sm">מנוי</span>
-                                                    <Badge variant={app.subscription_required ? "destructive" : "secondary"}>
-                                                        {app.subscription_required ? "נדרש" : "לא נדרש"}
-                                                    </Badge>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </>
-                                ) : (
-                                    <div className="h-60 flex items-center justify-center text-slate-300">
-                                        בחר אפליקציה להצגה
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
-                    );
-                })}
-            </div>
-        ) : (
-            <>
-                {/* COLUMNS */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <SelectionColumn 
-                    title="אפשרות א'" 
-                    value={col1} 
-                    onChange={setCol1} 
-                    deviceList={devices1} 
-                    themeColor="purple"
-                    icon={Glasses}
-                  />
-                  <SelectionColumn 
-                    title="אפשרות ב'" 
-                    value={col2} 
-                    onChange={setCol2} 
-                    deviceList={devices2} 
-                    themeColor="blue"
-                    icon={Glasses}
-                  />
-                  <SelectionColumn 
-                    title="אפשרות ג'" 
-                    value={col3} 
-                    onChange={setCol3} 
-                    deviceList={devices3} 
-                    themeColor="teal"
-                    icon={Glasses}
-                  />
+        {/* COLUMNS */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <SelectionColumn 
+            title="אפשרות א'" 
+            value={col1} 
+            onChange={setCol1} 
+            deviceList={devices1} 
+            themeColor="purple"
+            icon={Glasses}
+          />
+          <SelectionColumn 
+            title="אפשרות ב'" 
+            value={col2} 
+            onChange={setCol2} 
+            deviceList={devices2} 
+            themeColor="blue"
+            icon={Glasses}
+          />
+          <SelectionColumn 
+            title="אפשרות ג'" 
+            value={col3} 
+            onChange={setCol3} 
+            deviceList={devices3} 
+            themeColor="teal"
+            icon={Glasses}
+          />
+        </div>
+
+        {/* SUMMARY FOOTER */}
+        <Card className="border-none shadow-md bg-white overflow-hidden">
+          <div className="h-1 w-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500"></div>
+          <CardContent className="p-6 lg:p-8">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+              
+              <div className="flex items-center gap-6">
+                <div className={`
+                  w-16 h-16 rounded-full flex items-center justify-center border-4 
+                  ${conflictSet.size > 0 ? "border-red-100 bg-red-50 text-red-500" : "border-green-100 bg-green-50 text-green-500"}
+                `}>
+                  {conflictSet.size > 0 ? <AlertCircle className="w-8 h-8" /> : <CheckCircle2 className="w-8 h-8" />}
                 </div>
+                <div>
+                  <h3 className={`text-xl font-bold mb-1 ${conflictSet.size > 0 ? "text-red-600" : "text-green-600"}`}>
+                    {conflictSet.size > 0 ? `נמצאו ${conflictSet.size} התנגשויות` : "אין התנגשויות"}
+                  </h3>
+                  <p className="text-gray-500 text-sm">
+                    {conflictSet.size > 0 
+                      ? "חלק מהמשקפות מופיעות ביותר מרשימה אחת בו-זמנית."
+                      : "כל המשקפות שנבחרו פנויות לשיבוץ במקביל."}
+                  </p>
+                </div>
+              </div>
 
-                {/* SUMMARY FOOTER */}
-                <Card className="border-none shadow-md bg-white overflow-hidden">
-                  <div className="h-1 w-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500"></div>
-                  <CardContent className="p-6 lg:p-8">
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-                      
-                      <div className="flex items-center gap-6">
-                        <div className={`
-                          w-16 h-16 rounded-full flex items-center justify-center border-4 
-                          ${conflictSet.size > 0 ? "border-red-100 bg-red-50 text-red-500" : "border-green-100 bg-green-50 text-green-500"}
-                        `}>
-                          {conflictSet.size > 0 ? <AlertCircle className="w-8 h-8" /> : <CheckCircle2 className="w-8 h-8" />}
-                        </div>
-                        <div>
-                          <h3 className={`text-xl font-bold mb-1 ${conflictSet.size > 0 ? "text-red-600" : "text-green-600"}`}>
-                            {conflictSet.size > 0 ? `נמצאו ${conflictSet.size} התנגשויות` : "אין התנגשויות"}
-                          </h3>
-                          <p className="text-gray-500 text-sm">
-                            {conflictSet.size > 0 
-                              ? "חלק מהמשקפות מופיעות ביותר מרשימה אחת בו-זמנית."
-                              : "כל המשקפות שנבחרו פנויות לשיבוץ במקביל."}
-                          </p>
-                        </div>
-                      </div>
+              {/* Static Legend */}
+              <div className="flex items-center gap-6 bg-gray-50 px-6 py-3 rounded-xl border border-gray-100">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-red-500 rounded-sm"></div>
+                  <span className="text-sm text-gray-600">התנגשות</span>
+                </div>
+                <div className="w-px h-4 bg-gray-300"></div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-gray-300 rounded-sm"></div>
+                  <span className="text-sm text-gray-600">מושבת</span>
+                </div>
+                <div className="w-px h-4 bg-gray-300"></div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-purple-500 rounded-sm"></div>
+                  <span className="text-sm text-gray-600">תקין</span>
+                </div>
+              </div>
 
-                      {/* Static Legend */}
-                      <div className="flex items-center gap-6 bg-gray-50 px-6 py-3 rounded-xl border border-gray-100">
-                        <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 bg-red-500 rounded-sm"></div>
-                          <span className="text-sm text-gray-600">התנגשות</span>
-                        </div>
-                        <div className="w-px h-4 bg-gray-300"></div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 bg-gray-300 rounded-sm"></div>
-                          <span className="text-sm text-gray-600">מושבת</span>
-                        </div>
-                        <div className="w-px h-4 bg-gray-300"></div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 bg-purple-500 rounded-sm"></div>
-                          <span className="text-sm text-gray-600">תקין</span>
-                        </div>
-                      </div>
-
-                    </div>
-                  </CardContent>
-                </Card>
-            </>
-        )}
+            </div>
+          </CardContent>
+        </Card>
 
       </div>
     </div>
