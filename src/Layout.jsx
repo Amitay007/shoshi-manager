@@ -28,13 +28,9 @@ function LayoutContent({ children, currentPageName }) {
     'DeviceAssignments': 'silshuch',
     'SyllabusHub': 'syllabus',
     'SyllabusWizard': 'syllabus',
-    'RelationalCenter': 'schools',
+    'RelationalCenter': 'communication',
     'SchoolDetails': 'schools',
-    'Management': 'management',
-    'CRMHub': 'management',
-    'CashFlow': 'management',
-    'TeachersList': 'management',
-    'TeacherProfile': 'management',
+    'Schools': 'schools',
     'BinocularCalculator': 'calculator', 
     'AccountsAndUsers': 'accounts',
     'Programs': 'programs',
@@ -80,8 +76,8 @@ function LayoutContent({ children, currentPageName }) {
     {
       section: "ניהול מערכות ואנשים",
       items: [
-        { id: "schools", label: "יחסי אנוש", icon: School, page: "RelationalCenter" },
-        { id: "management", label: "ניהול", icon: Briefcase, page: "Management" },
+        { id: "communication", label: "מרכז תקשורת", icon: Users, page: "RelationalCenter" },
+        { id: "schools", label: "בתי ספר", icon: School, page: "Schools" },
       ]
     },
     {
