@@ -34,6 +34,7 @@ function LayoutContent({ children, currentPageName }) {
 
 
     'CRMHub': 'communication',
+    'ContactDetails': 'communication',
     'Schools': 'schools',
     'SchoolDetails': 'schools',
 
