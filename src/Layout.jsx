@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { LoadingProvider, useLoading } from "@/components/common/LoadingContext";
 import YoyaLoader from "@/components/common/YoyaLoader";
 import {
-  Home, Code, BookOpen, School, Users, Calculator, ChevronRight, KeyRound, Stamp, Layers, GraduationCap, Menu, X
+  Code, BookOpen, School, Users, Calculator, ChevronRight, KeyRound, Stamp, Layers, GraduationCap, Menu, X
 } from "lucide-react";
 import VRIcon from "@/components/icons/VRIcon";
 import { cn } from "@/lib/utils";
@@ -61,7 +61,7 @@ function LayoutContent({ children, currentPageName }) {
     {
       section: "ראשי",
       items: [
-        { id: "dashboard", label: "שושי 2.1", icon: Home, page: "Dashboard" },
+        { id: "dashboard", label: "שושי 2.1", icon: Layers, page: "Dashboard" },
       ]
     },
     {
@@ -82,7 +82,7 @@ function LayoutContent({ children, currentPageName }) {
     {
       section: "ניהול מערכות ואנשים",
       items: [
-        { id: "communication", label: "מרכז תקשורת", icon: Users, page: "CRMHub" },
+        { id: "communication", label: "אנשי קשר", icon: Users, page: "CRMHub" },
         { id: "schools", label: "בתי ספר", icon: School, page: "Schools" },
       ]
     },

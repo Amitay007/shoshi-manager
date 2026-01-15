@@ -23,17 +23,23 @@ export default function CRMHub() {
     email: "",
     phone: "",
     role: "",
-    organization: "",
+    organization: "", // Keeping for backward compatibility or custom text
+    institution_id: "", // New field
     type: "other",
     status: "active"
   });
 
   const queryClient = useQueryClient();
 
-  // Fetch Contacts
+  // Fetch Contacts & Institutions
   const { data: contacts, isLoading } = useQuery({
     queryKey: ['contacts'],
     queryFn: () => base44.entities.Contact.list('-created_date', 100)
+  });
+
+  const { data: institutions } = useQuery({
+    queryKey: ['institutions'],
+    queryFn: () => base44.entities.EducationInstitution.list()
   });
 
   // Create Contact Mutation
@@ -72,7 +78,7 @@ export default function CRMHub() {
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">מרכז תקשורת</h1>
+          <h1 className="text-3xl font-bold text-slate-900">אנשי קשר</h1>
           <p className="text-slate-500">ניהול אנשי קשר ואינטראקציות</p>
         </div>
         <div className="flex gap-2">
@@ -113,11 +119,24 @@ export default function CRMHub() {
                   onChange={e => setNewContact({...newContact, phone: e.target.value})}
                 />
                 <div className="grid grid-cols-2 gap-4">
-                  <Input 
-                    placeholder="ארגון" 
-                    value={newContact.organization}
-                    onChange={e => setNewContact({...newContact, organization: e.target.value})}
-                  />
+                  <Select 
+                    value={newContact.institution_id} 
+                    onValueChange={val => {
+                        const inst = institutions?.find(i => i.id === val);
+                        setNewContact({
+                            ...newContact, 
+                            institution_id: val, 
+                            organization: inst ? inst.name : "" // Auto-fill text for display
+                        });
+                    }}
+                  >
+                    <SelectTrigger><SelectValue placeholder="בחר מוסד" /></SelectTrigger>
+                    <SelectContent>
+                        {institutions?.map(i => (
+                            <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
                   <Input 
                     placeholder="תפקיד" 
                     value={newContact.role}

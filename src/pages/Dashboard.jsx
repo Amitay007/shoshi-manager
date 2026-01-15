@@ -79,32 +79,43 @@ export default function Dashboard() {
     });
 
     useEffect(() => {
+        let unsubscribe;
         const loadData = async () => {
             try {
-                const [currentUser, devices] = await Promise.all([
-                    base44.auth.me(),
-                    base44.entities.VRDevice.list(undefined, 1000)
-                ]);
-                
+                const currentUser = await base44.auth.me();
                 setUser(currentUser);
 
-                // Calculate metrics
-                const activeCount = devices.filter(d => ['זמין', 'בשימוש'].includes(d.status)).length;
-                const faultCount = devices.filter(d => ['בתיקון', 'מושבת'].includes(d.status) || d.is_disabled).length;
+                // Initial fetch
+                const devices = await base44.entities.VRDevice.list(undefined, 1000);
+                
+                const updateMetrics = (deviceList) => {
+                    const activeCount = deviceList.filter(d => ['זמין', 'בשימוש'].includes(d.status)).length;
+                    const faultCount = deviceList.filter(d => ['בתיקון', 'מושבת'].includes(d.status) || d.is_disabled).length;
+                    
+                    setMetrics(prev => ({
+                        ...prev,
+                        activeDevices: activeCount,
+                        faults: faultCount
+                    }));
+                };
 
-                setMetrics(prev => ({
-                    ...prev,
-                    activeDevices: activeCount,
-                    faults: faultCount
-                }));
+                updateMetrics(devices);
+                setLoading(false);
+
+                // Subscribe to changes
+                unsubscribe = base44.entities.VRDevice.subscribe(async (event) => {
+                    // Refetch all to keep simple and accurate (or optimistically update)
+                    const updatedDevices = await base44.entities.VRDevice.list(undefined, 1000);
+                    updateMetrics(updatedDevices);
+                });
 
             } catch (e) {
                 console.error("Error loading home data", e);
-            } finally {
                 setLoading(false);
             }
         };
         loadData();
+        return () => unsubscribe && unsubscribe();
     }, []);
 
     const firstName = user?.full_name?.split(' ')[0] || "אורח";
