@@ -89,7 +89,7 @@ function LayoutContent({ children, currentPageName }) {
       items: [
 
 
-        { id: "management", label: "ניהול", icon: Briefcase, page: "Management" },
+
         { id: "schools", label: "בתי ספר", icon: School, page: "Schools" },
       ]
     },
