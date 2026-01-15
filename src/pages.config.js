@@ -24,21 +24,18 @@ import DeviceMenu from './pages/DeviceMenu';
 import EditHeadset from './pages/EditHeadset';
 import GeneralApps from './pages/GeneralApps';
 import GeneralInfo from './pages/GeneralInfo';
-import HoursReport from './pages/HoursReport';
 import Management from './pages/Management';
 import ManagerScheduler from './pages/ManagerScheduler';
 import MasterSchedule from './pages/MasterSchedule';
 import MySchedule from './pages/MySchedule';
 import ProgramView from './pages/ProgramView';
 import Programs from './pages/Programs';
-import RelationalCenter from './pages/RelationalCenter';
 import ResearchPage from './pages/ResearchPage';
 import SchoolDetails from './pages/SchoolDetails';
 import Schools from './pages/Schools';
 import SyllabusHub from './pages/SyllabusHub';
 import SyllabusValuesManager from './pages/SyllabusValuesManager';
 import SyllabusWizard from './pages/SyllabusWizard';
-import TeacherAgenda from './pages/TeacherAgenda';
 import TeacherProfile from './pages/TeacherProfile';
 import TeachersList from './pages/TeachersList';
 import UpdateAppStatus from './pages/UpdateAppStatus';
@@ -75,21 +72,18 @@ export const PAGES = {
     "EditHeadset": EditHeadset,
     "GeneralApps": GeneralApps,
     "GeneralInfo": GeneralInfo,
-    "HoursReport": HoursReport,
     "Management": Management,
     "ManagerScheduler": ManagerScheduler,
     "MasterSchedule": MasterSchedule,
     "MySchedule": MySchedule,
     "ProgramView": ProgramView,
     "Programs": Programs,
-    "RelationalCenter": RelationalCenter,
     "ResearchPage": ResearchPage,
     "SchoolDetails": SchoolDetails,
     "Schools": Schools,
     "SyllabusHub": SyllabusHub,
     "SyllabusValuesManager": SyllabusValuesManager,
     "SyllabusWizard": SyllabusWizard,
-    "TeacherAgenda": TeacherAgenda,
     "TeacherProfile": TeacherProfile,
     "TeachersList": TeachersList,
     "UpdateAppStatus": UpdateAppStatus,
