@@ -215,7 +215,7 @@ function LayoutContent({ children, currentPageName }) {
             <aside
                 className={cn(
                     "fixed top-0 right-0 h-full bg-gradient-to-b from-slate-800 to-slate-900 shadow-2xl z-50 transition-transform duration-300 ease-in-out",
-                    "w-56", // Fixed width 224px for both mobile and desktop
+                    "w-52", // Fixed width 208px for both mobile and desktop
                     "lg:translate-x-0", // Always visible on desktop
                     sidebarOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0" // Mobile slide
                 )}
@@ -283,7 +283,7 @@ function LayoutContent({ children, currentPageName }) {
         {/* Main Content */}
         <div className={cn(
           "flex-1 transition-all duration-300 min-h-screen",
-          showSidebar ? "lg:mr-56" : "" // Push content on desktop
+          showSidebar ? "lg:mr-52" : "" // Push content on desktop
         )}>
           <div className="p-4 lg:p-8 max-w-full mx-auto">
             {children}
