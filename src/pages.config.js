@@ -8,9 +8,7 @@ import AppDevices from './pages/AppDevices';
 import AssignmentDetails from './pages/AssignmentDetails';
 import BinocularCalculator from './pages/BinocularCalculator';
 import BulkDataLoader from './pages/BulkDataLoader';
-import CRMHub from './pages/CRMHub';
 import CashFlow from './pages/CashFlow';
-import ContactDetails from './pages/ContactDetails';
 import CreateProgram from './pages/CreateProgram';
 import CreateTeacher from './pages/CreateTeacher';
 import Dashboard from './pages/Dashboard';
@@ -56,9 +54,7 @@ export const PAGES = {
     "AssignmentDetails": AssignmentDetails,
     "BinocularCalculator": BinocularCalculator,
     "BulkDataLoader": BulkDataLoader,
-    "CRMHub": CRMHub,
     "CashFlow": CashFlow,
-    "ContactDetails": ContactDetails,
     "CreateProgram": CreateProgram,
     "CreateTeacher": CreateTeacher,
     "Dashboard": Dashboard,

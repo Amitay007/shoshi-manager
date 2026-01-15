@@ -31,7 +31,7 @@ function LayoutContent({ children, currentPageName }) {
 
 
 
-    'CRMHub': 'communication',
+
 
     'Schools': 'schools',
     'SchoolDetails': 'schools',
@@ -88,7 +88,7 @@ function LayoutContent({ children, currentPageName }) {
       section: "ניהול מערכות ואנשים",
       items: [
 
-        { id: "communication", label: "מרכז תקשורת", icon: Users, page: "CRMHub" },
+
         { id: "management", label: "ניהול", icon: Briefcase, page: "Management" },
         { id: "schools", label: "בתי ספר", icon: School, page: "Schools" },
       ]
