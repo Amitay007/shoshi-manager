@@ -27,7 +27,7 @@ export default function Version2() {
     { name: "AddAppPage", icon: Plus, title: "הוספת אפליקציה" },
     { name: "SchoolDetails", icon: School, title: "פרטי בית ספר" },
     { name: "HoursReport", icon: Calendar, title: "דיווח שעות" },
-    { name: "MySchedule", icon: Calendar, title: "הלו"ז שלי" },
+    { name: "MySchedule", icon: Calendar, title: 'הלו"ז שלי' },
     { name: "SyllabusWizard", icon: GraduationCap, title: "אשף הסילבוסים" },
     { name: "TeacherAgenda", icon: Calendar, title: "יומן מורה" },
     { name: "AddAppToDevice", icon: Plus, title: "הוספת אפליקציה למכשיר" },
