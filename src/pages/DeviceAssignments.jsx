@@ -51,6 +51,8 @@ export default function DeviceAssignments() {
   const [programsWithDevices, setProgramsWithDevices] = useState([]);
   const [expandedProgramId, setExpandedProgramId] = useState(null); // For expanding program sessions
   const [deviceAppMap, setDeviceAppMap] = useState({}); // Map of deviceId -> Set of appIds
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [importText, setImportText] = useState("");
   
   // Program filter state
   const [programFilterAppId, setProgramFilterAppId] = useState(null);
@@ -438,6 +440,51 @@ export default function DeviceAssignments() {
   const getHeadsetDisplay = (deviceId) => {
     const device = allHeadsets.find(d => d.id === deviceId);
     return device ? device.binocular_number : deviceId;
+  };
+
+  const handleImportSubmit = () => {
+    const numbers = importText
+      .split(/[\n,]+/)
+      .map(s => s.trim())
+      .filter(s => s)
+      .map(s => parseInt(s, 10))
+      .filter(n => !isNaN(n));
+
+    if (numbers.length === 0) {
+      toast({ title: "לא נמצאו מספרים", variant: "destructive" });
+      return;
+    }
+
+    const matchedDeviceIds = [];
+    numbers.forEach(num => {
+      const device = allHeadsets.find(d => d.binocular_number === num);
+      if (device && !device.is_disabled) {
+        matchedDeviceIds.push(device.id);
+      }
+    });
+
+    if (matchedDeviceIds.length === 0) {
+      toast({ title: "לא נמצאו משקפות תואמות (או שהן מושבתות)", variant: "destructive" });
+      return;
+    }
+
+    if (currentSessionIndex === null) {
+      // Static
+      const newSet = new Set(selectedStaticHeadsets);
+      matchedDeviceIds.forEach(id => newSet.add(id));
+      setSelectedStaticHeadsets(newSet);
+    } else {
+      // Dynamic
+      const newDynamic = [...selectedDynamicHeadsets];
+      const newSet = new Set(newDynamic[currentSessionIndex]);
+      matchedDeviceIds.forEach(id => newSet.add(id));
+      newDynamic[currentSessionIndex] = newSet;
+      setSelectedDynamicHeadsets(newDynamic);
+    }
+
+    toast({ title: `יובאו ${matchedDeviceIds.length} משקפות בהצלחה` });
+    setShowImportDialog(false);
+    setImportText("");
   };
 
   if (loading) {
@@ -874,6 +921,9 @@ export default function DeviceAssignments() {
                     </CardTitle>
                     {!isReadOnly && (
                       <div className="flex gap-2">
+                        <Button onClick={() => { setCurrentSessionIndex(null); setShowImportDialog(true); }} variant="outline" className="border-green-200 hover:bg-green-50 text-green-700 gap-2 h-9">
+                          <FileText className="w-4 h-4" /> ייבוא מאקסל
+                        </Button>
                         <Button onClick={() => setShowProgramsModal(true)} variant="outline" className="border-purple-200 hover:bg-purple-50 text-purple-700 gap-2 h-9">
                           <FileText className="w-4 h-4" /> יבא מתוכנית
                         </Button>
@@ -958,6 +1008,9 @@ export default function DeviceAssignments() {
                         
                         {!isReadOnly && (
                           <div className="flex gap-2">
+                            <Button onClick={() => { setCurrentSessionIndex(idx); setShowImportDialog(true); }} size="sm" variant="outline" className="border-green-200 hover:bg-green-50 text-green-700 gap-2">
+                              <FileText className="w-4 h-4" /> אקסל
+                            </Button>
                             <Button onClick={() => { setCurrentSessionIndex(idx); setShowProgramsModal(true); }} size="sm" variant="outline" className="border-cyan-200 hover:bg-cyan-50 text-cyan-700 gap-2">
                               <FileText className="w-4 h-4" /> יבא
                             </Button>
@@ -1462,6 +1515,31 @@ export default function DeviceAssignments() {
                 </div>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setShowProgramsModal(false)}>ביטול</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            {/* Import Excel/List Dialog */}
+            <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
+              <DialogContent dir="rtl">
+                <DialogHeader>
+                  <DialogTitle>ייבוא רשימת משקפות</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <p className="text-sm text-slate-600">
+                    הדבק כאן רשימה של מספרי משקפות (מופרדים בפסיק או בשורות חדשות).
+                    ניתן להעתיק עמודה מקובץ אקסל ולהדביק כאן.
+                  </p>
+                  <Textarea
+                    value={importText}
+                    onChange={(e) => setImportText(e.target.value)}
+                    placeholder="לדוגמה: 101, 102, 103..."
+                    className="min-h-[200px] font-mono text-lg"
+                  />
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setShowImportDialog(false)}>ביטול</Button>
+                  <Button onClick={handleImportSubmit} className="bg-green-600 hover:bg-green-700">ייבא משקפות</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>

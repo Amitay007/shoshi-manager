@@ -28,13 +28,9 @@ function LayoutContent({ children, currentPageName }) {
     'DeviceAssignments': 'silshuch',
     'SyllabusHub': 'syllabus',
     'SyllabusWizard': 'syllabus',
-    'RelationalCenter': 'schools',
+    'RelationalCenter': 'relational_center',
     'SchoolDetails': 'schools',
-    'Management': 'management',
-    'CRMHub': 'management',
-    'CashFlow': 'management',
-    'TeachersList': 'management',
-    'TeacherProfile': 'management',
+    'Schools': 'schools',
     'BinocularCalculator': 'calculator', 
     'AccountsAndUsers': 'accounts',
     'Programs': 'programs',
@@ -45,7 +41,7 @@ function LayoutContent({ children, currentPageName }) {
   const isActive = (page, itemId) => {
     const currentPath = location.pathname;
     const pagePath = createPageUrl(page);
-    
+
     if (currentPath === pagePath) return true;
 
     const currentPageName = currentPath.substring(1).split('?')[0];
@@ -75,13 +71,14 @@ function LayoutContent({ children, currentPageName }) {
         { id: "silshuch", label: "שיבוץ משקפות", icon: Stamp, page: "DeviceAssignments" },
         { id: "devices", label: "מכשירי VR", icon: VRIcon, page: "GeneralInfo" },
         { id: "apps", label: "אפליקציות", icon: Code, page: "GeneralApps" },
+        { id: "calculator", label: "מחשבון משקפות", icon: Calculator, page: "BinocularCalculator" },
       ]
     },
     {
       section: "ניהול מערכות ואנשים",
       items: [
-        { id: "schools", label: "יחסי אנוש", icon: School, page: "RelationalCenter" },
-        { id: "management", label: "ניהול", icon: Briefcase, page: "Management" },
+        { id: "relational_center", label: "מרכז תקשורת", icon: Users, page: "RelationalCenter" },
+        { id: "schools", label: "בתי ספר", icon: School, page: "Schools" },
       ]
     },
     {

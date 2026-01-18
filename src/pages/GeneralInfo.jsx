@@ -778,14 +778,14 @@ export default function GeneralInfo() {
                       <CardTitle>סטטוס משקפת</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      {selectedDevice.is_disabled ? (
+                      {selectedDevice.is_disabled || selectedDevice.status === "מושבת" || selectedDevice.status === "בתיקון" ? (
                         <div className="space-y-3">
                           <Button
                             className="w-full bg-slate-400 hover:bg-slate-500 text-white gap-2"
                             onClick={handleEnableDevice}
                           >
                             <AlertCircle className="w-5 h-5" />
-                            מושבת
+                            {selectedDevice.status === "בתיקון" ? "בתיקון" : "מושבת"}
                           </Button>
                           {selectedDevice.disable_reason && (
                             <div className="p-3 bg-slate-50 rounded-md border border-slate-200">
@@ -793,7 +793,7 @@ export default function GeneralInfo() {
                               <p className="text-sm text-slate-700">{selectedDevice.disable_reason}</p>
                             </div>
                           )}
-                          <p className="text-xs text-slate-500 text-center">לחץ על הכפתור להפעלת המשקפת</p>
+                          <p className="text-xs text-slate-500 text-center">לחץ על הכפתור להחזרת המשקפת למצב תקין</p>
                         </div>
                       ) : (
                         <div className="space-y-3">

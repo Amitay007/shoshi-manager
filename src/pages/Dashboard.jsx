@@ -81,9 +81,11 @@ export default function Dashboard() {
     useEffect(() => {
         const loadData = async () => {
             try {
-                const [currentUser, devices] = await Promise.all([
+                const [currentUser, devices, apps, programs] = await Promise.all([
                     base44.auth.me(),
-                    base44.entities.VRDevice.list()
+                    base44.entities.VRDevice.list(),
+                    base44.entities.VRApp.list(),
+                    base44.entities.Syllabus.list()
                 ]);
                 
                 setUser(currentUser);
@@ -95,7 +97,9 @@ export default function Dashboard() {
                 setMetrics(prev => ({
                     ...prev,
                     activeDevices: activeCount,
-                    faults: faultCount
+                    faults: faultCount,
+                    apps: apps.length,
+                    programs: programs.length
                 }));
 
             } catch (e) {
