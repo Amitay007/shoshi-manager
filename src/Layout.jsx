@@ -77,7 +77,7 @@ function LayoutContent({ children, currentPageName }) {
     {
       section: "ניהול מערכות ואנשים",
       items: [
-        { id: "relational_center", label: "מרכז תקשורת", icon: Users, page: "RelationalCenter" },
+        { id: "relational_center", label: "מרכז תקשורת", icon: Users, page: "CRMHub?mode=hr" },
         { id: "schools", label: "בתי ספר", icon: School, page: "Schools" },
       ]
     },
