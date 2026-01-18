@@ -1,183 +1,99 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { GraduationCap, Users, AppWindow, Settings, TrendingUp, BookOpen, Calendar, School, Layers, ListPlus, UploadCloud, RefreshCw, Download, Link2 } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { 
+  LayoutGrid, Calculator, Users, Smartphone, FileText, 
+  School, Calendar, GraduationCap, Database, Plus, 
+  Upload, RefreshCw, Settings, UserPlus, CreditCard, 
+  Menu, Edit, Shield, Eye, Image
+} from "lucide-react";
 
 export default function Version2() {
   const navigate = useNavigate();
-  const [secretOpen, setSecretOpen] = React.useState(false);
-  const [showHidden, setShowHidden] = React.useState(false);
 
-  const menuCards = [
-    { title: "תוכניות", icon: GraduationCap, page: "SyllabusHub", color: "from-purple-500 to-purple-600" },
-    { title: "חשבונות ומשתמשים", icon: Users, page: "AccountsAndUsers", color: "from-purple-500 to-purple-600" },
-    { title: "אפליקציות", icon: AppWindow, page: "GeneralApps", color: "from-purple-500 to-purple-600" },
-    { title: "משקפות", icon: Settings, page: "GeneralInfo", color: "from-purple-500 to-purple-600" },
-    { title: "CRM", icon: TrendingUp, page: "CRMHub", color: "from-purple-500 to-purple-600" },
-    { title: "מרכז סילבוסים", icon: BookOpen, page: "SyllabusHub", color: "from-purple-500 to-purple-600" },
-    { title: "לוח זמנים", icon: Calendar, page: "BinocularCalculator", color: "from-purple-500 to-purple-600" },
-    { title: "בתי ספר", icon: School, page: "Schools", color: "from-purple-500 to-purple-600" },
+  const allPages = [
+    { name: "Dashboard", icon: LayoutGrid, title: "לוח בקרה ראשי" },
+    { name: "BinocularCalculator", icon: Calculator, title: "מחשבון משקפות" },
+    { name: "CRMHub", icon: Users, title: "ניהול קשרי לקוחות" },
+    { name: "DeviceInfo", icon: Smartphone, title: "פרטי מכשיר" },
+    { name: "GeneralInfo", icon: Settings, title: "מידע כללי משקפות" },
+    { name: "AppDetailsPage", icon: FileText, title: "פרטי אפליקציה" },
+    { name: "DeviceAssignments", icon: Smartphone, title: "שיבוץ מכשירים" },
+    { name: "AccountsAndUsers", icon: Users, title: "חשבונות ומשתמשים" },
+    { name: "ContactDetails", icon: Users, title: "פרטי איש קשר" },
+    { name: "Schools", icon: School, title: "בתי ספר" },
+    { name: "SyllabusHub", icon: GraduationCap, title: "מרכז סילבוסים" },
+    { name: "SyllabusValuesManager", icon: Settings, title: "ניהול ערכי סילבוס" },
+    { name: "AddAppPage", icon: Plus, title: "הוספת אפליקציה" },
+    { name: "SchoolDetails", icon: School, title: "פרטי בית ספר" },
+    { name: "HoursReport", icon: Calendar, title: "דיווח שעות" },
+    { name: "MySchedule", icon: Calendar, title: "הלו"ז שלי" },
+    { name: "SyllabusWizard", icon: GraduationCap, title: "אשף הסילבוסים" },
+    { name: "TeacherAgenda", icon: Calendar, title: "יומן מורה" },
+    { name: "AddAppToDevice", icon: Plus, title: "הוספת אפליקציה למכשיר" },
+    { name: "AddAppsFromList", icon: Plus, title: "הוספת אפליקציות מרשימה" },
+    { name: "AppDevices", icon: Smartphone, title: "מכשירי אפליקציה" },
+    { name: "AssignmentDetails", icon: FileText, title: "פרטי מטלה" },
+    { name: "BulkDataLoader", icon: Upload, title: "טעינת נתונים המונית" },
+    { name: "CashFlow", icon: CreditCard, title: "תזרים מזומנים" },
+    { name: "CreateProgram", icon: Plus, title: "יצירת תוכנית" },
+    { name: "CreateTeacher", icon: UserPlus, title: "יצירת מורה" },
+    { name: "DataImport", icon: Database, title: "ייבוא נתונים" },
+    { name: "DataUpdater", icon: RefreshCw, title: "עדכון נתונים" },
+    { name: "DeviceMenu", icon: Menu, title: "תפריט מכשיר" },
+    { name: "EditHeadset", icon: Edit, title: "עריכת משקפת" },
+    { name: "Management", icon: Shield, title: "ניהול" },
+    { name: "ManagerScheduler", icon: Calendar, title: "יומן מנהל" },
+    { name: "MasterSchedule", icon: Calendar, title: "לוח זמנים ראשי" },
+    { name: "ProgramView", icon: Eye, title: "צפייה בתוכנית" },
+    { name: "Programs", icon: GraduationCap, title: "תוכניות" },
+    { name: "ResearchPage", icon: FileText, title: "דף מחקר" },
+    { name: "TeacherProfile", icon: Users, title: "פרופיל מורה" },
+    { name: "TeachersList", icon: Users, title: "רשימת מורים" },
+    { name: "UpdateAppStatus", icon: RefreshCw, title: "עדכון סטטוס אפליקציה" },
+    { name: "UpdateAppsFromPDF", icon: Upload, title: "עדכון אפליקציות מ-PDF" },
+    { name: "UploadLogo", icon: Image, title: "העלאת לוגו" },
+    { name: "Version2", icon: LayoutGrid, title: "היסטוריה (דף זה)" },
+    { name: "GeneralApps", icon: LayoutGrid, title: "אפליקציות כללי" },
+    { name: "AddNewHeadset", icon: Plus, title: "הוספת משקפת חדשה" },
+    { name: "DataRepositoryList", icon: Database, title: "רשימת מאגרי מידע" },
+    { name: "DataRepositories", icon: Database, title: "מאגרי מידע" },
+    { name: "RelationalCenter", icon: Users, title: "מרכז קשרים" }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-purple-700 to-purple-800 p-8" dir="rtl">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
+    <div className="min-h-screen bg-slate-50 p-8" dir="rtl">
+      <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-6xl font-bold text-white mb-4" style={{ fontFamily: 'Arial, sans-serif', letterSpacing: '0.05em' }}>
-            shoshi
+          <h1 className="text-4xl font-bold text-slate-900 mb-4">
+            כל עמודי האפליקציה ({allPages.length})
           </h1>
-          <p className="text-purple-200 text-lg">
-            VR Device Management System – Accounts & Application Inventory Control
+          <p className="text-slate-600 text-lg">
+            אינדקס מלא של כל העמודים הקיימים במערכת
           </p>
-          <p className="text-purple-300 text-sm mt-2">Made By Yoya</p>
         </div>
 
-        {/* Menu Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {menuCards.map((card, index) => {
-            const Icon = card.icon;
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          {allPages.map((page, index) => {
+            const Icon = page.icon;
             return (
               <button
                 key={index}
-                onClick={() => navigate(createPageUrl(card.page))}
-                className="bg-white bg-opacity-90 hover:bg-opacity-100 rounded-2xl p-8 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
+                onClick={() => navigate(createPageUrl(page.name))}
+                className="flex flex-col items-center justify-center p-6 bg-white rounded-xl shadow-sm hover:shadow-md border border-slate-200 transition-all duration-200 hover:-translate-y-1 group"
               >
-                <div className="flex flex-col items-center justify-center gap-4">
-                  <div className={`w-12 h-12 bg-gradient-to-br ${card.color} rounded-xl flex items-center justify-center`}>
-                    <Icon className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold text-purple-800">{card.title}</h3>
+                <div className="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center mb-3 group-hover:bg-purple-100 transition-colors">
+                  <Icon className="w-6 h-6 text-purple-600" />
                 </div>
+                <h3 className="font-semibold text-slate-800 text-center mb-1">{page.title}</h3>
+                <span className="text-xs text-slate-400 font-mono bg-slate-100 px-2 py-0.5 rounded">
+                  {page.name}
+                </span>
               </button>
             );
           })}
-          
-          {/* Hidden Buttons - Revealed after dialog */}
-          {showHidden && (
-            <>
-              <button
-                onClick={() => navigate(createPageUrl("DataRepositories"))}
-                className="bg-white bg-opacity-90 hover:bg-opacity-100 rounded-2xl p-8 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
-              >
-                <div className="flex flex-col items-center justify-center gap-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center">
-                    <Layers className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold text-purple-800">מאגרי מידע</h3>
-                </div>
-              </button>
-
-              <button
-                onClick={() => navigate(createPageUrl("AddAppsFromList"))}
-                className="bg-white bg-opacity-90 hover:bg-opacity-100 rounded-2xl p-8 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
-              >
-                <div className="flex flex-col items-center justify-center gap-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
-                    <ListPlus className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold text-purple-800">הוספת אפליקציות</h3>
-                </div>
-              </button>
-
-              <button
-                onClick={() => navigate(createPageUrl("BulkDataLoader"))}
-                className="bg-white bg-opacity-90 hover:bg-opacity-100 rounded-2xl p-8 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
-              >
-                <div className="flex flex-col items-center justify-center gap-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center">
-                    <UploadCloud className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold text-purple-800">טעינת נתונים</h3>
-                </div>
-              </button>
-
-              <button
-                onClick={() => navigate(createPageUrl("UpdateAppsFromPDF"))}
-                className="bg-white bg-opacity-90 hover:bg-opacity-100 rounded-2xl p-8 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
-              >
-                <div className="flex flex-col items-center justify-center gap-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-amber-600 rounded-xl flex items-center justify-center">
-                    <RefreshCw className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold text-purple-800">עדכון אפליקציות</h3>
-                </div>
-              </button>
-
-              <button
-                onClick={() => navigate(createPageUrl("DataImport"))}
-                className="bg-white bg-opacity-90 hover:bg-opacity-100 rounded-2xl p-8 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
-              >
-                <div className="flex flex-col items-center justify-center gap-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
-                    <UploadCloud className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold text-purple-800">ייבוא נתונים</h3>
-                </div>
-              </button>
-
-              <button
-                onClick={() => navigate(createPageUrl("DataUpdater"))}
-                className="bg-white bg-opacity-90 hover:bg-opacity-100 rounded-2xl p-8 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
-              >
-                <div className="flex flex-col items-center justify-center gap-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-rose-600 rounded-xl flex items-center justify-center">
-                    <Link2 className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold text-purple-800">עדכון</h3>
-                </div>
-              </button>
-
-              <button
-                onClick={() => navigate(createPageUrl("UpdateAppStatus"))}
-                className="bg-white bg-opacity-90 hover:bg-opacity-100 rounded-2xl p-8 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
-              >
-                <div className="flex flex-col items-center justify-center gap-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-xl flex items-center justify-center">
-                    <RefreshCw className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold text-purple-800">עדכון סטטוס</h3>
-                </div>
-              </button>
-            </>
-          )}
-        </div>
-
-        {/* Bottom Button */}
-        <div className="flex justify-center">
-          <button
-            onClick={() => setSecretOpen(true)}
-            className="bg-white bg-opacity-90 hover:bg-opacity-100 rounded-2xl px-12 py-6 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
-          >
-            <h3 className="text-2xl font-bold text-red-600">אל תלחץ כאן</h3>
-          </button>
         </div>
       </div>
-
-      {/* Secret Dialog */}
-      <Dialog open={secretOpen} onOpenChange={setSecretOpen}>
-        <DialogContent dir="rtl">
-          <DialogHeader>
-            <DialogTitle>מזל שאתה לא נשיא ארצות הברית וזה לא הכפתור האדום</DialogTitle>
-          </DialogHeader>
-          <div className="text-slate-600">
-            לחץ המשך
-          </div>
-          <DialogFooter className="justify-end">
-            <Button
-              onClick={() => {
-                setSecretOpen(false);
-                setShowHidden(true);
-              }}
-              className="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-bold"
-            >
-              המשך
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
