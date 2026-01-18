@@ -3,11 +3,13 @@ import { InstitutionProgram } from "@/entities/InstitutionProgram";
 import { Syllabus } from "@/entities/Syllabus";
 import { VRDevice } from "@/entities/VRDevice";
 import { EducationInstitution } from "@/entities/EducationInstitution";
+import { VRApp } from "@/entities/VRApp";
+import { DeviceApp } from "@/entities/DeviceApp";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calculator, Glasses, X, RefreshCw, Calendar, BookOpen, Layers, CheckCircle2, AlertCircle } from "lucide-react";
+import { Calculator, Glasses, X, RefreshCw, Calendar, BookOpen, Layers, CheckCircle2, AlertCircle, AppWindow } from "lucide-react";
 import { with429Retry } from "@/components/utils/retry";
 import { createPageUrl } from "@/utils";
 import { Link } from "react-router-dom";
@@ -23,9 +25,11 @@ export default function BinocularCalculator() {
   const [syllabi, setSyllabi] = useState([]);
   const [schools, setSchools] = useState([]);
   const [devices, setDevices] = useState([]);
+  const [apps, setApps] = useState([]);
+  const [deviceApps, setDeviceApps] = useState([]);
   
   // UI State
-  const [mode, setMode] = useState("programs"); // 'programs' | 'syllabi' | 'sessions'
+  const [mode, setMode] = useState("programs"); // 'programs' | 'syllabi' | 'sessions' | 'apps'
   
   // Selections
   const [col1, setCol1] = useState("");
@@ -40,16 +44,20 @@ export default function BinocularCalculator() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [pData, sData, iData, dData] = await Promise.all([
+      const [pData, sData, iData, dData, aData, daData] = await Promise.all([
         with429Retry(() => InstitutionProgram.list()),
         with429Retry(() => Syllabus.list()),
         with429Retry(() => EducationInstitution.list()),
         with429Retry(() => VRDevice.list()),
+        with429Retry(() => VRApp.list()),
+        with429Retry(() => DeviceApp.list(null, 10000)), // Fetch all to be safe
       ]);
 
       setInstPrograms(pData || []);
       setSyllabi(sData || []);
       setSchools(iData || []);
+      setApps(aData || []);
+      setDeviceApps(daData || []);
       
       // Sort devices by number for cleaner display
       const sortedDevices = (dData || []).sort((a, b) => 
@@ -67,6 +75,14 @@ export default function BinocularCalculator() {
 
   // 1. Generate Dropdown Options based on Mode
   const options = useMemo(() => {
+    if (mode === "apps") {
+      return apps.map(app => ({
+        value: app.id,
+        label: app.name,
+        subLabel: app.purchase_type || "אפליקציה"
+      }));
+    }
+
     if (mode === "syllabi") {
       return syllabi.map(s => ({
         value: s.id,
@@ -118,7 +134,7 @@ export default function BinocularCalculator() {
     }
 
     return [];
-  }, [mode, instPrograms, syllabi, schools]);
+  }, [mode, instPrograms, syllabi, schools, apps]);
 
   // 2. Fetch Devices for a Selection
   const getSelectionDevices = (selectionId) => {
@@ -126,7 +142,13 @@ export default function BinocularCalculator() {
 
     let targetIds = [];
 
-    if (mode === "syllabi") {
+    if (mode === "apps") {
+      // Find all DeviceApp records for this app
+      targetIds = deviceApps
+        .filter(da => da.app_id === selectionId)
+        .map(da => da.device_id);
+    }
+    else if (mode === "syllabi") {
       const syllabus = syllabi.find(s => s.id === selectionId);
       targetIds = syllabus?.assigned_device_ids || [];
     } 
@@ -147,9 +169,9 @@ export default function BinocularCalculator() {
   };
 
   // 3. Memoize Device Lists
-  const devices1 = useMemo(() => getSelectionDevices(col1), [col1, mode, devices, instPrograms, syllabi]);
-  const devices2 = useMemo(() => getSelectionDevices(col2), [col2, mode, devices, instPrograms, syllabi]);
-  const devices3 = useMemo(() => getSelectionDevices(col3), [col3, mode, devices, instPrograms, syllabi]);
+  const devices1 = useMemo(() => getSelectionDevices(col1), [col1, mode, devices, instPrograms, syllabi, deviceApps]);
+  const devices2 = useMemo(() => getSelectionDevices(col2), [col2, mode, devices, instPrograms, syllabi, deviceApps]);
+  const devices3 = useMemo(() => getSelectionDevices(col3), [col3, mode, devices, instPrograms, syllabi, deviceApps]);
 
   // 4. Calculate Conflicts
   const conflictSet = useMemo(() => {
@@ -313,6 +335,7 @@ export default function BinocularCalculator() {
               { id: "programs", label: "תוכניות", icon: Layers },
               { id: "sessions", label: "מפגשים", icon: Calendar },
               { id: "syllabi", label: "סילבוסים", icon: BookOpen },
+              { id: "apps", label: "אפליקציות", icon: AppWindow },
             ].map((tab) => {
               const isActive = mode === tab.id;
               const TabIcon = tab.icon;

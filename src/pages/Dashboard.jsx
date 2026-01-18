@@ -91,7 +91,7 @@ export default function Dashboard() {
                 setUser(currentUser);
 
                 // Calculate metrics
-                const activeCount = devices.filter(d => ['זמין', 'בשימוש'].includes(d.status)).length;
+                const activeCount = devices.filter(d => ['זמין', 'בשימוש'].includes(d.status) && !d.is_disabled).length;
                 const faultCount = devices.filter(d => ['בתיקון', 'מושבת'].includes(d.status) || d.is_disabled).length;
 
                 setMetrics(prev => ({

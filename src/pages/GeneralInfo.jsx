@@ -231,23 +231,43 @@ export default function GeneralInfo() {
   };
 
   const handleDisableDevice = async () => {
+    const updatedDevice = {
+      ...selectedDevice,
+      is_disabled: true,
+      disable_reason: disableReason,
+      status: "מושבת"
+    };
+    
     await with429Retry(() => VRDevice.update(selectedDevice.id, {
       is_disabled: true,
       disable_reason: disableReason,
       status: "מושבת"
     }));
-    await loadDeviceDetails(selectedDevice);
+    
+    setSelectedDevice(updatedDevice);
+    setEditGeneralData(updatedDevice);
+    await loadDeviceDetails(updatedDevice);
     await loadData();
     setShowDisableDialog(false);
   };
 
   const handleEnableDevice = async () => {
+    const updatedDevice = {
+      ...selectedDevice,
+      is_disabled: false,
+      disable_reason: "",
+      status: "זמין"
+    };
+
     await with429Retry(() => VRDevice.update(selectedDevice.id, {
       is_disabled: false,
       disable_reason: "",
       status: "זמין"
     }));
-    await loadDeviceDetails(selectedDevice);
+    
+    setSelectedDevice(updatedDevice);
+    setEditGeneralData(updatedDevice);
+    await loadDeviceDetails(updatedDevice);
     await loadData();
   };
   
