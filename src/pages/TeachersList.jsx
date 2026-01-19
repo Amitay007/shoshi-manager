@@ -10,6 +10,7 @@ import { createPageUrl } from "@/utils";
 import BackHomeButtons from "@/components/common/BackHomeButtons";
 import { useLoading } from "@/components/common/LoadingContext";
 import { with429Retry } from "@/components/utils/retry";
+import { Button } from "@/components/ui/button";
 
 export default function TeachersList() {
   const [teachers, setTeachers] = useState([]);
