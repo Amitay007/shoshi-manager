@@ -24,7 +24,21 @@ import { toast } from "sonner";
 
 export default function Version2() {
   const navigate = useNavigate();
-  const [selectedPages, setSelectedPages] = useState({}); // { pageName: 'delete' | 'review' | 'keep' }
+  const [selectedPages, setSelectedPages] = useState(() => {
+    // Restore from localStorage
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('version2_selected_pages');
+      return saved ? JSON.parse(saved) : {};
+    }
+    return {};
+  });
+
+  useEffect(() => {
+    // Save to localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('version2_selected_pages', JSON.stringify(selectedPages));
+    }
+  }, [selectedPages]);
   const [analysisModalOpen, setAnalysisModalOpen] = useState(false);
   const [analyzingPage, setAnalyzingPage] = useState(null);
 
