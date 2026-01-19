@@ -864,21 +864,7 @@ export default function GeneralApps() {
           }
         </div>
 
-        {/* --- ROBUST SEARCH BAR --- */}
-        <div className="relative mb-4 w-full max-w-md" ref={searchRef}>
-          <div className="relative">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-            <Input
-              placeholder="חפש אפליקציה..."
-              className="pr-10 bg-white shadow-sm border-slate-200 focus:ring-2 focus:ring-cyan-500"
-              value={filters.search}
-              onChange={(e) => {
-                setFilters(prev => ({ ...prev, search: e.target.value }));
-                setIsSearchOpen(true);
-              }}
-              onFocus={() => setIsSearchOpen(true)}
-            />
-          </div>
+       
 
           {/* DROPDOWN RESULTS */}
           {isSearchOpen && searchOptions.length > 0 && (
