@@ -105,8 +105,8 @@ export default function ShoshiBrainChat() {
                     <Bot className="w-4 h-4 text-purple-600" />
                 </div>
                 <div>
-                    <h3 className="font-semibold text-sm text-slate-800">ערוץ תקשורת ישיר</h3>
-                    <p className="text-xs text-slate-500">מחובר לסוכן QA Expert</p>
+                    <h3 className="font-semibold text-sm text-slate-800">המוח של שושי</h3>
+                    <p className="text-xs text-slate-500">אני עובדת עם אמא</p>
                 </div>
             </div>
 

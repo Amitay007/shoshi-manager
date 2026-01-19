@@ -186,37 +186,38 @@ export default function Dashboard() {
                 {/* 3. Main Split View */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[600px]">
                     
-                    {/* Left Column - Shoshi's Brain (Larger) */}
+                    {/* Left Column - Shoshi Insight Center (Larger) */}
                     <Card className="lg:col-span-7 flex flex-col border-0 shadow-lg overflow-hidden h-full">
                         <CardHeader className="bg-slate-900 text-white p-4 py-3 shrink-0 flex flex-row items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <Brain className="w-5 h-5 text-purple-400" />
-                                <CardTitle className="text-base">המוח של שושי</CardTitle>
+                                <CardTitle className="text-base">Shoshi Insight Center</CardTitle>
                             </div>
                             <div className="flex items-center gap-2">
                                 <span className="flex h-2 w-2 relative">
                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                                     <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                                 </span>
-                                <span className="text-xs text-slate-400">Active</span>
+                                <span className="text-xs text-slate-400">ברקה מחובר</span>
                             </div>
                         </CardHeader>
                         
                         <div className="flex-1 flex flex-col min-h-0 bg-slate-50">
-                            {/* Top Part: Alerts (Fixed height) */}
+                            {/* Top Part: Insights from SystemDiagnostics (Fixed height) */}
                             <div className="h-1/3 p-4 border-b bg-white overflow-hidden flex flex-col">
                                 <div className="flex items-center gap-2 mb-3 text-slate-500 text-xs font-semibold uppercase tracking-wider">
-                                    <Bell className="w-3 h-3" /> התראות אחרונות
+                                    <Activity className="w-3 h-3" /> תובנות מערכת (Live)
                                 </div>
                                 <ScrollArea className="flex-1 -mr-3 pr-3">
-                                    <AlertItem title="זוהה עומס בייצוא סילבוס (Latency > 2s)" time="לפני 10 דקות" type="warning" />
-                                    <AlertItem title="שגיאת התחברות למשקפת #2611" time="לפני 45 דקות" type="error" />
-                                    <div className="text-center text-xs text-slate-400 mt-2">אין התראות נוספות</div>
+                                    {/* Placeholder for real insights - utilizing existing AlertItem for UI consistency */}
+                                    <AlertItem title="ברקה: סריקת קישורים הושלמה - נמצאו 2 קישורים שבורים" time="לפני 5 דקות" type="warning" />
+                                    <AlertItem title="ברקה: זמן טעינת דף הבית תקין (1.2s)" time="לפני 20 דקות" type="success" />
+                                    <AlertItem title="זוהה עומס בייצוא סילבוס (Latency > 2s)" time="לפני שעתיים" type="error" />
                                 </ScrollArea>
                             </div>
 
-                            {/* Bottom Part: Chat (Remaining height) */}
-                            <div className="flex-1 min-h-0 p-4 bg-slate-100/50">
+                            {/* Bottom Part: Chat with QA Expert (Remaining height) */}
+                            <div className="flex-1 min-h-0 p-0 bg-slate-100/50">
                                 <ShoshiBrainChat />
                             </div>
                         </div>
