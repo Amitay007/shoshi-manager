@@ -17,7 +17,6 @@ export default function SyllabusHub() {
   const [schools, setSchools] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  // החזרת מצבי הסינון
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterSchool, setFilterSchool] = useState("all");
@@ -29,22 +28,21 @@ export default function SyllabusHub() {
   const loadData = async () => {
     setLoading(true);
     try {
-      // ניסיון טעינה משולב: קודם מהתוכניות (איפה שאתה רואה אותם) ואז מהסילבוסים
+      // טעינה משולבת של תוכניות וסילבוסים כדי למצוא את הנתונים ה"נעלמים"
       const [progData, syllabiData, schoolsData] = await Promise.all([
         with429Retry(() => base44.entities.InstitutionProgram.list()).catch(() => []),
         with429Retry(() => base44.entities.Syllabus.list()).catch(() => []),
         with429Retry(() => base44.entities.EducationInstitution.list()).catch(() => [])
       ]);
 
-      // איחוד רשימות כדי להבטיח ששום דבר לא יתפספס
       const combined = [...(progData || []), ...(syllabiData || [])];
-      console.log("Combined Data Found:", combined);
+      console.log("Raw Combined Data:", combined);
       
       setItems(combined);
       setSchools(schoolsData || []);
     } catch (error) {
-      console.error("Critical Load Error:", error);
-      toast({ title: "שגיאה בטעינה", variant: "destructive" });
+      console.error("Load Error:", error);
+      toast({ title: "שגיאה בטעינת נתונים", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -61,7 +59,7 @@ export default function SyllabusHub() {
     });
   }, [items, searchTerm, filterStatus, filterSchool]);
 
-  if (loading) return <div className="p-12 text-center text-slate-500">טוען את מרכז הסילבוסים...</div>;
+  if (loading) return <div className="p-12 text-center text-slate-500">טוען נתונים...</div>;
 
   return (
     <div className="min-h-screen bg-slate-50 p-4 lg:p-8" dir="rtl">
@@ -74,43 +72,4 @@ export default function SyllabusHub() {
               <BookOpen className="w-8 h-8" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-slate-900">מרכז סילבוסים</h1>
-              <p className="text-slate-500">ניהול תוכניות הלימוד של יויה</p>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Link to={createPageUrl("SyllabusWizard")}>
-              <Button className="bg-purple-600 hover:bg-purple-700 text-white gap-2">
-                <Plus className="w-4 h-4" /> סילבוס חדש
-              </Button>
-            </Link>
-            <BackHomeButtons backTo="CRMHub" backLabel="אנשי קשר" />
-          </div>
-        </div>
-
-        {/* פאנל סינון (החזרנו את השורות) */}
-        <Card className="border-none shadow-sm">
-          <CardContent className="p-4 grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="relative">
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-              <Input 
-                placeholder="חיפוש חופשי..." 
-                value={searchTerm} 
-                onChange={(e) => setSearchTerm(e.target.value)} 
-                className="pr-10"
-              />
-            </div>
-
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger><SelectValue placeholder="סטטוס" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">כל הסטטוסים</SelectItem>
-                <SelectItem value="draft">טיוטה</SelectItem>
-                <SelectItem value="final">מאושר</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={filterSchool} onValueChange={setFilterSchool}>
-              <SelectTrigger><SelectValue placeholder="בית ספר" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">כל בתי הספר
+              <h1 className="text-3xl font-bold text-slate-900">מרכז
