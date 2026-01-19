@@ -885,7 +885,6 @@ export default function GeneralApps() {
               ))}
             </div>
           )}
-        </div>
         {/* ------------------------- */}
 
         <div className="mb-4">
