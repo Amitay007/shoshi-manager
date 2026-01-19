@@ -5,11 +5,9 @@ import AddAppsFromList from './pages/AddAppsFromList';
 import AddNewHeadset from './pages/AddNewHeadset';
 import AppDetailsPage from './pages/AppDetailsPage';
 import AppDevices from './pages/AppDevices';
-import AssignmentDetails from './pages/AssignmentDetails';
 import BinocularCalculator from './pages/BinocularCalculator';
 import BulkDataLoader from './pages/BulkDataLoader';
 import CRMHub from './pages/CRMHub';
-import CashFlow from './pages/CashFlow';
 import ContactDetails from './pages/ContactDetails';
 import CreateProgram from './pages/CreateProgram';
 import CreateTeacher from './pages/CreateTeacher';
@@ -25,11 +23,6 @@ import EditHeadset from './pages/EditHeadset';
 import GeneralApps from './pages/GeneralApps';
 import GeneralInfo from './pages/GeneralInfo';
 import Home from './pages/Home';
-import HoursReport from './pages/HoursReport';
-import Management from './pages/Management';
-import ManagerScheduler from './pages/ManagerScheduler';
-import MasterSchedule from './pages/MasterSchedule';
-import MySchedule from './pages/MySchedule';
 import ProgramView from './pages/ProgramView';
 import Programs from './pages/Programs';
 import RelationalCenter from './pages/RelationalCenter';
@@ -39,12 +32,9 @@ import Schools from './pages/Schools';
 import SyllabusHub from './pages/SyllabusHub';
 import SyllabusValuesManager from './pages/SyllabusValuesManager';
 import SyllabusWizard from './pages/SyllabusWizard';
-import TeacherAgenda from './pages/TeacherAgenda';
 import TeacherProfile from './pages/TeacherProfile';
 import TeachersList from './pages/TeachersList';
 import UpdateAppStatus from './pages/UpdateAppStatus';
-import UpdateAppsFromPDF from './pages/UpdateAppsFromPDF';
-import UploadLogo from './pages/UploadLogo';
 import Version2 from './pages/Version2';
 import __Layout from './Layout.jsx';
 
@@ -57,11 +47,9 @@ export const PAGES = {
     "AddNewHeadset": AddNewHeadset,
     "AppDetailsPage": AppDetailsPage,
     "AppDevices": AppDevices,
-    "AssignmentDetails": AssignmentDetails,
     "BinocularCalculator": BinocularCalculator,
     "BulkDataLoader": BulkDataLoader,
     "CRMHub": CRMHub,
-    "CashFlow": CashFlow,
     "ContactDetails": ContactDetails,
     "CreateProgram": CreateProgram,
     "CreateTeacher": CreateTeacher,
@@ -77,11 +65,6 @@ export const PAGES = {
     "GeneralApps": GeneralApps,
     "GeneralInfo": GeneralInfo,
     "Home": Home,
-    "HoursReport": HoursReport,
-    "Management": Management,
-    "ManagerScheduler": ManagerScheduler,
-    "MasterSchedule": MasterSchedule,
-    "MySchedule": MySchedule,
     "ProgramView": ProgramView,
     "Programs": Programs,
     "RelationalCenter": RelationalCenter,
@@ -91,12 +74,9 @@ export const PAGES = {
     "SyllabusHub": SyllabusHub,
     "SyllabusValuesManager": SyllabusValuesManager,
     "SyllabusWizard": SyllabusWizard,
-    "TeacherAgenda": TeacherAgenda,
     "TeacherProfile": TeacherProfile,
     "TeachersList": TeachersList,
     "UpdateAppStatus": UpdateAppStatus,
-    "UpdateAppsFromPDF": UpdateAppsFromPDF,
-    "UploadLogo": UploadLogo,
     "Version2": Version2,
 }
 
