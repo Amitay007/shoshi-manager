@@ -24,6 +24,7 @@ import DeviceMenu from './pages/DeviceMenu';
 import EditHeadset from './pages/EditHeadset';
 import GeneralApps from './pages/GeneralApps';
 import GeneralInfo from './pages/GeneralInfo';
+import Home from './pages/Home';
 import HoursReport from './pages/HoursReport';
 import Management from './pages/Management';
 import ManagerScheduler from './pages/ManagerScheduler';
@@ -45,7 +46,6 @@ import UpdateAppStatus from './pages/UpdateAppStatus';
 import UpdateAppsFromPDF from './pages/UpdateAppsFromPDF';
 import UploadLogo from './pages/UploadLogo';
 import Version2 from './pages/Version2';
-import Home from './pages/Home';
 import __Layout from './Layout.jsx';
 
 
@@ -76,6 +76,7 @@ export const PAGES = {
     "EditHeadset": EditHeadset,
     "GeneralApps": GeneralApps,
     "GeneralInfo": GeneralInfo,
+    "Home": Home,
     "HoursReport": HoursReport,
     "Management": Management,
     "ManagerScheduler": ManagerScheduler,
@@ -97,7 +98,6 @@ export const PAGES = {
     "UpdateAppsFromPDF": UpdateAppsFromPDF,
     "UploadLogo": UploadLogo,
     "Version2": Version2,
-    "Home": Home,
 }
 
 export const pagesConfig = {
