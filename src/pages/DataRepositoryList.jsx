@@ -47,12 +47,38 @@ export default function DataRepositoryList() {
     if (!config) return;
     const load = async () => {
       setLoading(true);
-      const sch = await with429Retry(() => config.sdk.schema());
+      let sch = null;
+      try {
+        // Try SDK first if available
+        if (typeof config.sdk.schema === 'function') {
+           sch = await with429Retry(() => config.sdk.schema());
+        }
+      } catch (e) {
+        console.warn("SDK schema fetch failed", e);
+      }
+
+      // Fallback to backend function if SDK failed or method missing
+      if (!sch) {
+        try {
+           const res = await base44.functions.invoke('getEntitySchema', { entityName: entityKey });
+           sch = res.data || res; // Handle different response structures
+        } catch (e) {
+           console.error("Backend schema fetch failed", e);
+        }
+      }
+
       // fallback: in case schema is missing, avoid crash
       setSchema(sch || { properties: {} });
-      const list = await with429Retry(() => config.sdk.list());
-      setItems(list);
-      setFiltered(list);
+
+      try {
+          const list = await with429Retry(() => config.sdk.list());
+          setItems(list);
+          setFiltered(list);
+      } catch (e) {
+          console.error("List fetch failed", e);
+          setItems([]);
+          setFiltered([]);
+      }
       setLoading(false);
     };
     load();
