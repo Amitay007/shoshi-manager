@@ -150,7 +150,6 @@ export default function CreateTeacher() {
                   שמור עובד
                 </Button>
               </div>
-
             </form>
           </CardContent>
         </Card>
