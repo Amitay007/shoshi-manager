@@ -144,7 +144,7 @@ export default function TeachersList() {
                       </div>
                     </CardHeader>
 
-                   <CardContent className="space-y-3">
+                 <CardContent className="space-y-3">
                       {teacher.email && (
                         <div className="flex items-center gap-2 text-sm text-slate-600">
                           <Mail className="w-4 h-4 text-slate-400" />
@@ -156,6 +156,16 @@ export default function TeachersList() {
                         <div className="flex items-center gap-2 text-sm text-slate-600">
                           <Phone className="w-4 h-4 text-slate-400" />
                           <span>{teacher.phone}</span>
+                        </div>
+                      )}
+
+                      {(teacher.subjects || []).length > 0 && (
+                        <div className="flex flex-wrap gap-1 pt-2">
+                          {teacher.subjects.slice(0, 3).map((subject, idx) => (
+                            <Badge key={idx} className="bg-teal-100 text-teal-800 text-xs">
+                              {subject}
+                            </Badge>
+                          ))}
                         </div>
                       )}
                     </CardContent>
