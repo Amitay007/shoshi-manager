@@ -151,7 +151,6 @@ export default function TeachersList() {
                           <span className="truncate">{teacher.email}</span>
                         </div>
                       )}
-
                       {teacher.phone && (
                         <div className="flex items-center gap-2 text-sm text-slate-600">
                           <Phone className="w-4 h-4 text-slate-400" />
