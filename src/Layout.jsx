@@ -75,16 +75,10 @@ function LayoutContent({ children, currentPageName }) {
       ]
     },
     {
-      section: "צוות יויה",
-      items: [
-        { id: "teachers_list", label: "רשימת עובדים", icon: Users, page: "TeachersList" },
-        { id: "create_teacher", label: "הוספת עובד חדש", icon: Plus, page: "CreateTeacher" },
-      ]
-    },
-    {
       section: "ניהול מערכות ואנשים",
       items: [
-        { id: "relational_center", label: "קשרי לקוחות", icon: Users, page: "CRMHub?mode=manager" },
+        { id: "teachers_list", label: "צוות יויה", icon: Users, page: "TeachersList" },
+        { id: "relational_center", label: "אנשי קשר", icon: Users, page: "CRMHub?mode=manager" },
         { id: "schools", label: "בתי ספר", icon: School, page: "Schools" },
       ]
     },

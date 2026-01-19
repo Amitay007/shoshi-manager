@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Users, Mail, Phone, Search, BookOpen } from "lucide-react";
+import { Users, Mail, Phone, Search, BookOpen, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import BackHomeButtons from "@/components/common/BackHomeButtons";
@@ -74,7 +74,15 @@ export default function TeachersList() {
               <p className="text-slate-600">ניהול מורים ומדריכי VR</p>
             </div>
           </div>
-          <BackHomeButtons backTo="CRMHub" backLabel="חזור למרכז ניהול" />
+          <div className="flex gap-2">
+            <Link to={createPageUrl("CreateTeacher")}>
+              <Button className="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 gap-2 text-white shadow-md">
+                <Plus className="w-4 h-4" />
+                הוספת עובד חדש
+              </Button>
+            </Link>
+            <BackHomeButtons backTo="CRMHub" backLabel="חזור למרכז ניהול" />
+          </div>
         </div>
 
         {/* Search Bar */}
