@@ -29,7 +29,7 @@ export default function CreateTeacher() {
     setIsSubmitting(true);
     try {
       // Ensure numeric values are numbers
-      if (data.hourlyRate) data.hourlyRate = Number(data.hourlyRate);
+
       if (data.experience_years) data.experience_years = Number(data.experience_years);
 
       await base44.entities.Teacher.create(data);
@@ -110,26 +110,9 @@ export default function CreateTeacher() {
                   <Input id="phone" {...register("phone")} />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="start_work_date">תאריך תחילת עבודה</Label>
-                  <Input 
-                    id="start_work_date" 
-                    type="date" 
-                    {...register("start_work_date")} 
-                  />
-                </div>
+            
 
-                <div className="space-y-2">
-                  <Label htmlFor="hourlyRate">שכר שעתי (₪)</Label>
-                  <Input 
-                    id="hourlyRate" 
-                    type="number" 
-                    min="0" 
-                    step="0.1" 
-                    {...register("hourlyRate")} 
-                  />
-                </div>
-              </div>
+                
 
               <div className="space-y-2">
                 <Label htmlFor="address">כתובת</Label>
