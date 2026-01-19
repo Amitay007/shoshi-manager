@@ -20,18 +20,13 @@ export default function CreateTeacher() {
 
   const { register, handleSubmit, formState: { errors } } = useForm({
     defaultValues: {
-      active: true,
-      start_work_date: new Date().toISOString().split('T')[0]
+      active: true
     }
   });
 
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     try {
-      // Ensure numeric values are numbers
-
-      if (data.experience_years) data.experience_years = Number(data.experience_years);
-
       await base44.entities.Teacher.create(data);
       
       toast({
@@ -80,6 +75,7 @@ export default function CreateTeacher() {
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               
+              {/* רשת לשדות עליונים */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="name">שם מלא *</Label>
@@ -109,10 +105,7 @@ export default function CreateTeacher() {
                   <Label htmlFor="phone">טלפון</Label>
                   <Input id="phone" {...register("phone")} />
                 </div>
-
-            
-
-                
+              </div> {/* כאן הייתה חסרה הסגירה של ה-Grid! */}
 
               <div className="space-y-2">
                 <Label htmlFor="address">כתובת</Label>
@@ -124,27 +117,28 @@ export default function CreateTeacher() {
                 <Textarea id="notes" {...register("notes")} className="min-h-[100px]" />
               </div>
 
-            <div className="flex items-center gap-2 p-4 bg-slate-50 rounded-lg border border-slate-100">
-            <Switch
-              id="active"
-              defaultChecked={true}
-              {...register("active")}
-            />
-            <Label htmlFor="active">במערכת פעיל עובד</Label>
-          </div>
+              <div className="flex items-center gap-2 p-4 bg-slate-50 rounded-lg border border-slate-100">
+                <Switch
+                  id="active"
+                  defaultChecked={true}
+                  {...register("active")}
+                />
+                <Label htmlFor="active">עובד פעיל במערכת</Label>
+              </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t">
-            <Button type="button" variant="outline" onClick={() => navigate(-1)}>
-              ביטול
-            </Button>
-            <Button type="submit" disabled={isSubmitting} className="bg-cyan-600 hover:bg-cyan-700 min-w-[120px]">
-              {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin ml-2" /> : <Save className="w-4 h-4 ml-2" />}
-              שמור עובד
-            </Button>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
-  </div>
-);
+              <div className="flex justify-end gap-3 pt-4 border-t">
+                <Button type="button" variant="outline" onClick={() => navigate(-1)}>
+                  ביטול
+                </Button>
+                <Button type="submit" disabled={isSubmitting} className="bg-cyan-600 hover:bg-cyan-700 min-w-[120px]">
+                  {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin ml-2" /> : <Save className="w-4 h-4 ml-2" />}
+                  שמור עובד
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
 }
