@@ -157,70 +157,8 @@ export default function ContactDetails() {
           </CardContent>
         </Card>
 
-        {/* Activity Log Section */}
-        <div className="grid grid-cols-1 gap-6">
-          <Card className="border-0 shadow-md">
-            <CardHeader className="flex flex-row items-center justify-between bg-slate-50/50 border-b border-slate-100 pb-4">
-              <CardTitle className="flex items-center gap-2 text-xl">
-                <Clock className="w-5 h-5 text-purple-600" />
-                יומן מעקב ותיעוד
-              </CardTitle>
-              <Button onClick={() => setShowLogModal(true)} className="gap-2 bg-purple-600 hover:bg-purple-700 shadow-sm">
-                <Plus className="w-4 h-4" /> הוסף תיעוד חדש
-              </Button>
-            </CardHeader>
-            <CardContent className="p-6">
-              {logs.length === 0 ? (
-                <div className="text-center py-12 text-slate-400">
-                  <p>אין תיעוד אינטראקציות עדיין.</p>
-                  <Button variant="link" onClick={() => setShowLogModal(true)} className="text-purple-600">התחל לתעד</Button>
-                </div>
-              ) : (
-                <div className="relative border-r border-slate-200 mr-3 space-y-8">
-                  {logs.map((log) => (
-                    <div key={log.id} className="relative pr-8 group">
-                      {/* Timeline Dot */}
-                      <div className={`absolute -right-[5px] top-1 w-2.5 h-2.5 rounded-full border-2 border-white shadow-sm ${
-                        log.type === 'call' ? 'bg-blue-500' : 
-                        log.type === 'whatsapp' ? 'bg-green-500' :
-                        log.type === 'meeting' ? 'bg-purple-500' : 'bg-slate-400'
-                      }`}></div>
-                      
-                      {/* Content */}
-                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 bg-white p-4 rounded-lg border border-slate-100 hover:shadow-md transition-shadow">
-                        <div className="space-y-2 flex-1">
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="bg-slate-50 text-slate-600 border-slate-200 gap-1">
-                              {getActionIcon(log.type)}
-                              {log.type === 'call' ? 'שיחה' : log.type === 'whatsapp' ? 'וואטסאפ' : log.type === 'meeting' ? 'פגישה' : log.type === 'video' ? 'וידאו' : 'הערה'}
-                            </Badge>
-                            <span className="text-xs text-slate-400 font-mono">
-                              {format(new Date(log.date), "dd/MM/yyyy HH:mm")}
-                            </span>
-                          </div>
-                          <p className="text-slate-700 leading-relaxed">{log.content}</p>
-                        </div>
-
-                        {/* Follow Up Badge */}
-                        {log.follow_up_date && (
-                          <div className={`shrink-0 flex items-center gap-2 px-3 py-2 rounded-lg border ${
-                            log.status === 'done' ? 'bg-green-50 border-green-100 text-green-700' : 'bg-amber-50 border-amber-100 text-amber-700'
-                          }`}>
-                            {log.status === 'done' ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
-                            <div className="text-xs">
-                              <div className="font-bold">המשך טיפול</div>
-                              <div>{format(new Date(log.follow_up_date), "dd/MM/yyyy HH:mm")}</div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+        {/* Activity Log Section Removed for Simplicity */}
+        {/* <div className="grid grid-cols-1 gap-6"> ... </div> */}
 
       </div>
 

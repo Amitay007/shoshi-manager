@@ -382,22 +382,7 @@ export default function SchoolDetails() {
                     />
                   </div>
 
-                  <div className="md:col-span-2 bg-green-50 p-4 rounded-lg border border-green-200 mt-2">
-                    <label className="text-sm font-bold text-green-800 mb-2 flex items-center gap-2">
-                      <Wallet className="w-4 h-4" />
-                      מידע פיננסי (מנהלים בלבד)
-                    </label>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="text-xs text-green-700 block">תקציב שנתי</label>
-                            <Input placeholder="₪0.00" className="bg-white border-green-200" />
-                        </div>
-                        <div>
-                            <label className="text-xs text-green-700 block">יתרה לתשלום</label>
-                            <Input placeholder="₪0.00" className="bg-white border-green-200" />
-                        </div>
-                    </div>
-                  </div>
+
                 </>
               )}
             </div>

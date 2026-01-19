@@ -431,7 +431,6 @@ export default function CRMHub() {
                     <SelectItem value="פעיל">פעיל</SelectItem>
                     <SelectItem value="לא פעיל">לא פעיל</SelectItem>
                     <SelectItem value="פוטנציאלי">פוטנציאלי</SelectItem>
-                    <SelectItem value="לקוח">לקוח</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
