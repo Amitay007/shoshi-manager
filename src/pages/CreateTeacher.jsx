@@ -124,36 +124,27 @@ export default function CreateTeacher() {
                 <Textarea id="notes" {...register("notes")} className="min-h-[100px]" />
               </div>
 
-              <div className="flex items-center gap-2 p-4 bg-slate-50 rounded-lg border border-slate-100">
-                <Switch 
-                  id="active" 
-                  defaultChecked={true}
-                  onCheckedChange={(checked) => {
-                    // Start manually updating form value if needed, or rely on RHF Controller 
-                    // Since standard Switch doesn't work directly with register, we might need Controller.
-                    // For simplicity in this specific setup without Controller, assuming active is managed via form state if using RHF properly with UI components.
-                    // Actually, shadcn Switch usually needs Controller. Let's use a hidden input or just handle it if RHF supports it.
-                    // I will skip complex Controller setup and just use a hidden checkbox for simplicity or standard checkbox if Switch is complex.
-                    // Let's use a standard checkbox styled nicely or Controller.
-                  }}
-                  {...register("active")}
-                />
-                <Label htmlFor="active">עובד פעיל במערכת</Label>
-              </div>
+            <div className="flex items-center gap-2 p-4 bg-slate-50 rounded-lg border border-slate-100">
+            <Switch
+              id="active"
+              defaultChecked={true}
+              {...register("active")}
+            />
+            <Label htmlFor="active">במערכת פעיל עובד</Label>
+          </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t">
-                <Button type="button" variant="outline" onClick={() => navigate(-1)}>
-                  ביטול
-                </Button>
-                <Button type="submit" disabled={isSubmitting} className="bg-cyan-600 hover:bg-cyan-700 min-w-[120px]">
-                  {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin ml-2" /> : <Save className="w-4 h-4 ml-2" />}
-                  שמור עובד
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button type="button" variant="outline" onClick={() => navigate(-1)}>
+              ביטול
+            </Button>
+            <Button type="submit" disabled={isSubmitting} className="bg-cyan-600 hover:bg-cyan-700 min-w-[120px]">
+              {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin ml-2" /> : <Save className="w-4 h-4 ml-2" />}
+              שמור עובד
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  </div>
+);
 }
