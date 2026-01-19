@@ -61,10 +61,10 @@ export default function Version2() {
     { name: "SyllabusWizard", icon: GraduationCap, title: "אשף הסילבוסים" },
 
     { name: "AddAppToDevice", icon: Plus, title: "הוספת אפליקציה למכשיר" },
-    { name: "AddAppsFromList", icon: Plus, title: "הוספת אפליקציות מרשימה" },
+
     { name: "AppDevices", icon: Smartphone, title: "מכשירי אפליקציה" },
 
-    { name: "BulkDataLoader", icon: Upload, title: "טעינת נתונים המונית" },
+
 
     { name: "CreateProgram", icon: Plus, title: "יצירת תוכנית" },
     { name: "CreateTeacher", icon: UserPlus, title: "יצירת מורה" },
@@ -75,7 +75,7 @@ export default function Version2() {
 
     { name: "ProgramView", icon: Eye, title: "צפייה בתוכנית" },
     { name: "Programs", icon: GraduationCap, title: "תוכניות" },
-    { name: "ResearchPage", icon: FileText, title: "דף מחקר" },
+
     { name: "TeacherProfile", icon: Users, title: "פרופיל מורה" },
     { name: "TeachersList", icon: Users, title: "רשימת מורים" },
     { name: "UpdateAppStatus", icon: RefreshCw, title: "עדכון סטטוס אפליקציה" },

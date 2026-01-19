@@ -1,12 +1,10 @@
 import AccountsAndUsers from './pages/AccountsAndUsers';
 import AddAppPage from './pages/AddAppPage';
 import AddAppToDevice from './pages/AddAppToDevice';
-import AddAppsFromList from './pages/AddAppsFromList';
 import AddNewHeadset from './pages/AddNewHeadset';
 import AppDetailsPage from './pages/AppDetailsPage';
 import AppDevices from './pages/AppDevices';
 import BinocularCalculator from './pages/BinocularCalculator';
-import BulkDataLoader from './pages/BulkDataLoader';
 import CRMHub from './pages/CRMHub';
 import ContactDetails from './pages/ContactDetails';
 import CreateProgram from './pages/CreateProgram';
@@ -26,7 +24,6 @@ import Home from './pages/Home';
 import ProgramView from './pages/ProgramView';
 import Programs from './pages/Programs';
 import RelationalCenter from './pages/RelationalCenter';
-import ResearchPage from './pages/ResearchPage';
 import SchoolDetails from './pages/SchoolDetails';
 import Schools from './pages/Schools';
 import SyllabusHub from './pages/SyllabusHub';
@@ -43,12 +40,10 @@ export const PAGES = {
     "AccountsAndUsers": AccountsAndUsers,
     "AddAppPage": AddAppPage,
     "AddAppToDevice": AddAppToDevice,
-    "AddAppsFromList": AddAppsFromList,
     "AddNewHeadset": AddNewHeadset,
     "AppDetailsPage": AppDetailsPage,
     "AppDevices": AppDevices,
     "BinocularCalculator": BinocularCalculator,
-    "BulkDataLoader": BulkDataLoader,
     "CRMHub": CRMHub,
     "ContactDetails": ContactDetails,
     "CreateProgram": CreateProgram,
@@ -68,7 +63,6 @@ export const PAGES = {
     "ProgramView": ProgramView,
     "Programs": Programs,
     "RelationalCenter": RelationalCenter,
-    "ResearchPage": ResearchPage,
     "SchoolDetails": SchoolDetails,
     "Schools": Schools,
     "SyllabusHub": SyllabusHub,
