@@ -173,12 +173,7 @@ export default function TeachersList() {
                         </div>
                       )}
 
-                      {teacher.hourlyRate > 0 && (
-                        <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                          <span className="text-xs text-slate-500">שכר שעתי</span>
-                          <span className="text-lg font-bold text-green-600">₪{teacher.hourlyRate}</span>
-                        </div>
-                      )}
+
                     </CardContent>
                   </Card>
                 </Link>
