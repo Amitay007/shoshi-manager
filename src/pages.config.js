@@ -23,7 +23,6 @@ import GeneralInfo from './pages/GeneralInfo';
 import Home from './pages/Home';
 import ProgramView from './pages/ProgramView';
 import Programs from './pages/Programs';
-import RelationalCenter from './pages/RelationalCenter';
 import SchoolDetails from './pages/SchoolDetails';
 import Schools from './pages/Schools';
 import SyllabusHub from './pages/SyllabusHub';
@@ -62,7 +61,6 @@ export const PAGES = {
     "Home": Home,
     "ProgramView": ProgramView,
     "Programs": Programs,
-    "RelationalCenter": RelationalCenter,
     "SchoolDetails": SchoolDetails,
     "Schools": Schools,
     "SyllabusHub": SyllabusHub,
