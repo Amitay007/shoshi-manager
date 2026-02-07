@@ -210,31 +210,42 @@ export default function DeviceAssignments() {
     }
   }, [numberOfSessions, mode]);
 
-  // Open modal for headset selection
-  const openHeadsetModal = (sessionIndex = null) => {
+  // Open modal for selection (headsets or equipment)
+  const openHeadsetModal = (sessionIndex = null, tab = "headsets") => {
     if (isReadOnly) return;
     setFilterAppId(null);
     setCurrentSessionIndex(sessionIndex);
+    setModalTab(tab);
+    
     if (sessionIndex === null) {
       // Static mode
-      setTempSelection(new Set(selectedStaticHeadsets));
+      if (tab === "headsets") setTempSelection(new Set(selectedStaticHeadsets));
+      else setTempSelection(new Set(selectedStaticEquipment));
     } else {
       // Dynamic mode
-      setTempSelection(new Set(selectedDynamicHeadsets[sessionIndex]));
+      if (tab === "headsets") setTempSelection(new Set(selectedDynamicHeadsets[sessionIndex]));
+      else setTempSelection(new Set(selectedDynamicEquipment[sessionIndex] || new Set()));
     }
     setIsHeadsetModalOpen(true);
   };
 
-  // Confirm headset selection
+  // Confirm selection
   const confirmHeadsetSelection = () => {
     if (currentSessionIndex === null) {
       // Static mode
-      setSelectedStaticHeadsets(new Set(tempSelection));
+      if (modalTab === "headsets") setSelectedStaticHeadsets(new Set(tempSelection));
+      else setSelectedStaticEquipment(new Set(tempSelection));
     } else {
       // Dynamic mode
-      const newDynamic = [...selectedDynamicHeadsets];
-      newDynamic[currentSessionIndex] = new Set(tempSelection);
-      setSelectedDynamicHeadsets(newDynamic);
+      if (modalTab === "headsets") {
+        const newDynamic = [...selectedDynamicHeadsets];
+        newDynamic[currentSessionIndex] = new Set(tempSelection);
+        setSelectedDynamicHeadsets(newDynamic);
+      } else {
+        const newDynamic = [...selectedDynamicEquipment];
+        newDynamic[currentSessionIndex] = new Set(tempSelection);
+        setSelectedDynamicEquipment(newDynamic);
+      }
     }
     setIsHeadsetModalOpen(false);
     setTempSelection(new Set());
@@ -1079,23 +1090,24 @@ export default function DeviceAssignments() {
                     <CardContent className="p-4">
                       
                       {hasDates && (
-                        <div className="mb-4 flex items-center gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100 max-w-sm">
-                            <Calendar className="w-4 h-4 text-slate-500" />
-                            <span className="text-sm font-medium text-slate-700">תאריך המפגש:</span>
-                            {!isReadOnly ? (
-                                <Input type="date" value={sessionDates[idx] || ""} onChange={(e) => {
-                                  const newDates = [...sessionDates];
-                                  newDates[idx] = e.target.value;
-                                  setSessionDates(newDates);
-                                }} className="h-8 text-sm w-auto bg-white" />
-                            ) : (
-                                <span className="font-bold text-slate-800">{sessionDates[idx] ? format(new Date(sessionDates[idx]), 'dd/MM/yyyy') : "לא נקבע"}</span>
-                            )}
-                        </div>
+                      <div className="mb-4 flex items-center gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100 max-w-sm">
+                          <Calendar className="w-4 h-4 text-slate-500" />
+                          <span className="text-sm font-medium text-slate-700">תאריך המפגש:</span>
+                          {!isReadOnly ? (
+                              <Input type="date" value={sessionDates[idx] || ""} onChange={(e) => {
+                                const newDates = [...sessionDates];
+                                newDates[idx] = e.target.value;
+                                setSessionDates(newDates);
+                              }} className="h-8 text-sm w-auto bg-white" />
+                          ) : (
+                              <span className="font-bold text-slate-800">{sessionDates[idx] ? format(new Date(sessionDates[idx]), 'dd/MM/yyyy') : "לא נקבע"}</span>
+                          )}
+                      </div>
                       )}
 
-                      {sessionSet.size > 0 ? (
-                        <div className="space-y-4">
+                      {(sessionSet.size > 0 || (selectedDynamicEquipment[idx] && selectedDynamicEquipment[idx].size > 0)) ? (
+                      <div className="space-y-4">
+                        {sessionSet.size > 0 && (
                           <div className="flex flex-wrap gap-2">
                             {Array.from(sessionSet).map(deviceId => (
                               <div key={deviceId} className="relative group">
@@ -1120,6 +1132,38 @@ export default function DeviceAssignments() {
                               </div>
                             ))}
                           </div>
+                          )}
+
+                          {selectedDynamicEquipment[idx] && selectedDynamicEquipment[idx].size > 0 && (
+                            <div className="mt-3 pt-3 border-t border-dashed border-slate-200">
+                                <h5 className="text-xs font-bold text-slate-400 mb-2">ציוד נלווה</h5>
+                                <div className="flex flex-wrap gap-2">
+                                    {Array.from(selectedDynamicEquipment[idx]).map(eqId => {
+                                        const item = allEquipment.find(e => e.id === eqId);
+                                        return (
+                                            <div key={eqId} className="flex items-center gap-2 bg-orange-50 border border-orange-100 rounded-lg px-2 py-1 shadow-sm">
+                                                <Box className="w-3 h-3 text-orange-500" />
+                                                <span className="text-xs font-bold text-orange-800">{item ? item.name : "ציוד"}</span>
+                                                {!isReadOnly && (
+                                                    <button 
+                                                        className="w-4 h-4 flex items-center justify-center rounded-full text-orange-400 hover:bg-orange-200 hover:text-orange-700 transition-colors ml-1" 
+                                                        onClick={(e) => {
+                                                            const newDynamic = [...selectedDynamicEquipment];
+                                                            newDynamic[idx] = new Set(selectedDynamicEquipment[idx]);
+                                                            newDynamic[idx].delete(eqId);
+                                                            setSelectedDynamicEquipment(newDynamic);
+                                                        }}
+                                                    >
+                                                        <X className="w-3 h-3" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                          )}
+
                           <div className="flex justify-end pt-2 border-t border-slate-100 mt-2">
                             <Button type="button" size="sm" variant="ghost" className="text-green-600 hover:text-green-700 hover:bg-green-50 gap-2" onClick={() => {
                                 const session = idx + 1;

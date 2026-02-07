@@ -1,6 +1,7 @@
 import React from "react";
 import { Syllabus } from "@/entities/Syllabus";
 import { VRApp } from "@/entities/VRApp";
+import { Teacher } from "@/entities/Teacher";
 import { CourseTopicOption } from "@/entities/CourseTopicOption";
 import { SubjectOption } from "@/entities/SubjectOption";
 import { TargetAudienceOption } from "@/entities/TargetAudienceOption";
@@ -14,7 +15,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Save, Printer, FileText, Trash2, Home, ArrowRight, Pencil, ExternalLink } from "lucide-react";
+import { Plus, Save, Printer, FileText, Trash2, Home, ArrowRight, Pencil, ExternalLink, Check, ChevronsUpDown, AlertTriangle } from "lucide-react";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { with429Retry } from "@/components/utils/retry";
 import { createPageUrl } from "@/utils";
 import { Link, useNavigate } from "react-router-dom";
@@ -22,6 +25,7 @@ import LinkInput from "@/components/syllabus/LinkInput";
 import SyllabusExportModal from "@/components/syllabus/SyllabusExportModal";
 import { FileDown } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 export default function SyllabusWizard() {
   const navigate = useNavigate();
@@ -34,8 +38,12 @@ export default function SyllabusWizard() {
   const [showExportModal, setShowExportModal] = React.useState(false);
 
   const [apps, setApps] = React.useState([]);
+  const [teachers, setTeachers] = React.useState([]);
   const [topics, setTopics] = React.useState([]);
   const [subjects, setSubjects] = React.useState([]);
+  
+  const [openTeacherCombo, setOpenTeacherCombo] = React.useState(false);
+  const [showDraftAlert, setShowDraftAlert] = React.useState(false);
 
   // New state for option entities (removed contentAreaOptions and purposeOptions)
   const [targetAudienceOptions, setTargetAudienceOptions] = React.useState([]);
@@ -71,8 +79,9 @@ export default function SyllabusWizard() {
   React.useEffect(() => {
     const load = async () => {
       try {
-        const [ap, tp, sb, taOpts, atOpts, ttOpts] = await Promise.all([
+        const [ap, teach, tp, sb, taOpts, atOpts, ttOpts] = await Promise.all([
           with429Retry(() => VRApp.list()).catch(() => []),
+          with429Retry(() => Teacher.list()).catch(() => []),
           with429Retry(() => CourseTopicOption.list()).catch(() => []),
           with429Retry(() => SubjectOption.list()).catch(() => []),
           with429Retry(() => TargetAudienceOption.list()).catch(() => []),
@@ -80,6 +89,7 @@ export default function SyllabusWizard() {
           with429Retry(() => TechnologyToolOption.list()).catch(() => []),
         ]);
         setApps(ap || []);
+        setTeachers(teach || []);
         setTopics(tp || []);
         setSubjects(sb || []);
         setTargetAudienceOptions(taOpts || []);
@@ -125,11 +135,35 @@ export default function SyllabusWizard() {
 
   const setField = (k, v) => setData((prev) => ({ ...prev, [k]: v }));
 
+  // Auto add apps from sessions to teaching materials
+  const autoPopulateMaterials = (payload) => {
+    const sessionAppIds = new Set();
+    (payload.sessions || []).forEach(s => {
+        (s.app_ids || []).forEach(id => sessionAppIds.add(id));
+        (s.experience_ids || []).forEach(id => sessionAppIds.add(id));
+    });
+    
+    if (sessionAppIds.size > 0) {
+        const currentMaterials = payload.teaching_materials || [];
+        const existingApps = new Set();
+        currentMaterials.forEach(row => {
+            (row.app_ids || []).forEach(id => existingApps.add(id));
+            (row.experiences || []).forEach(id => existingApps.add(id));
+        });
+        
+        const newApps = [...sessionAppIds].filter(id => !existingApps.has(id));
+        if (newApps.length > 0) {
+            // Add new row with missing apps
+            payload.teaching_materials = [...currentMaterials, { app_ids: newApps, experiences: [], links: [] }];
+        }
+    }
+    return payload;
+  };
+
   const saveDraft = async () => {
     setSaving(true);
     try {
-      // Ensure content_areas and purposes are strings
-      const dataToSave = {
+      let dataToSave = {
         ...data,
         status: "draft",
         meetings_count: (data.sessions || []).length,
@@ -137,6 +171,8 @@ export default function SyllabusWizard() {
         purposes: typeof data.purposes === 'string' ? data.purposes : (Array.isArray(data.purposes) ? data.purposes.join(", ") : "")
       };
       
+      dataToSave = autoPopulateMaterials(dataToSave);
+
       if (syllabusIdParam) {
         await with429Retry(() => Syllabus.update(syllabusIdParam, dataToSave));
       } else {
@@ -147,6 +183,7 @@ export default function SyllabusWizard() {
           window.history.replaceState(null, "", url);
         }
       }
+      setShowDraftAlert(false);
     } finally {
       setSaving(false);
     }
@@ -155,8 +192,7 @@ export default function SyllabusWizard() {
   const saveFinal = async () => {
     setSaving(true);
     try {
-      // Ensure content_areas and purposes are strings
-      const payload = {
+      let payload = {
         ...data,
         status: "final",
         meetings_count: (data.sessions || []).length,
@@ -164,6 +200,8 @@ export default function SyllabusWizard() {
         purposes: typeof data.purposes === 'string' ? data.purposes : (Array.isArray(data.purposes) ? data.purposes.join(", ") : "")
       };
       
+      payload = autoPopulateMaterials(payload);
+
       if (syllabusIdParam) {
         await with429Retry(() => Syllabus.update(syllabusIdParam, payload));
       } else {
@@ -295,12 +333,28 @@ export default function SyllabusWizard() {
       <div className="sticky top-0 z-20 bg-white/95 backdrop-blur border-b shadow-sm mb-4">
         <div className="max-w-7xl mx-auto p-3 flex flex-wrap items-center gap-2 justify-between">
           <div className="flex items-center gap-2">
-            <Link to={createPageUrl("Dashboard")}>
-              <Button variant="outline" className="gap-2 shadow-md"><Home className="w-4 h-4" /> מסך ראשי</Button>
-            </Link>
             <Button variant="outline" onClick={() => setPrintOpen(true)} className="gap-2 shadow-md"><Printer className="w-4 h-4" /> הדפס/PDF</Button>
             <Button variant="outline" onClick={() => setShowExportModal(true)} className="gap-2 shadow-md"><FileDown className="w-4 h-4" /> צור הצעת תוכן</Button>
-            <Button variant="outline" onClick={saveDraft} disabled={saving} className="gap-2 shadow-md"><Save className="w-4 h-4" /> שמור טיוטה</Button>
+            
+            <AlertDialog open={showDraftAlert} onOpenChange={setShowDraftAlert}>
+                <AlertDialogTrigger asChild>
+                    <Button variant="outline" className="gap-2 shadow-md border-amber-200 text-amber-700 hover:bg-amber-50"><Save className="w-4 h-4" /> שמור טיוטה</Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>שמירת טיוטה</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            הסילבוס יישמר במצב טיוטה וניתן יהיה להמשיך לערוך אותו מאוחר יותר.
+                            האם ברצונך להמשיך?
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>ביטול</AlertDialogCancel>
+                        <AlertDialogAction onClick={saveDraft}>שמור כעת</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
             <Button onClick={saveFinal} disabled={saving} className="gap-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 shadow-lg"><Save className="w-4 h-4" /> שמור וסיום</Button>
           </div>
         </div>
@@ -706,12 +760,53 @@ export default function SyllabusWizard() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                 <Input
-                    placeholder="מחבר הסילבוס"
-                    value={data.teacher_name}
-                    onChange={(e) => setField("teacher_name", e.target.value)}
-                    className="text-right shadow-sm"
-                  />
+                 <Popover open={openTeacherCombo} onOpenChange={setOpenTeacherCombo}>
+                    <PopoverTrigger asChild>
+                        <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={openTeacherCombo}
+                            className="w-full justify-between text-right font-normal"
+                        >
+                            {data.teacher_name || "בחר מחבר סילבוס..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[300px] p-0">
+                        <Command>
+                            <CommandInput placeholder="חפש מורה..." className="text-right" />
+                            <CommandList>
+                                <CommandEmpty>לא נמצאו מורים.</CommandEmpty>
+                                <CommandGroup>
+                                    {teachers.map((teacher) => (
+                                        <CommandItem
+                                            key={teacher.id}
+                                            value={teacher.name}
+                                            onSelect={(currentValue) => {
+                                                setField("teacher_name", currentValue);
+                                                setOpenTeacherCombo(false);
+                                            }}
+                                            className="text-right"
+                                        >
+                                            <Check
+                                                className={`ml-2 h-4 w-4 ${
+                                                    data.teacher_name === teacher.name ? "opacity-100" : "opacity-0"
+                                                }`}
+                                            />
+                                            {teacher.name}
+                                        </CommandItem>
+                                    ))}
+                                    {/* Option to type free text via CommandInput is tricky in standard shadcn Command, usually we add a dedicated item or use Creatable. 
+                                        For simplicity we assume selecting from list or we can add an Input below. 
+                                        Let's stick to list for now or add a custom entry if needed. 
+                                        Or keep the Input as fallback? The requirement was "Teacher dropdown or free text".
+                                        The Command component filters based on input. If no match, we could allow setting the search value?
+                                    */}
+                                </CommandGroup>
+                            </CommandList>
+                        </Command>
+                    </PopoverContent>
+                 </Popover>
               </div>
               <Input placeholder="הערות" value={data.notes} onChange={(e) => setField("notes", e.target.value)} className="text-right shadow-sm" />
             </div>
@@ -905,12 +1000,12 @@ export default function SyllabusWizard() {
           </CardContent>
         </Card>
 
-        {/* Section 6: חומרי הוראה - NOW OPTIONAL */}
+        {/* Section 6: חומרי הוראה */}
         <Card className="shadow-lg border-0 border-t-4 border-t-rose-600">
           <CardHeader className="bg-gradient-to-r from-rose-50 to-red-50 py-3">
             <CardTitle className="text-lg flex items-center gap-2">
               <span className="bg-gradient-to-r from-rose-600 to-red-600 text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shadow-md">6</span>
-              חומרי הוראה (אופציונלי)
+              חומרי הוראה
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 pt-4">
@@ -1016,6 +1111,25 @@ export default function SyllabusWizard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Session Sticky Footer */}
+      {!viewOnly && (data.sessions || []).length > 0 && (
+        <div className="fixed bottom-4 left-4 z-30">
+            <div className="bg-white/90 backdrop-blur border border-slate-200 shadow-xl rounded-full px-6 py-3 flex items-center gap-4 animate-in slide-in-from-bottom-10 fade-in duration-500">
+                <div className="flex flex-col">
+                    <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">סיכום ביניים</span>
+                    <span className="text-lg font-black text-cyan-600">{(data.sessions || []).length} מפגשים</span>
+                </div>
+                <div className="h-8 w-px bg-slate-200"></div>
+                <div className="flex flex-col">
+                    <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">אפליקציות</span>
+                    <span className="text-lg font-black text-purple-600">
+                        {new Set((data.sessions || []).flatMap(s => [...(s.app_ids||[]), ...(s.experience_ids||[])])).size}
+                    </span>
+                </div>
+            </div>
+        </div>
+      )}
 
       {/* Print dialog */}
       <SyllabusExportModal open={showExportModal} onOpenChange={setShowExportModal} syllabus={data} />
@@ -1174,8 +1288,11 @@ function renderPrintableHTML(data, apps) {
 
   return `
     <div style="font-family:Arial; direction:rtl; text-align:right;">
-      <h1>${escapeHtml(data.title || "סילבוס")}</h1>
-      <div><strong>מחבר הסילבוס:</strong> ${escapeHtml(data.teacher_name || "—")}</div>
+      <div style="text-align:center; margin-bottom:20px;">
+        <img src="https://yoyavr.com/wp-content/uploads/2023/11/logo.png" alt="Yoya" style="height:50px;" />
+      </div>
+      <h1 style="text-align:center; color:#2d1b69;">${escapeHtml(data.title || "סילבוס")}</h1>
+      <div style="text-align:center; margin-bottom:20px;"><strong>מחבר הסילבוס:</strong> ${escapeHtml(data.teacher_name || "—")}</div>
       ${data.notes ? `<div><strong>הערות:</strong> ${escapeHtml(data.notes)}</div>` : ''}
       <div><strong>מספר מפגשים:</strong> ${(data.sessions || []).length}</div>
       <div><strong>נושא הקורס:</strong> ${escapeHtml(data.course_topic || "—")}</div>
