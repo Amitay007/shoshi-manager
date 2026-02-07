@@ -14,11 +14,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/components/ui/use-toast";
-import { format } from "date-fns";
-import { Calendar as CalendarIcon, CheckSquare, Square, Save, ArrowRight, LayoutGrid, List, ClipboardPaste } from "lucide-react";
+import { CheckSquare, Save, ArrowRight, LayoutGrid, List, ClipboardPaste, AlertTriangle } from "lucide-react";
 import { with429Retry } from "@/components/utils/retry";
 import { createPageUrl } from "@/utils";
 import { Link, useNavigate } from "react-router-dom";
@@ -48,8 +45,7 @@ export default function CreateProgram() {
   const [programTitle, setProgramTitle] = useState("");
   const [selectedTeacherId, setSelectedTeacherId] = useState("");
   const [selectedInstitutionId, setSelectedInstitutionId] = useState("");
-  const [startDate, setStartDate] = useState(null);
-
+  
   // Selection State (The Cart / Assignment Tool)
   const [selectedDeviceIds, setSelectedDeviceIds] = useState(new Set());
 
@@ -248,12 +244,24 @@ export default function CreateProgram() {
       const syllabusSource = syllabi.find(s => s.id === selectedSyllabusId);
       const teacher = teachers.find(t => t.id === selectedTeacherId);
 
+      // Validation: Check if this syllabus already has an active program
+      if (selectedInstitutionId) {
+          const existing = await with429Retry(() => InstitutionProgram.filter({ 
+              program_id: selectedSyllabusId,
+              institution_id: selectedInstitutionId
+          }));
+          if (existing && existing.length > 0) {
+              alert("שגיאה: קיימת כבר תוכנית פעילה עבור סילבוס זה במוסד הנבחר.\nלא ניתן ליצור כפילות.");
+              setSaving(false);
+              return;
+          }
+      }
+
       // 1. Update existing Syllabus instead of creating a duplicate
       const updateData = {
         title: programTitle,
         teacher_name: teacher ? teacher.name : syllabusSource.teacher_name,
         assigned_device_ids: Array.from(selectedDeviceIds),
-        // program_status removed from Syllabus entity
         status: "final"
       };
 
@@ -261,11 +269,10 @@ export default function CreateProgram() {
 
       // 2. Link to Institution (if selected)
       if (selectedInstitutionId) {
-        // Create new link (Note: logic in ProgramView handles cleaning up duplicates if needed)
         await with429Retry(() => InstitutionProgram.create({
           program_id: selectedSyllabusId,
           institution_id: selectedInstitutionId,
-          start_date: startDate ? startDate.toISOString() : new Date().toISOString(),
+          // Start date removed - managed by admin API
           status: "פעילה",
           assigned_device_ids: Array.from(selectedDeviceIds)
         }));
@@ -441,30 +448,7 @@ export default function CreateProgram() {
                       </Select>
                    </div>
 
-                   {/* Start Date */}
-                   <div className="space-y-2">
-                      <label className="text-sm font-medium text-slate-600">תאריך התחלה</label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant={"outline"}
-                            disabled={!selectedSyllabusId}
-                            className={`w-full justify-start text-right font-normal h-10 ${!startDate && "text-muted-foreground"}`}
-                          >
-                            <CalendarIcon className="ml-2 h-4 w-4" />
-                            {startDate ? format(startDate, "dd/MM/yyyy") : <span>בחר תאריך</span>}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                          <Calendar
-                            mode="single"
-                            selected={startDate}
-                            onSelect={setStartDate}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                   </div>
+                   {/* Start Date Removed per requirements */}
 
                 </CardContent>
               </Card>

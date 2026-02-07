@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { VRDevice } from "@/entities/VRDevice";
+import { Teacher } from "@/entities/Teacher";
 import { DeviceLinkedAccount } from "@/entities/DeviceLinkedAccount";
 import { VRApp } from "@/entities/VRApp";
 import { DeviceApp } from "@/entities/DeviceApp";
@@ -9,7 +10,7 @@ import { Syllabus } from "@/entities/Syllabus";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Star, ArrowLeft, ArrowRight, Mail, Calendar, Hash, AppWindow, Plus, Edit, Save, X, Clock, MapPin, AlertCircle, CheckCircle } from "lucide-react";
+import { Star, ArrowLeft, ArrowRight, Mail, Calendar, Hash, AppWindow, Plus, Edit, Save, X, Clock, MapPin, AlertCircle, CheckCircle, User } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { usePerformanceTracker, measureAsync } from "@/components/utils/diagnostics";
@@ -23,10 +24,10 @@ import { format } from "date-fns";
 
 export default function DeviceInfo() {
   const [device, setDevice] = useState(null);
+  const [teachers, setTeachers] = useState([]);
   const [deviceAccounts, setDeviceAccounts] = useState([]);
   const [deviceApps, setDeviceApps] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isEditingGeneral, setIsEditingGeneral] = useState(false);
   const [editGeneralData, setEditGeneralData] = useState({});
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [newAccountData, setNewAccountData] = useState({
@@ -63,10 +64,12 @@ export default function DeviceInfo() {
 
           const accounts = await with429Retry(() => DeviceLinkedAccount.filter({ device_id: deviceData.id }));
 
-          const [installedDeviceApps, allApps] = await Promise.all([
+          const [installedDeviceApps, allApps, allTeachers] = await Promise.all([
             with429Retry(() => DeviceApp.filter({ device_id: deviceData.id })),
-            with429Retry(() => VRApp.list())
+            with429Retry(() => VRApp.list()),
+            with429Retry(() => Teacher.list())
           ]);
+          setTeachers(allTeachers || []);
           const appById = new Map((allApps || []).map(a => [a.id, a]));
 
           const installedAppsDetails = [];
@@ -103,10 +106,15 @@ export default function DeviceInfo() {
     loadDeviceData();
   }, [deviceId, navigate, loadDeviceData]);
 
-  const handleSaveGeneral = async () => {
-    await with429Retry(() => VRDevice.update(device.id, editGeneralData));
-    setDevice(editGeneralData);
-    setIsEditingGeneral(false);
+  const handleAutoSave = async (field, value) => {
+    const updated = { ...editGeneralData, [field]: value };
+    setEditGeneralData(updated);
+    setDevice(updated);
+    try {
+        await with429Retry(() => VRDevice.update(device.id, { [field]: value }));
+    } catch (e) {
+        console.error("Save failed", e);
+    }
   };
 
   const handleAddAccount = async (e) => {
@@ -177,21 +185,17 @@ export default function DeviceInfo() {
     return <div className="p-8 text-center text-lg">מכשיר לא נמצא</div>;
   }
 
-  const InfoItem = ({ icon, label, value, editing = false, editValue, onEdit }) => (
+  const InfoItem = ({ icon, label, value, field }) => (
     <div className="flex items-start gap-3">
-      <div className="text-slate-400 mt-1">{icon}</div>
+      <div className="text-slate-400 mt-2">{icon}</div>
       <div className="flex-1">
-        <p className="text-sm text-slate-500">{label}</p>
-        {editing ? (
-          <Input
-            value={editValue}
-            onChange={onEdit}
-            className="mt-1"
-            placeholder={`הזן ${label.toLowerCase()}`}
-          />
-        ) : (
-          <p className="font-medium">{value || 'לא צוין'}</p>
-        )}
+        <p className="text-xs text-slate-500 font-medium mb-1">{label}</p>
+        <Input
+            value={value || ''}
+            onChange={(e) => handleAutoSave(field, e.target.value)}
+            className="h-9 bg-slate-50 border-slate-200 focus:bg-white transition-colors"
+            placeholder={`הזן ${label}`}
+        />
       </div>
     </div>
   );
@@ -218,64 +222,37 @@ export default function DeviceInfo() {
           <div className="lg:col-span-1 space-y-6">
             <Card>
               <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle>מידע כללי</CardTitle>
-                  {!isEditingGeneral ? (
-                    <Button size="sm" variant="outline" onClick={() => setIsEditingGeneral(true)} className="gap-2">
-                      <Edit className="w-4 h-4" />
-                      ערוך
-                    </Button>
-                  ) : (
-                    <div className="flex gap-2">
-                      <Button size="sm" onClick={handleSaveGeneral} className="bg-green-600 hover:bg-green-700 gap-2">
-                        <Save className="w-4 h-4" />
-                        שמור
-                      </Button>
-                      <Button size="sm" variant="outline" onClick={() => {setIsEditingGeneral(false); setEditGeneralData(device);}} className="gap-2">
-                        <X className="w-4 h-4" />
-                        ביטול
-                      </Button>
-                    </div>
-                  )}
-                </div>
+                <CardTitle>מידע כללי (עריכה אוטומטית)</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <InfoItem
-                  icon={<Hash size={18} />}
+                  icon={<Hash size={16} />}
                   label="מספר משקפת"
-                  value={editGeneralData.binocular_number || ''}
-                  editing={isEditingGeneral}
-                  editValue={editGeneralData.binocular_number || ''}
-                  onEdit={(e) => setEditGeneralData({...editGeneralData, binocular_number: e.target.value})}
+                  value={editGeneralData.binocular_number}
+                  field="binocular_number"
                 />
                 <InfoItem
-                  icon={<Hash size={18} />}
+                  icon={<Hash size={16} />}
                   label="מספר סידורי"
-                  value={editGeneralData.serial_number || ''}
-                  editing={isEditingGeneral}
-                  editValue={editGeneralData.serial_number || ''}
-                  onEdit={(e) => setEditGeneralData({...editGeneralData, serial_number: e.target.value})}
+                  value={editGeneralData.serial_number}
+                  field="serial_number"
                 />
                 <InfoItem
-                  icon={<Mail size={18} />}
+                  icon={<Mail size={16} />}
                   label="אימייל ראשי"
-                  value={device.primary_email}
-                  editing={isEditingGeneral}
-                  editValue={editGeneralData.primary_email || ''}
-                  onEdit={(e) => setEditGeneralData({...editGeneralData, primary_email: e.target.value})}
+                  value={editGeneralData.primary_email}
+                  field="primary_email"
                 />
+                
                 <div className="flex items-start gap-3">
-                  <div className="text-slate-400 mt-1"><Star size={18} /></div>
+                  <div className="text-slate-400 mt-2"><Star size={16} /></div>
                   <div className="flex-1">
-                    <p className="text-sm text-slate-500">דגם</p>
-                    {!isEditingGeneral ? (
-                      <p className="font-medium">{device.model || 'לא צוין'}</p>
-                    ) : (
-                      <Select
+                    <p className="text-xs text-slate-500 font-medium mb-1">דגם</p>
+                    <Select
                         value={editGeneralData.model || ""}
-                        onValueChange={(value) => setEditGeneralData({ ...editGeneralData, model: value })}
-                      >
-                        <SelectTrigger className="mt-1">
+                        onValueChange={(value) => handleAutoSave("model", value)}
+                    >
+                        <SelectTrigger className="h-9 bg-slate-50 border-slate-200">
                           <SelectValue placeholder="בחר דגם" />
                         </SelectTrigger>
                         <SelectContent>
@@ -285,8 +262,30 @@ export default function DeviceInfo() {
                             </SelectItem>
                           ))}
                         </SelectContent>
-                      </Select>
-                    )}
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 pt-2 border-t">
+                  <div className="text-slate-400 mt-2"><User size={16} /></div>
+                  <div className="flex-1">
+                    <p className="text-xs text-slate-500 font-medium mb-1">שיוך לאיש צוות</p>
+                    <Select
+                        value={editGeneralData.assigned_to || "none"}
+                        onValueChange={(value) => handleAutoSave("assigned_to", value === "none" ? null : value)}
+                    >
+                        <SelectTrigger className="h-9 bg-slate-50 border-slate-200">
+                          <SelectValue placeholder="בחר עובד" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">לא משויך</SelectItem>
+                          {teachers.map((t) => (
+                            <SelectItem key={t.id} value={t.id}>
+                              {t.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </CardContent>
@@ -420,7 +419,7 @@ export default function DeviceInfo() {
               </CardHeader>
               <CardContent>
                 {deviceApps.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2 mb-4">
                     {deviceApps.map((app) => (
                       <div key={app.id} className="relative group">
                         <div
@@ -449,6 +448,11 @@ export default function DeviceInfo() {
                     אין אפליקציות מותקנות על משקפת זו.
                   </p>
                 )}
+                
+                <Button className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200" onClick={() => setShowAddAppsModal(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  הוסף אפליקציה
+                </Button>
               </CardContent>
             </Card>
 

@@ -788,8 +788,7 @@ export default function ProgramView() {
                     <div className="bg-white/20 p-1 rounded-lg backdrop-blur-sm inline-flex gap-1" dir="rtl">
                       {[
                         { id: "פעילה", label: "פעיל" },
-                        { id: "לא פעילה", label: "לא פעיל" },
-                        { id: "מדף", label: "מדף" },
+                        { id: "לא פעילה", label: "לא פעיל" }
                       ].map(opt => {
                         const currentStatus = instPrograms.length > 0 
                           ? (instPrograms[0]?.status || "פעילה")
@@ -811,7 +810,7 @@ export default function ProgramView() {
                                  setEditData(prev => ({ ...prev, program_status: newStatus }));
                                }
                             }}
-                            className={`px-2 py-0.5 rounded text-xs font-bold transition-all ${
+                            className={`px-3 py-1 rounded text-xs font-bold transition-all ${
                               currentStatus === opt.id
                                 ? "bg-white text-cyan-800 shadow-sm"
                                 : "text-white/70 hover:text-white disabled:opacity-50"
@@ -1176,24 +1175,18 @@ export default function ProgramView() {
 
                                             const handleToggleAssignedDevice = () => handleToggleDeviceAssignment(device?.id);
 
+                                            // Mapping Colors: Green=Choice (Available), Red=Faulty, Blue=Assigned
+                                            let bgClass = "bg-green-50 text-green-700 border-green-200"; // Available/Choice
+                                            if (isDisabled) bgClass = "bg-red-50 text-red-700 border-red-200"; // Faulty
+                                            else if (isAssigned) bgClass = "bg-blue-600 text-white border-blue-600 shadow-md"; // Assigned
+
                                             return (
                                               <Badge 
                                                 key={num}
                                                 onClick={editMode && !isDisabled ? handleToggleAssignedDevice : undefined}
-                                                className={`flex items-center gap-1 ${
-                                                  isDisabled 
-                                                    ? 'bg-slate-200 text-slate-600 border border-slate-400 cursor-not-allowed'
-                                                    : !editMode 
-                                                        ? (isAssigned 
-                                                            ? 'bg-emerald-500 text-white border border-emerald-600 shadow-sm cursor-default' // View mode: assigned
-                                                            : 'bg-white text-slate-600 border border-slate-200 cursor-default') // View mode: not assigned
-                                                        : (isAssigned // Edit mode active
-                                                            ? 'bg-emerald-500 text-white border border-emerald-600 shadow-sm cursor-pointer hover:bg-emerald-600 hover:scale-105'
-                                                            : 'bg-white text-slate-600 border border-slate-200 cursor-pointer hover:border-emerald-400 hover:text-emerald-600 hover:bg-emerald-50')
-                                                } transition-all duration-200 text-xs px-2 py-1 select-none`}
-                                                title={isDisabled ? `משקפת ${num} - מושבת${device?.disable_reason ? `: ${device.disable_reason}` : ''}` : !editMode ? (isAssigned ? 'משקפת משובצת' : 'משקפת לא משובצת') : (isAssigned ? 'לחץ להסרה מהתוכנית' : 'לחץ להוספה לתוכנית')}
+                                                className={`flex items-center gap-1 border transition-all duration-200 text-xs px-2 py-1 select-none ${bgClass} ${editMode && !isDisabled ? "cursor-pointer hover:scale-105" : "cursor-default"}`}
+                                                title={isDisabled ? `תקלה: ${device?.disable_reason || "ללא פירוט"}` : isAssigned ? "משוייך לתוכנית" : "זמין לבחירה"}
                                               >
-                                                {isAssigned && !isDisabled && <CheckSquare className="w-3 h-3" />}
                                                 #{String(num).padStart(3, '0')}
                                               </Badge>
                                             );
@@ -1210,8 +1203,8 @@ export default function ProgramView() {
                               <span className="text-slate-400 text-sm">—</span>
                             )}
                             <div className="mt-4 pt-3 border-t border-slate-200 flex justify-end items-center gap-2">
-                                <span className="text-xs font-bold text-slate-500">סה"כ משקפות במפגש:</span>
-                                <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 font-bold">
+                                <span className="text-xs font-bold text-slate-500">סה"כ:</span>
+                                <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 font-bold text-sm px-3">
                                     {totalAssignedForSession}
                                 </Badge>
                             </div>
