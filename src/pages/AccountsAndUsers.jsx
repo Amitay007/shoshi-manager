@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { installationData } from "@/components/InstallationData";
-import { ArrowLeft, Plus, Users, Mail, KeyRound, Search, Eye, EyeOff, Copy, Check, LayoutGrid, List } from "lucide-react";
+import { Search, ArrowLeft, Plus, Users, Mail, KeyRound, Eye, EyeOff, Copy, Check, LayoutGrid, List } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { with429Retry } from "@/components/utils/retry";
