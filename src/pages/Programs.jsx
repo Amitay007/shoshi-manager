@@ -19,9 +19,9 @@ export default function Programs() {
   const [instPrograms, setInstPrograms] = useState([]);
   const [schools, setSchools] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState("all"); // active, inactive, shelf, all
+  const [activeTab, setActiveTab] = useState("active");
+  const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState({
-    search: "",
     activity_types: [],
     content_areas: [],
     target_audiences: [],
@@ -145,63 +145,97 @@ export default function Programs() {
     }
   };
 
-  const filteredPrograms = useMemo(() => {
-    let result = [...(programs || [])]; // Fix: ensure programs is array
-    const term = (filters.search || "").toLowerCase().trim();
-
-    // Show ONLY programs that have associated InstitutionPrograms
-    result = result.filter((p) => {
-      const associatedInstProgs = instPrograms.filter((ip) => ip.program_id === p.id);
-      if (associatedInstProgs.length === 0) return false;
-
-      if (statusFilter === 'all') return true;
-
-      const statuses = associatedInstProgs.map((ip) => ip.status || "פעילה");
-      if (statusFilter === 'active') return statuses.includes("פעילה");
-      if (statusFilter === 'inactive') return statuses.includes("לא פעילה");
-      if (statusFilter === 'shelf') return statuses.includes("מדף");
-
-      return false;
+  // Calculate Status & Counts
+  const programStatusMap = useMemo(() => {
+    const map = {};
+    programs.forEach(p => {
+      const associatedIPs = instPrograms.filter(ip => ip.program_id === p.id);
+      if (associatedIPs.length === 0) {
+         map[p.id] = "draft"; // Or hidden?
+         return;
+      }
+      // Usually a program has one IP context in this view? Or multiple?
+      // Assuming active if ANY IP is active
+      const hasActive = associatedIPs.some(ip => (ip.status || "פעילה") === "פעילה");
+      const hasShelf = associatedIPs.some(ip => ip.status === "מדף");
+      
+      if (hasActive) map[p.id] = "active";
+      else if (hasShelf) map[p.id] = "shelf";
+      else map[p.id] = "inactive";
     });
+    return map;
+  }, [programs, instPrograms]);
 
-    if (term) {
-      result = result.filter((p) => {
-        const title = p.title || p.course_topic || p.subject || "";
-        const notes = p.notes || "";
-        return title.toLowerCase().includes(term) || notes.toLowerCase().includes(term);
+  const counts = useMemo(() => ({
+    all: programs.length,
+    active: programs.filter(p => programStatusMap[p.id] === "active").length,
+    inactive: programs.filter(p => programStatusMap[p.id] === "inactive").length,
+    shelf: programs.filter(p => programStatusMap[p.id] === "shelf").length,
+    middle_high: programs.filter(p => {
+        const audience = Array.isArray(p.target_audience) ? p.target_audience : [];
+        return audience.some(a => a.includes("חט") || a.includes("תיכון"));
+    }).length,
+    primary: programs.filter(p => {
+        const audience = Array.isArray(p.target_audience) ? p.target_audience : [];
+        return audience.some(a => a.includes("יסודי"));
+    }).length,
+    special: programs.filter(p => {
+        const audience = Array.isArray(p.target_audience) ? p.target_audience : [];
+        return audience.some(a => a.includes("חינוך מיוחד") || a.includes("חנ"));
+    }).length
+  }), [programs, programStatusMap]);
+
+  const filterPills = [
+    { key: "active", label: "פעיל", count: counts.active, color: "bg-emerald-50 text-emerald-700 border-emerald-200", activeColor: "bg-emerald-600 text-white border-emerald-600" },
+    { key: "inactive", label: "לא פעיל", count: counts.inactive, color: "bg-slate-50 text-slate-600 border-slate-200", activeColor: "bg-slate-600 text-white border-slate-600" },
+    { key: "shelf", label: "מדף", count: counts.shelf, color: "bg-amber-50 text-amber-700 border-amber-200", activeColor: "bg-amber-600 text-white border-amber-600" },
+    { key: "middle_high", label: "חט\"ב/תיכון", count: counts.middle_high, color: "bg-purple-50 text-purple-700 border-purple-200", activeColor: "bg-purple-600 text-white border-purple-600" },
+    { key: "primary", label: "יסודי", count: counts.primary, color: "bg-blue-50 text-blue-700 border-blue-200", activeColor: "bg-blue-600 text-white border-blue-600" },
+    { key: "special", label: "חנ\"מ", count: counts.special, color: "bg-orange-50 text-orange-700 border-orange-200", activeColor: "bg-orange-600 text-white border-orange-600" },
+    { key: "all", label: "הכל", count: counts.all, color: "bg-slate-100 text-slate-700 border-slate-200", activeColor: "bg-slate-800 text-white border-slate-800" },
+  ];
+
+  const filteredPrograms = useMemo(() => {
+    let result = [...programs];
+    
+    // Sort by updated_date (newest first) to show duplicated items
+    result.sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+
+    // Text Search
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase().trim();
+      result = result.filter(p => {
+         const title = p.title || p.course_topic || p.subject || "";
+         const teacher = p.teacher_name || "";
+         const schoolsName = instPrograms
+            .filter(ip => ip.program_id === p.id)
+            .map(ip => schools.find(s => s.id === ip.institution_id)?.name || "")
+            .join(" ");
+            
+         return title.toLowerCase().includes(term) || 
+                teacher.toLowerCase().includes(term) ||
+                schoolsName.toLowerCase().includes(term);
       });
     }
 
-    if ((filters.activity_types || []).length > 0) {
-      result = result.filter((p) => (filters.activity_types || []).includes(p.activity_type));
-    }
-
-    if ((filters.content_areas || []).length > 0) {
-      result = result.filter((p) => {
-        const programContentAreas = typeof p.content_areas === 'string' ?
-        p.content_areas.split(',').map((s) => s.trim()).filter(Boolean) :
-        Array.isArray(p.content_areas) ? p.content_areas : [];
-        return programContentAreas.some((ca) => (filters.content_areas || []).includes(ca));
-      });
-    }
-
-    if ((filters.target_audiences || []).length > 0) {
-      result = result.filter((p) =>
-      (p.target_audience || []).some((ta) => (filters.target_audiences || []).includes(ta))
-      );
-    }
-
-    if ((filters.schools || []).length > 0) {
-      const programIdsInSchools = new Set(
-        (instPrograms || []).
-        filter((ip) => (filters.schools || []).includes(ip.institution_id)).
-        map((ip) => ip.program_id)
-      );
-      result = result.filter((p) => programIdsInSchools.has(p.id));
+    // Pill Filter Logic
+    if (activeTab !== "all") {
+       result = result.filter(p => {
+          if (activeTab === "active") return programStatusMap[p.id] === "active";
+          if (activeTab === "inactive") return programStatusMap[p.id] === "inactive";
+          if (activeTab === "shelf") return programStatusMap[p.id] === "shelf";
+          
+          const audience = Array.isArray(p.target_audience) ? p.target_audience : [];
+          if (activeTab === "middle_high") return audience.some(a => a.includes("חט") || a.includes("תיכון"));
+          if (activeTab === "primary") return audience.some(a => a.includes("יסודי"));
+          if (activeTab === "special") return audience.some(a => a.includes("חינוך מיוחד") || a.includes("חנ"));
+          
+          return true;
+       });
     }
 
     return result;
-  }, [programs, filters, instPrograms]);
+  }, [programs, searchTerm, activeTab, programStatusMap, schools, instPrograms]);
 
   if (isLoading) {
     return (
@@ -227,27 +261,42 @@ export default function Programs() {
           </div>
         </div>
 
-        {/* Status Toggle & Actions */}
-        <div className="flex justify-start items-center mb-2 gap-4">
-           <Link to={createPageUrl("CreateProgram")}>
-              <Button className="bg-gradient-to-r text-primary-foreground px-3 py-2 text-sm font-medium rounded-md inline-flex items-center justify-center whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-primary/90 h-9 from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg gap-2">
-                <Plus className="w-4 h-4" />
-                תוכנית חדשה
-              </Button>
-            </Link>
+        {/* Pills & Actions */}
+        <div className="flex flex-col gap-4 mb-6">
+           <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
+                {filterPills.map(pill => (
+                  <button
+                    key={pill.key}
+                    onClick={() => setActiveTab(pill.key)}
+                    className={`px-3 py-1 rounded-full border text-sm font-medium transition-all whitespace-nowrap
+                      ${activeTab === pill.key ? pill.activeColor : pill.color}`}
+                  >
+                    {pill.label} ({pill.count})
+                  </button>
+                ))}
+              </div>
+
+              <Link to={createPageUrl("CreateProgram")}>
+                <Button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-md gap-2 rounded-full">
+                  <Plus className="w-4 h-4" />
+                  תוכנית חדשה
+                </Button>
+              </Link>
+           </div>
+           
+           <div className="flex gap-2">
+             <div className="relative flex-1">
+                <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input
+                  placeholder="חיפוש לפי שם, מורה, בית ספר..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pr-10 bg-white shadow-sm border-slate-200 rounded-full"
+                />
+             </div>
+           </div>
         </div>
-
-        {/* Filters */}
-        <Card className="mb-6 shadow-lg border-0">
-          <CardContent className="p-4">
-            <ProgramsFilterBar
-              allPrograms={programs}
-              schools={schools}
-              instPrograms={instPrograms}
-              onChange={setFilters} />
-
-          </CardContent>
-        </Card>
 
         {/* Programs Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
