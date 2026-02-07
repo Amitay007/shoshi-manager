@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Building2, Save, ArrowRight, Plus, Trash2, Eye, Calendar, AlertCircle, MapPin, Navigation, UserCircle, Phone, Mail, Wallet } from "lucide-react";
+import { Building2, Save, ArrowRight, Plus, Trash2, Eye, Calendar, AlertCircle, MapPin, Navigation, UserCircle, Phone, Mail, Wallet, Pencil } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { createPageUrl } from "@/utils";
 import { Link, useNavigate } from "react-router-dom";
@@ -217,10 +217,17 @@ export default function SchoolDetails() {
           </h1>
           <div className="flex items-center justify-center gap-2">
             {isManager ? (
-               <Button onClick={handleSave} disabled={saving} className="bg-green-600 hover:bg-green-700 gap-2">
-                 <Save className="w-4 h-4" />
-                 {saving ? "שומר..." : "שמור"}
-               </Button>
+               !isEditing ? (
+                 <Button onClick={() => setIsEditing(true)} className="bg-cyan-600 hover:bg-cyan-700 gap-2">
+                   <Pencil className="w-4 h-4" />
+                   ערוך
+                 </Button>
+               ) : (
+                 <Button onClick={handleSave} disabled={saving} className="bg-green-600 hover:bg-green-700 gap-2">
+                   <Save className="w-4 h-4" />
+                   {saving ? "שומר..." : "שמור"}
+                 </Button>
+               )
             ) : (
                <Button disabled className="bg-slate-200 text-slate-400 gap-2 cursor-not-allowed hover:bg-slate-200">
                  <Save className="w-4 h-4" />
