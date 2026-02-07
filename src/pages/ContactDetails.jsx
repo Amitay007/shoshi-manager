@@ -92,13 +92,12 @@ export default function ContactDetails() {
       <div className="max-w-5xl mx-auto space-y-6">
         
         {/* Top Navigation */}
-        <div className="flex justify-between items-center">
+        <div className="flex justify-start items-center">
           <Link to={createPageUrl(`CRMHub?mode=${mode}`)}>
-            <Button variant="ghost" className="gap-2 text-slate-600">
+            <Button className="gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700 shadow-md">
               <ArrowRight className="w-4 h-4" /> חזרה ל{isManager ? "קשרי לקוחות" : "מרכז תקשורת"}
             </Button>
           </Link>
-          <BackHomeButtons showBack={false} />
         </div>
 
         {/* Header Card */}

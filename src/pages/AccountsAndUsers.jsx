@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { installationData } from "@/components/InstallationData";
-import { ArrowLeft, Plus, Users, Mail, KeyRound, Search, Eye, EyeOff, Copy, Check } from "lucide-react";
+import { ArrowLeft, Plus, Users, Mail, KeyRound, Search, Eye, EyeOff, Copy, Check, LayoutGrid, List } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { with429Retry } from "@/components/utils/retry";
@@ -48,6 +48,7 @@ export default function AccountsAndUsers() {
     });
     const [showPasswords, setShowPasswords] = useState({});
     const [copiedPasswords, setCopiedPasswords] = useState({});
+    const [viewMode, setViewMode] = useState("list"); // list, grid
     const { showLoader, hideLoader } = useLoading();
 
     useEffect(() => {
@@ -272,7 +273,7 @@ export default function AccountsAndUsers() {
                             <p className="text-slate-500 text-sm">ניהול חשבונות משתמשים למשקפות VR</p>
                         </div>
                     </div>
-                    <BackHomeButtons className="hidden lg:block" />
+                    {/* Home button removed */}
                 </div>
 
                 {/* Management Card */}
@@ -325,6 +326,24 @@ export default function AccountsAndUsers() {
                                 value={filterNumber}
                                 onChange={(e) => setFilterNumber(e.target.value)}
                             />
+                            <div className="mr-auto flex bg-slate-100 p-1 rounded-lg">
+                                <Button 
+                                    size="sm" 
+                                    variant={viewMode === "list" ? "white" : "ghost"} 
+                                    className={viewMode === "list" ? "bg-white shadow-sm text-purple-700" : "text-slate-500"}
+                                    onClick={() => setViewMode("list")}
+                                >
+                                    <List className="w-4 h-4" />
+                                </Button>
+                                <Button 
+                                    size="sm" 
+                                    variant={viewMode === "grid" ? "white" : "ghost"} 
+                                    className={viewMode === "grid" ? "bg-white shadow-sm text-purple-700" : "text-slate-500"}
+                                    onClick={() => setViewMode("grid")}
+                                >
+                                    <LayoutGrid className="w-4 h-4" />
+                                </Button>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
@@ -441,9 +460,14 @@ export default function AccountsAndUsers() {
                                                     <a href={account.link_url} target="_blank" rel="noreferrer" className="ml-2 text-cyan-700 underline">קישור</a>
                                                 )}
                                             </div>
-                                            {device?.primary_email && (
-                                                <div className="text-xs text-slate-500 mt-1">
-                                                    משקפת: <span className="font-bold text-cyan-700">#{device.binocular_number}</span> | Gmail: <span className="font-medium">{device.primary_email}</span>
+                                            {device && (
+                                                <div className="flex items-center gap-2 mt-2">
+                                                    <div className="w-8 h-8 border-2 border-slate-200 rounded flex items-center justify-center font-bold text-slate-700 bg-slate-50 text-sm">
+                                                        {device.binocular_number}
+                                                    </div>
+                                                    <div className="text-xs text-slate-500">
+                                                        <div>Gmail: <span className="font-medium">{device.primary_email}</span></div>
+                                                    </div>
                                                 </div>
                                             )}
                                             {account.password && (

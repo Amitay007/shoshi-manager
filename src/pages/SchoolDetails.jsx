@@ -27,6 +27,7 @@ export default function SchoolDetails() {
 
   const [loading, setLoading] = React.useState(!isNew);
   const [saving, setSaving] = React.useState(false);
+  const [isEditing, setIsEditing] = React.useState(isNew); // Edit mode state
   const [school, setSchool] = React.useState({
     name: "",
     type: "יסודי",
@@ -35,6 +36,7 @@ export default function SchoolDetails() {
     phone: "",
     contact_person: "",
     contact_email: "",
+    contact_role: "", // NEW
     notes: "",
     teacher_notes: "",
     manager_notes: ""
@@ -326,6 +328,17 @@ export default function SchoolDetails() {
                   value={school.contact_person}
                   onChange={(e) => setSchool({ ...school, contact_person: e.target.value })}
                   placeholder="הזן שם איש קשר"
+                  disabled={!isEditing}
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-slate-700 mb-1 block">תפקיד איש קשר</label>
+                <Input
+                  value={school.contact_role}
+                  onChange={(e) => setSchool({ ...school, contact_role: e.target.value })}
+                  placeholder="הזן תפקיד"
+                  disabled={!isEditing}
                 />
               </div>
 
@@ -336,6 +349,7 @@ export default function SchoolDetails() {
                   value={school.contact_email}
                   onChange={(e) => setSchool({ ...school, contact_email: e.target.value })}
                   placeholder="הזן אימייל"
+                  disabled={!isEditing}
                 />
               </div>
 
@@ -506,21 +520,23 @@ export default function SchoolDetails() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Link to={createPageUrl(`SyllabusWizard?id=${prog.program_id}`)}>
+                        <Link to={createPageUrl(`SyllabusWizard?id=${prog.program_id}&viewOnly=true`)}>
                           <Button variant="outline" size="sm" className="gap-1">
                             <Eye className="w-4 h-4" />
                             צפה
                           </Button>
                         </Link>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleRemoveProgram(prog.id)}
-                          className="gap-1"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          נתק
-                        </Button>
+                        {isManager && (
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => handleRemoveProgram(prog.id)}
+                              className="gap-1"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                              נתק
+                            </Button>
+                        )}
                       </div>
                     </div>
                   ))}
