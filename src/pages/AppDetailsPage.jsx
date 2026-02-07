@@ -113,13 +113,10 @@ export default function AppDetailsPage() {
             <Button
               variant="outline"
               onClick={() => navigate(createPageUrl(`AddAppPage?editId=${app.id}`))}
-              className="gap-2"
+              className="gap-2 shadow-sm"
             >
               <Pencil className="w-4 h-4" />
               ערוך
-            </Button>
-            <Button variant="outline" size="icon" onClick={() => navigate(-1)}>
-              <ArrowRight className="w-4 h-4" />
             </Button>
           </div>
         </div>
