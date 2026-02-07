@@ -5,6 +5,7 @@ import { Syllabus } from "@/entities/Syllabus";
 import { InstitutionProgram } from "@/entities/InstitutionProgram";
 import { DeviceApp } from "@/entities/DeviceApp";
 import { VRApp } from "@/entities/VRApp";
+import { Equipment } from "@/entities/Equipment";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Plus, Copy, Save, Repeat, Calendar, FileText, Search, CheckCircle, Stamp, MessageSquare, Trash2, X, Edit, ArrowRight, ArrowLeft, ChevronDown, ChevronUp, Filter, Check } from "lucide-react";
+import { Plus, Copy, Save, Repeat, Calendar, FileText, Search, CheckCircle, Stamp, MessageSquare, Trash2, X, Edit, ArrowRight, ArrowLeft, ChevronDown, ChevronUp, Filter, Check, Monitor, AlertTriangle, Box } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -39,11 +40,17 @@ export default function DeviceAssignments() {
   
   // Headset selection state
   const [allHeadsets, setAllHeadsets] = useState([]);
+  const [allEquipment, setAllEquipment] = useState([]);
+  
   const [selectedStaticHeadsets, setSelectedStaticHeadsets] = useState(new Set());
+  const [selectedStaticEquipment, setSelectedStaticEquipment] = useState(new Set());
+  
   const [selectedDynamicHeadsets, setSelectedDynamicHeadsets] = useState([new Set(), new Set(), new Set()]);
+  const [selectedDynamicEquipment, setSelectedDynamicEquipment] = useState([new Set(), new Set(), new Set()]);
   
   // Modal state
   const [isHeadsetModalOpen, setIsHeadsetModalOpen] = useState(false);
+  const [modalTab, setModalTab] = useState("headsets"); // headsets, equipment
   const [currentSessionIndex, setCurrentSessionIndex] = useState(null);
   const [tempSelection, setTempSelection] = useState(new Set());
 
@@ -122,14 +129,16 @@ export default function DeviceAssignments() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [devices, silshuchim, programs, instPrograms, deviceApps, apps] = await Promise.all([
+      const [devices, silshuchim, programs, instPrograms, deviceApps, apps, equipment] = await Promise.all([
         with429Retry(() => VRDevice.list()),
         with429Retry(() => Silshuch.list()),
         with429Retry(() => Syllabus.list()),
         with429Retry(() => InstitutionProgram.list()),
-        with429Retry(() => DeviceApp.list(null, 10000)), // Fetch all device apps
-        with429Retry(() => VRApp.list())
+        with429Retry(() => DeviceApp.list(null, 10000)),
+        with429Retry(() => VRApp.list()),
+        with429Retry(() => Equipment.list())
       ]);
+      setAllEquipment(equipment || []);
       
       setAllApps(apps || []);
       
@@ -312,6 +321,7 @@ export default function DeviceAssignments() {
 
       if (mode === "static") {
         silshuchData.selectedHeadsets = Array.from(selectedStaticHeadsets);
+        silshuchData.selectedEquipment = Array.from(selectedStaticEquipment);
         if (hasDates && executionDate) {
           silshuchData.executionDate = executionDate;
         }
@@ -320,6 +330,7 @@ export default function DeviceAssignments() {
         silshuchData.sessions = selectedDynamicHeadsets.map((sessionSet, idx) => ({
           sessionNumber: idx + 1,
           headsets: Array.from(sessionSet),
+          equipment: Array.from(selectedDynamicEquipment[idx] || []),
           sessionDate: hasDates && sessionDates[idx] ? sessionDates[idx] : undefined
         }));
       }
@@ -409,11 +420,15 @@ export default function DeviceAssignments() {
     
     if (silshuch.mode === "static") {
       setSelectedStaticHeadsets(new Set(silshuch.selectedHeadsets || []));
+      setSelectedStaticEquipment(new Set(silshuch.selectedEquipment || []));
     } else {
       setNumberOfSessions(silshuch.numberOfSessions || 3);
       const sessions = (silshuch.sessions || []).map(s => new Set(s.headsets || []));
+      const equipSessions = (silshuch.sessions || []).map(s => new Set(s.equipment || []));
       const dates = (silshuch.sessions || []).map(s => s.sessionDate || null);
+      
       setSelectedDynamicHeadsets(sessions);
+      setSelectedDynamicEquipment(equipSessions);
       setSessionDates(dates);
     }
     
@@ -587,7 +602,7 @@ export default function DeviceAssignments() {
                  <div className="absolute top-0 right-0 w-2 h-full bg-red-500"></div>
                  <CardContent className="p-6 flex flex-col items-center justify-center h-full relative z-10">
                     <div className="mb-2 p-3 bg-red-50 rounded-full text-red-600 group-hover:bg-red-100 transition-colors">
-                        <Trash2 className="w-6 h-6" />
+                        <AlertTriangle className="w-6 h-6" />
                     </div>
                     <div className="text-sm font-medium text-slate-500 mb-1">משקפות תקולות</div>
                     <div className="text-3xl font-bold text-slate-800 tracking-tight">{faultyHeadsets.length}</div>
@@ -692,7 +707,7 @@ export default function DeviceAssignments() {
                       <div className={`h-24 w-full relative overflow-hidden ${silshuch.mode === "static" ? "bg-[#6b46c1]" : "bg-[#00d4ff]"}`}>
                          <div className="absolute inset-0 bg-white/10 mix-blend-overlay"></div>
                          <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-white/20 rounded-full blur-xl"></div>
-                         <div className="absolute top-4 left-4">
+                         <div className="absolute top-4 right-4">
                              <Badge className="bg-white/90 backdrop-blur text-slate-900 border-none shadow-sm px-3 py-1 text-xs font-bold">
                                 {silshuch.mode === "static" ? "סטטי" : "דינמי"}
                              </Badge>
@@ -927,14 +942,20 @@ export default function DeviceAssignments() {
                         <Button onClick={() => setShowProgramsModal(true)} variant="outline" className="border-purple-200 hover:bg-purple-50 text-purple-700 gap-2 h-9">
                           <FileText className="w-4 h-4" /> יבא מתוכנית
                         </Button>
-                        <Button onClick={() => openHeadsetModal(null)} className="bg-gradient-to-r from-purple-600 to-purple-700 text-white gap-2 shadow-md hover:shadow-lg h-9">
-                          <Plus className="w-4 h-4" /> הוסף משקפות
-                        </Button>
+                        <div className="flex bg-white rounded-lg border p-1 gap-1">
+                            <Button onClick={() => openHeadsetModal(null, "headsets")} size="sm" variant="ghost" className="h-8 hover:bg-purple-50 text-purple-700">
+                                <Plus className="w-3 h-3 mr-1" /> משקפות
+                            </Button>
+                            <div className="w-px bg-slate-200 my-1"></div>
+                            <Button onClick={() => openHeadsetModal(null, "equipment")} size="sm" variant="ghost" className="h-8 hover:bg-purple-50 text-purple-700">
+                                <Plus className="w-3 h-3 mr-1" /> ציוד
+                            </Button>
+                        </div>
                       </div>
                     )}
                   </div>
                 </CardHeader>
-                <CardContent className="p-6">
+                <CardContent className="p-4">
                   {/* Date Picker moved here for static mode */}
                   {hasDates && (
                     <div className="mb-6 p-4 bg-white rounded-xl border border-purple-100 shadow-sm flex items-center gap-4 max-w-md">
@@ -950,8 +971,9 @@ export default function DeviceAssignments() {
                     </div>
                   )}
                   
-                  {selectedStaticHeadsets.size > 0 ? (
+                  {(selectedStaticHeadsets.size > 0 || selectedStaticEquipment.size > 0) ? (
                     <div className="space-y-4">
+                      {selectedStaticHeadsets.size > 0 && <h4 className="text-sm font-bold text-slate-500 mb-2">משקפות</h4>}
                       <div className="flex flex-wrap gap-3">
                         {Array.from(selectedStaticHeadsets).map(deviceId => (
                           <div key={deviceId} className="relative group animate-in zoom-in-50 duration-200">
@@ -977,12 +999,42 @@ export default function DeviceAssignments() {
                           </div>
                         ))}
                       </div>
+                      
+                      {selectedStaticEquipment.size > 0 && (
+                        <>
+                            <h4 className="text-sm font-bold text-slate-500 mb-2 mt-4">ציוד נלווה</h4>
+                            <div className="flex flex-wrap gap-3">
+                                {Array.from(selectedStaticEquipment).map(eqId => {
+                                    const item = allEquipment.find(e => e.id === eqId);
+                                    return (
+                                        <div key={eqId} className="relative group">
+                                            <div className="flex items-center gap-3 bg-white border border-slate-200 rounded-xl px-4 py-2 shadow-sm pr-10">
+                                                <Box className="w-5 h-5 text-orange-500" />
+                                                <span className="font-bold text-slate-700">{item ? item.name : "ציוד לא ידוע"}</span>
+                                            </div>
+                                            {!isReadOnly && (
+                                                <button 
+                                                    className="absolute top-1/2 -translate-y-1/2 right-2 w-6 h-6 flex items-center justify-center rounded-full text-slate-400 hover:bg-red-50 hover:text-red-500 transition-colors" 
+                                                    onClick={(e) => {
+                                                        const newSet = new Set(selectedStaticEquipment);
+                                                        newSet.delete(eqId);
+                                                        setSelectedStaticEquipment(newSet);
+                                                    }}
+                                                >
+                                                    <X className="w-4 h-4" />
+                                                </button>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </>
+                      )}
                     </div>
                   ) : (
                     <div className="text-center py-12 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
                       <VRIcon className="w-12 h-12 mx-auto mb-3 text-slate-300" />
-                      <p className="text-slate-500 font-medium">טרם נבחרו משקפות לשיבוץ זה</p>
-                      {!isReadOnly && <p className="text-slate-400 text-sm mt-1">השתמש בכפתורים למעלה להוספת משקפות</p>}
+                      <p className="text-slate-500 font-medium">טרם נבחרו פריטים לשיבוץ זה</p>
                     </div>
                   )}
                 </CardContent>
@@ -1014,14 +1066,17 @@ export default function DeviceAssignments() {
                             <Button onClick={() => { setCurrentSessionIndex(idx); setShowProgramsModal(true); }} size="sm" variant="outline" className="border-cyan-200 hover:bg-cyan-50 text-cyan-700 gap-2">
                               <FileText className="w-4 h-4" /> יבא
                             </Button>
-                            <Button onClick={() => openHeadsetModal(idx)} size="sm" className="bg-cyan-600 hover:bg-cyan-700 text-white gap-2">
-                              <Plus className="w-4 h-4" /> הוסף משקפות
+                            <Button onClick={() => openHeadsetModal(idx, "headsets")} size="sm" className="bg-cyan-600 hover:bg-cyan-700 text-white gap-1">
+                              <Plus className="w-3 h-3" /> משקפות
+                            </Button>
+                            <Button onClick={() => openHeadsetModal(idx, "equipment")} size="sm" variant="outline" className="border-orange-200 text-orange-700 hover:bg-orange-50 gap-1">
+                              <Plus className="w-3 h-3" /> ציוד
                             </Button>
                           </div>
                         )}
                       </div>
                     </CardHeader>
-                    <CardContent className="p-4 pt-6">
+                    <CardContent className="p-4">
                       
                       {hasDates && (
                         <div className="mb-4 flex items-center gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100 max-w-sm">
@@ -1243,22 +1298,35 @@ export default function DeviceAssignments() {
 
                 <div className="overflow-y-auto max-h-[50vh] p-4">
                   <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                    {allHeadsets.filter(d => {
-                        if (d.is_disabled) return false;
-                        if (filterAppId) {
-                            const installedApps = deviceAppMap[d.id];
-                            return installedApps && installedApps.has(filterAppId);
-                        }
-                        return true;
-                    }).map(device => (
-                      <div key={device.id} onClick={() => toggleHeadsetInTemp(device.id)} className={`relative p-4 rounded-lg border-2 cursor-pointer transition-all hover:shadow-md ${tempSelection.has(device.id) ? "border-purple-500 bg-purple-50" : "border-slate-200 bg-white hover:border-purple-300"}`}>
-                        <div className="absolute top-2 right-2"><Checkbox checked={tempSelection.has(device.id)} /></div>
-                        <div className="text-center pt-4">
-                          <VRIcon className={`w-6 h-6 mx-auto mb-2 ${tempSelection.has(device.id) ? "text-purple-600" : "text-slate-400"}`} />
-                          <div className={`font-bold text-lg ${tempSelection.has(device.id) ? "text-purple-900" : "text-slate-700"}`}>{device.binocular_number}</div>
-                        </div>
-                      </div>
-                    ))}
+                    {modalTab === "headsets" ? (
+                        allHeadsets.filter(d => {
+                            if (d.is_disabled) return false;
+                            if (filterAppId) {
+                                const installedApps = deviceAppMap[d.id];
+                                return installedApps && installedApps.has(filterAppId);
+                            }
+                            return true;
+                        }).map(device => (
+                          <div key={device.id} onClick={() => toggleHeadsetInTemp(device.id)} className={`relative p-4 rounded-lg border-2 cursor-pointer transition-all hover:shadow-md ${tempSelection.has(device.id) ? "border-purple-500 bg-purple-50" : "border-slate-200 bg-white hover:border-purple-300"}`}>
+                            <div className="absolute top-2 right-2"><Checkbox checked={tempSelection.has(device.id)} /></div>
+                            <div className="text-center pt-4">
+                              <VRIcon className={`w-6 h-6 mx-auto mb-2 ${tempSelection.has(device.id) ? "text-purple-600" : "text-slate-400"}`} />
+                              <div className={`font-bold text-lg ${tempSelection.has(device.id) ? "text-purple-900" : "text-slate-700"}`}>{device.binocular_number}</div>
+                            </div>
+                          </div>
+                        ))
+                    ) : (
+                        allEquipment.filter(e => e.status !== "faulty").map(item => (
+                          <div key={item.id} onClick={() => toggleHeadsetInTemp(item.id)} className={`relative p-4 rounded-lg border-2 cursor-pointer transition-all hover:shadow-md ${tempSelection.has(item.id) ? "border-orange-500 bg-orange-50" : "border-slate-200 bg-white hover:border-orange-300"}`}>
+                            <div className="absolute top-2 right-2"><Checkbox checked={tempSelection.has(item.id)} /></div>
+                            <div className="text-center pt-4">
+                              <Box className={`w-6 h-6 mx-auto mb-2 ${tempSelection.has(item.id) ? "text-orange-600" : "text-slate-400"}`} />
+                              <div className={`font-bold text-sm truncate ${tempSelection.has(item.id) ? "text-orange-900" : "text-slate-700"}`}>{item.name}</div>
+                              <div className="text-xs text-slate-400">{item.serial_number}</div>
+                            </div>
+                          </div>
+                        ))
+                    )}
                   </div>
                   {allHeadsets.filter(d => !d.is_disabled && (filterAppId ? deviceAppMap[d.id]?.has(filterAppId) : true)).length === 0 && (
                       <div className="text-center py-10 text-slate-500">
