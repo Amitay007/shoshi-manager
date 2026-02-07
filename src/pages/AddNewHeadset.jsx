@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { VRDevice } from "@/entities/VRDevice";
 import { VRApp } from "@/entities/VRApp";
+import { Teacher } from "@/entities/Teacher";
 import { DeviceLinkedAccount } from "@/entities/DeviceLinkedAccount";
 import { DeviceApp } from "@/entities/DeviceApp";
 import { with429Retry } from "@/components/utils/retry";
@@ -35,7 +36,9 @@ export default function AddNewHeadset() {
     remio_email: "",
     remio_password: "",
     notes: "",
+    assigned_to: "", // NEW
   });
+  const [teachers, setTeachers] = useState([]);
   const [extraAccounts, setExtraAccounts] = useState([]);
   const [errors, setErrors] = useState({ id: "", email: "" });
   const [allApps, setAllApps] = useState([]);
@@ -47,12 +50,16 @@ export default function AddNewHeadset() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    loadApps();
+    loadData();
   }, []);
 
-  const loadApps = async () => {
-    const list = await with429Retry(() => VRApp.list());
-    setAllApps(list);
+  const loadData = async () => {
+    const [appsList, teachersList] = await Promise.all([
+        with429Retry(() => VRApp.list()),
+        with429Retry(() => Teacher.list())
+    ]);
+    setAllApps(appsList || []);
+    setTeachers(teachersList || []);
   };
 
   const handleNumericChange = (e) => {
@@ -112,6 +119,7 @@ export default function AddNewHeadset() {
       primary_email: form.primary_email,
       purchase_date: form.purchase_date || undefined,
       notes: form.notes || undefined,
+      assigned_to: form.assigned_to || undefined,
       installedApps: selectedAppIds,
     };
 
@@ -238,6 +246,23 @@ export default function AddNewHeadset() {
                 />
               )}
             </div>
+
+            <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700">שיוך לאיש צוות (אופציונלי)</label>
+                <Select
+                    value={form.assigned_to}
+                    onValueChange={(v) => setForm((p) => ({ ...p, assigned_to: v }))}
+                >
+                    <SelectTrigger>
+                        <SelectValue placeholder="בחר עובד לשיוך" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {teachers.map(t => (
+                            <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
           </CardContent>
         </Card>
 
@@ -313,9 +338,17 @@ export default function AddNewHeadset() {
                    >
                     <SelectTrigger><SelectValue placeholder="סוג חשבון" /></SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="GMAIL">Gmail</SelectItem>
+                      <SelectItem value="META">Meta</SelectItem>
                       <SelectItem value="Facebook">Facebook</SelectItem>
+                      <SelectItem value="Remio">Remio</SelectItem>
                       <SelectItem value="Steam">Steam</SelectItem>
-                      <SelectItem value="Other">אחר</SelectItem>
+                      <SelectItem value="App Lab">App Lab</SelectItem>
+                      <SelectItem value="Mondly">Mondly</SelectItem>
+                      <SelectItem value="Immerse">Immerse</SelectItem>
+                      <SelectItem value="Microsoft">Microsoft</SelectItem>
+                      <SelectItem value="SideQuest">SideQuest</SelectItem>
+                      <SelectItem value="אחר">אחר</SelectItem>
                     </SelectContent>
                    </Select>
                    <Input

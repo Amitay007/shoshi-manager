@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { VRApp } from "@/entities/VRApp";
 import { DeviceApp } from "@/entities/DeviceApp";
@@ -6,7 +5,7 @@ import { VRDevice } from "@/entities/VRDevice";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Pencil, Users, Glasses } from "lucide-react";
+import { Pencil, Users, Glasses } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import AppLinkButtons from "@/components/common/AppLinkButtons";
@@ -180,7 +179,12 @@ export default function AppDetailsPage() {
         {/* Extra info and installations */}
         <Card>
           <CardContent className="p-4 space-y-3 text-sm text-slate-700">
-            <div>סוג רכישה: <span className="font-medium">{app.purchase_type || "—"}</span></div>
+            <div>סוג רכישה: <span className="font-medium">{
+                app.purchase_type === "subscription" ? "מנוי" :
+                app.purchase_type === "one_time" ? "חד פעמי" :
+                app.purchase_type === "free" ? "חינם" :
+                app.purchase_type === "other" ? "אחר" : "—"
+            }</span></div>
             
             {/* Updated devices display with disabled status */}
             <div>

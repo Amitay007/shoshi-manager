@@ -35,7 +35,7 @@ import {
   WifiOff // NEW: WifiOff icon for internet not required
 } from "lucide-react";
 import { format, addMonths, addYears } from "date-fns";
-import BackHomeButtons from "@/components/common/BackHomeButtons";
+// BackHomeButtons removed
 import AppLinkButtons from "@/components/common/AppLinkButtons"; // NEW: AppLinkButtons
 import { VRApp } from "@/entities/VRApp";
 import { VRDevice } from "@/entities/VRDevice";
@@ -721,29 +721,10 @@ export default function AddAppPage() {
                 ערוך
               </Button>
             }
-            <BackHomeButtons />
           </div>
         </div>
 
-        {/* Rating stars under the title */}
-        <div className="mb-4 flex items-center gap-2">
-          {[1, 2, 3, 4, 5].map((i) =>
-            <button
-              key={i}
-              type="button"
-              onClick={() => !viewOnly && handleFieldChange("rating", i)}
-              className="p-1"
-              title={`דירוג ${i}`}
-              disabled={viewOnly}>
-              <Star className={`w-6 h-6 ${formData.rating >= i ? 'text-yellow-500 fill-yellow-500' : 'text-slate-300'}`} />
-            </button>
-          )}
-          {formData.rating !== null ?
-            <button type="button" onClick={() => !viewOnly && handleFieldChange("rating", null)} className="text-sm text-slate-500 underline" disabled={viewOnly}>
-              נקה דירוג
-            </button> :
-            null}
-        </div>
+        {/* Rating stars removed from edit UI */}
 
         {/* Device association indicator */}
         {associatedDevice && showAssociation &&
@@ -762,50 +743,7 @@ export default function AddAppPage() {
           </Card>
         }
 
-        {/* Flags under the title - NOW SHOWN ALWAYS (not just when associatedDevice or isEditing) */}
-        {!viewOnly && (
-          <Card className="mb-4">
-            <CardContent className="py-4">
-              <div className="flex gap-6 items-center">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <Checkbox
-                    checked={formData.is_research}
-                    onCheckedChange={(v) => {
-                      if (viewOnly) return;
-                      const val = Boolean(v);
-                      // If marking as research, unmark installed to keep tags mutually exclusive
-                      setFormData((prev) => ({
-                        ...prev,
-                        is_research: val,
-                        ...(val ? { is_installed: false } : {})
-                      }));
-                    }}
-                    disabled={viewOnly} />
-                  <span>מחקר</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <Checkbox
-                    checked={formData.is_installed}
-                    onCheckedChange={(v) => {
-                      if (viewOnly) return;
-                      const val = Boolean(v);
-                      // If marking as installed, unmark research to keep tags mutually exclusive
-                      setFormData((prev) => ({
-                        ...prev,
-                        is_installed: val,
-                        ...(val ? { is_research: false } : {})
-                      }));
-                    }}
-                    disabled={viewOnly} />
-                  <span>מותקן</span>
-                </label>
-                <span className="text-sm text-slate-500">
-                  הגדרה זו תקבע היכן תופיע האפליקציה לאחר השמירה.
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        {/* Flags removed from edit UI per requirements */}
 
         <form onSubmit={handleSubmit} className="space-y-6" style={{ opacity: viewOnly ? 0.98 : 1 }}>
           {/* מידע כללי */}
@@ -1683,7 +1621,7 @@ export default function AddAppPage() {
                   {/* Subscription type chooser dialog trigger */}
                   <div className="flex items-center gap-2">
                     <Button type="button" variant="outline" onClick={() => { if (!viewOnly) { setTempSubType(formData.subscription_type || ""); setTempStartDate(formData.subscription_start_date || null); setOpenSubTypeDialog(true); } }} disabled={viewOnly}>
-                      סוג מנוי
+                      הגדרת מנוי (חודש ותקופה)
                     </Button>
                     {formData.subscription_type &&
                       <div className="text-sm text-slate-600 flex flex-wrap items-center gap-2">
