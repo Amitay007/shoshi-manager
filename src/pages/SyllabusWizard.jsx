@@ -939,9 +939,9 @@ export default function SyllabusWizard() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 pt-4">
-            <Textarea placeholder="מתנת הידע - מה התלמידים ידעו?" value={data.gift_knowledge} onChange={(e) => setField("gift_knowledge", e.target.value)} className="min-h-[80px] text-right shadow-sm" />
-            <Textarea placeholder="מתנת המיומנות - מה התלמידים יוכלו לעשות?" value={data.gift_skill} onChange={(e) => setField("gift_skill", e.target.value)} className="min-h-[80px] text-right shadow-sm" />
-            <Textarea placeholder="מתנת ההבנה - מה התלמידים יבינו?" value={data.gift_understanding} onChange={(e) => setField("gift_understanding", e.target.value)} className="min-h-[80px] text-right shadow-sm" />
+            <Textarea placeholder="מתנת הידע - מה התלמידים ידעו?" value={data.gift_knowledge} onChange={(e) => setField("gift_knowledge", e.target.value)} className="min-h-[160px] text-right shadow-sm resize-y" />
+            <Textarea placeholder="מתנת המיומנות - מה התלמידים יוכלו לעשות?" value={data.gift_skill} onChange={(e) => setField("gift_skill", e.target.value)} className="min-h-[160px] text-right shadow-sm resize-y" />
+            <Textarea placeholder="מתנת ההבנה - מה התלמידים יבינו?" value={data.gift_understanding} onChange={(e) => setField("gift_understanding", e.target.value)} className="min-h-[160px] text-right shadow-sm resize-y" />
           </CardContent>
         </Card>
 
