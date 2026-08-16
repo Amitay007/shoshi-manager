@@ -1,0 +1,23 @@
+{
+  "name": "GenreOption",
+  "type": "object",
+  "properties": {
+    "value": {
+      "type": "string",
+      "description": "Genre key"
+    },
+    "label": {
+      "type": "string",
+      "description": "Display label"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Is option active"
+    }
+  },
+  "required": [
+    "value",
+    "label"
+  ]
+}

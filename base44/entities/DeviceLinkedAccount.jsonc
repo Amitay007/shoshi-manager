@@ -1,0 +1,81 @@
+{
+  "name": "DeviceLinkedAccount",
+  "type": "object",
+  "properties": {
+    "device_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05d4\u05de\u05db\u05e9\u05d9\u05e8 \u05d4\u05de\u05e7\u05d5\u05e9\u05e8"
+    },
+    "account_type": {
+      "type": "string",
+      "enum": [
+        "GMAIL",
+        "META",
+        "Facebook",
+        "Remio",
+        "Steam",
+        "App Lab",
+        "Mondly",
+        "Immerse",
+        "Microsoft",
+        "SideQuest",
+        "\u05d0\u05d7\u05e8"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05d4\u05d7\u05e9\u05d1\u05d5\u05df"
+    },
+    "email": {
+      "type": "string",
+      "description": "\u05d0\u05d9\u05de\u05d9\u05d9\u05dc \u05e9\u05dc \u05d4\u05d7\u05e9\u05d1\u05d5\u05df"
+    },
+    "username": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05de\u05e9\u05ea\u05de\u05e9"
+    },
+    "password": {
+      "type": "string",
+      "description": "\u05e1\u05d9\u05e1\u05de\u05d4"
+    },
+    "recovery_email": {
+      "type": "string",
+      "description": "\u05d0\u05d9\u05de\u05d9\u05d9\u05dc \u05e9\u05d7\u05d6\u05d5\u05e8"
+    },
+    "link_url": {
+      "type": "string",
+      "description": "\u05e7\u05d9\u05e9\u05d5\u05e8 \u05dc\u05d7\u05e9\u05d1\u05d5\u05df (URL)"
+    },
+    "notes": {
+      "type": "string",
+      "description": "\u05d4\u05e2\u05e8\u05d5\u05ea"
+    }
+  },
+  "required": [
+    "device_id",
+    "account_type"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "write": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

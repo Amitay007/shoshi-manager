@@ -1,0 +1,50 @@
+{
+  "name": "SystemDiagnostics",
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "Error",
+        "Performance",
+        "Info"
+      ],
+      "default": "Info",
+      "description": "\u05e1\u05d5\u05d2 \u05d4\u05d3\u05d9\u05d5\u05d5\u05d7 (\u05e9\u05d2\u05d9\u05d0\u05d4, \u05d1\u05d9\u05e6\u05d5\u05e2\u05d9\u05dd, \u05de\u05d9\u05d3\u05e2)"
+    },
+    "source": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05d4\u05e7\u05d5\u05d1\u05e5 \u05d0\u05d5 \u05d4\u05d3\u05e3 \u05e9\u05d1\u05d5 \u05e7\u05e8\u05d4 \u05d4\u05d0\u05d9\u05e8\u05d5\u05e2"
+    },
+    "message": {
+      "type": "string",
+      "description": "\u05ea\u05d9\u05d0\u05d5\u05e8 \u05de\u05e4\u05d5\u05e8\u05d8 \u05e9\u05dc \u05d4\u05e9\u05d2\u05d9\u05d0\u05d4 \u05d0\u05d5 \u05d4\u05e4\u05e2\u05d5\u05dc\u05d4"
+    },
+    "duration": {
+      "type": "number",
+      "description": "\u05d6\u05de\u05df \u05d1\u05d9\u05e6\u05d5\u05e2 \u05d1\u05de\u05d9\u05dc\u05d9\u05e9\u05e0\u05d9\u05d5\u05ea"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05de\u05d5\u05e2\u05d3 \u05d4\u05ea\u05e8\u05d7\u05e9\u05d5\u05ea \u05d4\u05d0\u05d9\u05e8\u05d5\u05e2"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "\u05de\u05d9\u05d3\u05e2 \u05e0\u05d5\u05e1\u05e3 (stack trace, user info, etc)"
+    }
+  },
+  "required": [
+    "type",
+    "source",
+    "message"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {}
+  }
+}

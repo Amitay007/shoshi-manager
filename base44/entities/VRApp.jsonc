@@ -1,0 +1,301 @@
+{
+  "name": "VRApp",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05d4\u05d0\u05e4\u05dc\u05d9\u05e7\u05e6\u05d9\u05d4"
+    },
+    "description": {
+      "type": "string",
+      "description": "\u05ea\u05d9\u05d0\u05d5\u05e8 \u05d4\u05d0\u05e4\u05dc\u05d9\u05e7\u05e6\u05d9\u05d4"
+    },
+    "developer": {
+      "type": "string",
+      "description": "\u05de\u05e4\u05ea\u05d7/\u05ea \u05d4\u05d0\u05e4\u05dc\u05d9\u05e7\u05e6\u05d9\u05d4"
+    },
+    "purchase_type": {
+      "type": "string",
+      "enum": [
+        "app_purchase",
+        "subscription",
+        "free",
+        "one_time",
+        "other"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05d4\u05e8\u05db\u05d9\u05e9\u05d4"
+    },
+    "internet_required": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u05d4\u05d0\u05dd \u05d3\u05d5\u05e8\u05e9 \u05d0\u05d9\u05e0\u05d8\u05e8\u05e0\u05d8"
+    },
+    "hand_tracking": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u05d4\u05d0\u05dd \u05ea\u05d5\u05de\u05da \u05d1-Hand Tracking"
+    },
+    "subscription_required": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u05d4\u05d0\u05dd \u05d3\u05d5\u05e8\u05e9 \u05de\u05e0\u05d5\u05d9"
+    },
+    "store_link": {
+      "type": "string",
+      "description": "\u05e7\u05d9\u05e9\u05d5\u05e8 \u05dc\u05d7\u05e0\u05d5\u05ea"
+    },
+    "website_link": {
+      "type": "string",
+      "description": "\u05e7\u05d9\u05e9\u05d5\u05e8 \u05dc\u05d0\u05ea\u05e8/\u05e2\u05de\u05d5\u05d3 \u05e0\u05d5\u05d5\u05d9\u05ea"
+    },
+    "subscription_store_link": {
+      "type": "string",
+      "description": "\u05e7\u05d9\u05e9\u05d5\u05e8 \u05dc\u05d0\u05ea\u05e8 \u05d4\u05d7\u05e0\u05d5\u05ea (\u05dc\u05de\u05e0\u05d5\u05d9)"
+    },
+    "genre": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "\u05d6'\u05d0\u05e0\u05e8"
+    },
+    "genre_meta": {
+      "type": "array",
+      "description": "\u05de\u05d8\u05d0 \u05e9\u05dc \u05d6'\u05d0\u05e0\u05e8\u05d9\u05dd (\u05db\u05d5\u05dc\u05dc \u05de\u05d9 \u05d4\u05d5\u05e1\u05d9\u05e3)",
+      "items": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "added_by": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "education_field": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "\u05ea\u05d7\u05d5\u05dd \u05d7\u05d9\u05e0\u05d5\u05db\u05d9"
+    },
+    "education_field_meta": {
+      "type": "array",
+      "description": "\u05de\u05d8\u05d0 \u05e9\u05dc \u05ea\u05d7\u05d5\u05dd \u05d7\u05d9\u05e0\u05d5\u05db\u05d9 (\u05db\u05d5\u05dc\u05dc \u05de\u05d9 \u05d4\u05d5\u05e1\u05d9\u05e3)",
+      "items": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "added_by": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "supported_platforms": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "\u05e4\u05dc\u05d8\u05e4\u05d5\u05e8\u05de\u05d5\u05ea \u05e0\u05ea\u05de\u05db\u05d5\u05ea"
+    },
+    "supported_platforms_meta": {
+      "type": "array",
+      "description": "\u05de\u05d8\u05d0 \u05e9\u05dc \u05e4\u05dc\u05d8\u05e4\u05d5\u05e8\u05de\u05d5\u05ea (\u05db\u05d5\u05dc\u05dc \u05de\u05d9 \u05d4\u05d5\u05e1\u05d9\u05e3)",
+      "items": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "added_by": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "research_by": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "\u05e0\u05d7\u05e7\u05e8 \u05e2\"\u05d9"
+    },
+    "purchased_by": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "\u05e0\u05e8\u05db\u05e9 \u05e2\"\u05d9"
+    },
+    "installed_by": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "\u05d4\u05d5\u05ea\u05e7\u05df \u05e2\"\u05d9"
+    },
+    "player_count_details": {
+      "type": "array",
+      "description": "\u05e4\u05e8\u05d8\u05d9 \u05db\u05de\u05d5\u05ea \u05de\u05e9\u05ea\u05ea\u05e4\u05d9\u05dd",
+      "items": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string"
+          },
+          "count": {
+            "type": "string"
+          },
+          "added_by": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "purchase_price": {
+      "type": "number",
+      "description": "\u05de\u05d7\u05d9\u05e8 \u05e8\u05db\u05d9\u05e9\u05ea \u05d4\u05d0\u05e4\u05dc\u05d9\u05e7\u05e6\u05d9\u05d4"
+    },
+    "purchase_currency": {
+      "type": "string",
+      "enum": [
+        "\u20aa",
+        "$"
+      ],
+      "description": "\u05de\u05d8\u05d1\u05e2 \u05e8\u05db\u05d9\u05e9\u05d4"
+    },
+    "purchased_on": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05e8\u05db\u05d9\u05e9\u05d4"
+    },
+    "downloaded_on": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05d4\u05d5\u05e8\u05d3\u05d4 (\u05dc\u05d0\u05e4\u05dc\u05d9\u05e7\u05e6\u05d9\u05d5\u05ea \u05d7\u05d9\u05e0\u05de\u05d9\u05d5\u05ea)"
+    },
+    "subscription_type": {
+      "type": "string",
+      "enum": [
+        "monthly",
+        "semi_annual",
+        "yearly",
+        "one_time",
+        "other"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05d4\u05de\u05e0\u05d5\u05d9"
+    },
+    "subscription_price": {
+      "type": "number",
+      "description": "\u05de\u05d7\u05d9\u05e8 \u05d4\u05de\u05e0\u05d5\u05d9"
+    },
+    "subscription_currency": {
+      "type": "string",
+      "enum": [
+        "\u20aa",
+        "$"
+      ],
+      "description": "\u05de\u05d8\u05d1\u05e2 \u05d4\u05de\u05e0\u05d5\u05d9"
+    },
+    "subscription_start_date": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05ea\u05d7\u05d9\u05dc\u05ea \u05d4\u05de\u05e0\u05d5\u05d9"
+    },
+    "subscription_end_date": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05e1\u05d9\u05d5\u05dd \u05d4\u05de\u05e0\u05d5\u05d9"
+    },
+    "subscription_purchased_by": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "\u05e0\u05e8\u05db\u05e9 \u05e2\"\u05d9 (\u05de\u05e0\u05d5\u05d9)"
+    },
+    "subscription_installed_by": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "\u05d4\u05d5\u05ea\u05e7\u05df \u05e2\"\u05d9 (\u05de\u05e0\u05d5\u05d9)"
+    },
+    "other_purchase_text": {
+      "type": "string",
+      "description": "\u05e4\u05e8\u05d8\u05d9 \u05e8\u05db\u05d9\u05e9\u05d4 - \u05d0\u05d7\u05e8"
+    },
+    "rating": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 5,
+      "description": "\u05d3\u05d9\u05e8\u05d5\u05d2"
+    },
+    "is_research": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u05dc\u05d4\u05e6\u05d9\u05d2 \u05d1\u05e2\u05de\u05d5\u05d3 \u05d0\u05e4\u05dc\u05d9\u05e7\u05e6\u05d9\u05d5\u05ea \u05de\u05d7\u05e7\u05e8"
+    },
+    "is_installed": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u05dc\u05d4\u05e6\u05d9\u05d2 \u05d1\u05e2\u05de\u05d5\u05d3 \u05d0\u05e4\u05dc\u05d9\u05e7\u05e6\u05d9\u05d5\u05ea \u05de\u05d5\u05ea\u05e7\u05e0\u05d5\u05ea"
+    },
+    "in_onboarding": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u05d1\u05ea\u05d4\u05dc\u05d9\u05da \u05e7\u05dc\u05d9\u05d8\u05d4"
+    },
+    "custom_tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "\u05ea\u05d2\u05d9\u05dd \u05de\u05d5\u05ea\u05d0\u05de\u05d9\u05dd \u05d0\u05d9\u05e9\u05d9\u05ea"
+    },
+    "app_notes": {
+      "type": "string",
+      "description": "\u05d4\u05e2\u05e8\u05d5\u05ea \u05de\u05d9\u05d5\u05d7\u05d3\u05d5\u05ea \u05dc\u05d0\u05e4\u05dc\u05d9\u05e7\u05e6\u05d9\u05d4"
+    },
+    "theme_color": {
+      "type": "string",
+      "description": "\u05e6\u05d1\u05e2 \u05e0\u05d5\u05e9\u05d0 \u05e8\u05d0\u05e9\u05d9 (hex)"
+    },
+    "accent_color": {
+      "type": "string",
+      "description": "\u05e6\u05d1\u05e2 \u05d3\u05d2\u05e9 (hex)"
+    },
+    "custom_icon_url": {
+      "type": "string",
+      "description": "\u05d0\u05d9\u05d9\u05e7\u05d5\u05df \u05de\u05d5\u05ea\u05d0\u05dd (URL)"
+    },
+    "audience_level": {
+      "type": "string",
+      "description": "\u05e8\u05de\u05d4/\u05e9\u05db\u05d1\u05d4 \u05d7\u05d9\u05e0\u05d5\u05db\u05d9\u05ea"
+    },
+    "audience_age": {
+      "type": "string",
+      "description": "\u05d2\u05d9\u05dc \u05d9\u05e2\u05d3"
+    },
+    "custom_fields": {
+      "type": "object",
+      "description": "\u05e9\u05d3\u05d5\u05ea \u05de\u05d5\u05ea\u05d0\u05de\u05d9\u05dd \u05d0\u05d9\u05e9\u05d9\u05ea"
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "rls": {
+    "read": {},
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

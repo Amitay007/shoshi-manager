@@ -1,0 +1,23 @@
+{
+  "name": "PlatformOption",
+  "type": "object",
+  "properties": {
+    "value": {
+      "type": "string",
+      "description": "Platform key"
+    },
+    "label": {
+      "type": "string",
+      "description": "Display label"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Is option active"
+    }
+  },
+  "required": [
+    "value",
+    "label"
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "name": "ImportJob",
+  "type": "object",
+  "properties": {
+    "file_name": {
+      "type": "string",
+      "description": "Original uploaded file name"
+    },
+    "data_type": {
+      "type": "string",
+      "enum": [
+        "students",
+        "classes",
+        "schools",
+        "devices",
+        "apps",
+        "users"
+      ],
+      "description": "Type of data imported"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "success",
+        "failure",
+        "partial"
+      ],
+      "description": "Import result status"
+    },
+    "options": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Selected import options (addOnly, upsert, wipeReimport)"
+    },
+    "error_log": {
+      "type": "string",
+      "description": "Error log text for failed/partial imports"
+    }
+  },
+  "required": [
+    "file_name",
+    "data_type",
+    "status"
+  ],
+  "rls": {
+    "read": {},
+    "write": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

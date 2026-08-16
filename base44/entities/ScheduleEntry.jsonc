@@ -1,0 +1,92 @@
+{
+  "name": "ScheduleEntry",
+  "type": "object",
+  "properties": {
+    "program_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05d4\u05ea\u05d5\u05db\u05e0\u05d9\u05ea/\u05e1\u05d9\u05dc\u05d1\u05d5\u05e1 (Syllabus.id)"
+    },
+    "device_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "\u05e8\u05e9\u05d9\u05de\u05ea \u05de\u05d6\u05d4\u05d9 \u05d4\u05de\u05e9\u05e7\u05e4\u05d5\u05ea \u05d4\u05de\u05e9\u05d5\u05d1\u05e6\u05d5\u05ea (VRDevice.id)"
+    },
+    "start_datetime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05d5\u05e9\u05e2\u05ea \u05d4\u05ea\u05d7\u05dc\u05d4"
+    },
+    "end_datetime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05d5\u05e9\u05e2\u05ea \u05e1\u05d9\u05d5\u05dd"
+    },
+    "institution_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05de\u05d5\u05e1\u05d3 \u05d4\u05d7\u05d9\u05e0\u05d5\u05da (EducationInstitution.id)"
+    },
+    "custom_location": {
+      "type": "string",
+      "description": "\u05de\u05d9\u05e7\u05d5\u05dd \u05de\u05d5\u05ea\u05d0\u05dd \u05d0\u05d9\u05e9\u05d9\u05ea (\u05db\u05ea\u05d5\u05d1\u05ea/\u05e2\u05d9\u05e8)"
+    },
+    "learning_space": {
+      "type": "string",
+      "description": "\u05de\u05e8\u05d7\u05d1 \u05dc\u05de\u05d9\u05d3\u05d4 (\u05db\u05d9\u05ea\u05d4/\u05de\u05e1\u05d3\u05e8\u05d5\u05df/\u05d5\u05db\u05d5')"
+    },
+    "assigned_teacher_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05d4\u05de\u05d5\u05e8\u05d4 \u05d4\u05de\u05d5\u05d1\u05d9\u05dc (Teacher.id)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending_teacher_approval",
+        "approved",
+        "rejected",
+        "done",
+        "cancelled"
+      ],
+      "default": "pending_teacher_approval",
+      "description": "\u05e1\u05d8\u05d8\u05d5\u05e1 \u05d4\u05e9\u05d9\u05d1\u05d5\u05e5"
+    },
+    "employee_verified": {
+      "type": "string",
+      "enum": [
+        "verified",
+        "rejected",
+        "pending"
+      ],
+      "default": "pending",
+      "description": "\u05d4\u05d0\u05dd \u05d4\u05e2\u05d5\u05d1\u05d3 \u05d0\u05d9\u05e9\u05e8 \u05d0\u05ea \u05d4\u05e8\u05e9\u05d5\u05de\u05d4 (V/X)"
+    },
+    "confirmed": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u05d4\u05d0\u05dd \u05d4\u05de\u05d5\u05e8\u05d4 \u05d0\u05d9\u05e9\u05e8 \u05d4\u05d2\u05e2\u05d4 \u05dc\u05de\u05e9\u05de\u05e8\u05ea (Deprecated - use status)"
+    },
+    "notes": {
+      "type": "string",
+      "description": "\u05d4\u05e2\u05e8\u05d5\u05ea \u05e0\u05d5\u05e1\u05e4\u05d5\u05ea / \u05d4\u05d5\u05e8\u05d0\u05d5\u05ea \u05dc\u05de\u05d5\u05e8\u05d4"
+    },
+    "target_class": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05d4\u05db\u05d9\u05ea\u05d4 (\u05dc\u05de\u05e9\u05dc: \u05d6'3)"
+    },
+    "sessions_count": {
+      "type": "number",
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05de\u05e4\u05d2\u05e9\u05d9\u05dd"
+    }
+  },
+  "required": [
+    "program_id",
+    "start_datetime",
+    "end_datetime",
+    "assigned_teacher_id"
+  ],
+  "rls": {
+    "read": {},
+    "write": {}
+  }
+}

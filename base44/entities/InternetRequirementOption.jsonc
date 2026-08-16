@@ -1,0 +1,27 @@
+{
+  "name": "InternetRequirementOption",
+  "type": "object",
+  "properties": {
+    "value": {
+      "type": "string",
+      "enum": [
+        "yes",
+        "no"
+      ],
+      "description": "Requires internet or not"
+    },
+    "label": {
+      "type": "string",
+      "description": "Display label"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Is option active"
+    }
+  },
+  "required": [
+    "value",
+    "label"
+  ]
+}

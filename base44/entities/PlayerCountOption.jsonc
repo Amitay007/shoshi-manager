@@ -1,0 +1,27 @@
+{
+  "name": "PlayerCountOption",
+  "type": "object",
+  "properties": {
+    "value": {
+      "type": "string",
+      "description": "Players count value (e.g. '1','2','3','4','5','\u221e')"
+    },
+    "label": {
+      "type": "string",
+      "description": "Display label"
+    },
+    "order": {
+      "type": "number",
+      "description": "Ordering position"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Is option active"
+    }
+  },
+  "required": [
+    "value",
+    "label"
+  ]
+}

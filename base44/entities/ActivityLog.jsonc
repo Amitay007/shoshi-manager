@@ -1,0 +1,119 @@
+{
+  "name": "ActivityLog",
+  "type": "object",
+  "properties": {
+    "contact_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05d0\u05d9\u05e9 \u05e7\u05e9\u05e8 (Contact.id)"
+    },
+    "institution_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05de\u05d5\u05e1\u05d3 \u05d7\u05d9\u05e0\u05d5\u05da (EducationInstitution.id)"
+    },
+    "activity_type": {
+      "type": "string",
+      "enum": [
+        "\u05e9\u05d9\u05d7\u05d4",
+        "\u05e4\u05d2\u05d9\u05e9\u05d4",
+        "\u05d0\u05d9\u05de\u05d9\u05d9\u05dc",
+        "\u05d4\u05d5\u05d3\u05e2\u05ea SMS",
+        "\u05d4\u05d5\u05d3\u05e2\u05ea WhatsApp",
+        "\u05d4\u05e2\u05e8\u05d4",
+        "\u05de\u05e9\u05d9\u05de\u05d4",
+        "\u05d0\u05d7\u05e8"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05d4\u05e4\u05e2\u05d9\u05dc\u05d5\u05ea"
+    },
+    "subject": {
+      "type": "string",
+      "description": "\u05e0\u05d5\u05e9\u05d0 \u05d4\u05e4\u05e2\u05d9\u05dc\u05d5\u05ea"
+    },
+    "description": {
+      "type": "string",
+      "description": "\u05ea\u05d9\u05d0\u05d5\u05e8 \u05de\u05e4\u05d5\u05e8\u05d8 \u05e9\u05dc \u05d4\u05e4\u05e2\u05d9\u05dc\u05d5\u05ea"
+    },
+    "activity_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05d5\u05e9\u05e2\u05ea \u05d4\u05e4\u05e2\u05d9\u05dc\u05d5\u05ea"
+    },
+    "duration_minutes": {
+      "type": "number",
+      "description": "\u05de\u05e9\u05da \u05d4\u05e4\u05e2\u05d9\u05dc\u05d5\u05ea \u05d1\u05d3\u05e7\u05d5\u05ea"
+    },
+    "outcome": {
+      "type": "string",
+      "enum": [
+        "\u05de\u05d5\u05e6\u05dc\u05d7",
+        "\u05dc\u05d0 \u05de\u05d5\u05e6\u05dc\u05d7",
+        "\u05d3\u05d5\u05e8\u05e9 \u05de\u05e2\u05e7\u05d1",
+        "\u05de\u05de\u05ea\u05d9\u05df \u05dc\u05ea\u05e9\u05d5\u05d1\u05d4",
+        "\u05d1\u05d5\u05e6\u05e2",
+        "\u05dc\u05d0 \u05d1\u05d5\u05e6\u05e2"
+      ],
+      "description": "\u05ea\u05d5\u05e6\u05d0\u05ea \u05d4\u05e4\u05e2\u05d9\u05dc\u05d5\u05ea"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "\u05d2\u05d1\u05d5\u05d4\u05d4",
+        "\u05d1\u05d9\u05e0\u05d5\u05e0\u05d9\u05ea",
+        "\u05e0\u05de\u05d5\u05db\u05d4"
+      ],
+      "default": "\u05d1\u05d9\u05e0\u05d5\u05e0\u05d9\u05ea",
+      "description": "\u05e2\u05d3\u05d9\u05e4\u05d5\u05ea"
+    },
+    "next_action": {
+      "type": "string",
+      "description": "\u05e4\u05e2\u05d5\u05dc\u05d4 \u05d4\u05d1\u05d0\u05d4 \u05e0\u05d3\u05e8\u05e9\u05ea"
+    },
+    "next_action_date": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05dc\u05e4\u05e2\u05d5\u05dc\u05d4 \u05d4\u05d1\u05d0\u05d4"
+    },
+    "participants": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "\u05de\u05e9\u05ea\u05ea\u05e4\u05d9\u05dd \u05d1\u05e4\u05e2\u05d9\u05dc\u05d5\u05ea"
+    },
+    "attachments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "\u05e7\u05d1\u05e6\u05d9\u05dd \u05de\u05e6\u05d5\u05e8\u05e4\u05d9\u05dd"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "\u05ea\u05d2\u05d9\u05d5\u05ea"
+    },
+    "is_completed": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u05d4\u05d0\u05dd \u05d4\u05e4\u05e2\u05d9\u05dc\u05d5\u05ea \u05d4\u05d5\u05e9\u05dc\u05de\u05d4"
+    }
+  },
+  "required": [
+    "activity_type",
+    "description",
+    "activity_date"
+  ],
+  "rls": {
+    "read": {},
+    "write": {}
+  }
+}

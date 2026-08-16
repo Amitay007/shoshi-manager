@@ -1,0 +1,30 @@
+{
+  "name": "PurchaseTypeOption",
+  "type": "object",
+  "properties": {
+    "value": {
+      "type": "string",
+      "enum": [
+        "subscription",
+        "free",
+        "one_time",
+        "app_purchase",
+        "other"
+      ],
+      "description": "Purchase type key"
+    },
+    "label": {
+      "type": "string",
+      "description": "Display label"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Is option active"
+    }
+  },
+  "required": [
+    "value",
+    "label"
+  ]
+}
