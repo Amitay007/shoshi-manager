@@ -1,4 +1,5 @@
 import React from "react";
+import { toast } from "@/components/ui/use-toast";
 import { Syllabus } from "@/entities/Syllabus";
 import { VRApp } from "@/entities/VRApp";
 import { Teacher } from "@/entities/Teacher";
@@ -184,6 +185,14 @@ export default function SyllabusWizard() {
         }
       }
       setShowDraftAlert(false);
+      toast({ title: "נשמר כטיוטה", description: "הסילבוס נשמר בהצלחה." });
+    } catch (error) {
+      console.error("Failed to save syllabus draft:", error);
+      toast({
+        variant: "destructive",
+        title: "השמירה נכשלה",
+        description: error?.message || "אירעה שגיאה בשמירת הטיוטה. נסה/י שוב, ואם זה חוזר - בדוק/י עם התמיכה.",
+      });
     } finally {
       setSaving(false);
     }
@@ -207,7 +216,15 @@ export default function SyllabusWizard() {
       } else {
         await with429Retry(() => Syllabus.create(payload));
       }
+      toast({ title: "נשמר בהצלחה", description: "הסילבוס נשמר וסומן כסופי." });
       navigate(createPageUrl("SyllabusHub"));
+    } catch (error) {
+      console.error("Failed to save final syllabus:", error);
+      toast({
+        variant: "destructive",
+        title: "השמירה נכשלה",
+        description: error?.message || "אירעה שגיאה בשמירת הסילבוס. נסה/י שוב, ואם זה חוזר - בדוק/י עם התמיכה.",
+      });
     } finally {
       setSaving(false);
     }
