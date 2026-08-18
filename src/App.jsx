@@ -1,4 +1,3 @@
-import React from 'react'
 import './App.css'
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
@@ -10,41 +9,6 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
-
-// TEMP DIAGNOSTIC ONLY - added to surface a silent blank-screen crash on /Programs.
-// Does not touch any business logic, data, or schema. Safe to remove any time.
-class DiagnosticErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { error: null, info: null };
-  }
-  static getDerivedStateFromError(error) {
-    return { error };
-  }
-  componentDidCatch(error, info) {
-    this.setState({ info });
-    console.error('DiagnosticErrorBoundary caught:', error, info);
-  }
-  render() {
-    if (this.state.error) {
-      return (
-        <div style={{ direction: 'ltr', textAlign: 'left', padding: 24, fontFamily: 'monospace', background: '#fff0f0', color: '#7a0000', minHeight: '100vh', whiteSpace: 'pre-wrap' }}>
-          <h2 style={{ marginTop: 0 }}>Diagnostic: caught a render error</h2>
-          <div><strong>Message:</strong> {String(this.state.error && this.state.error.message)}</div>
-          <div style={{ marginTop: 12 }}><strong>Stack:</strong></div>
-          <div>{this.state.error && this.state.error.stack}</div>
-          {this.state.info && (
-            <>
-              <div style={{ marginTop: 12 }}><strong>Component stack:</strong></div>
-              <div>{this.state.info.componentStack}</div>
-            </>
-          )}
-        </div>
-      );
-    }
-    return this.props.children;
-  }
-}
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -109,9 +73,7 @@ function App() {
       <QueryClientProvider client={queryClientInstance}>
         <Router>
           <NavigationTracker />
-          <DiagnosticErrorBoundary>
-            <AuthenticatedApp />
-          </DiagnosticErrorBoundary>
+          <AuthenticatedApp />
         </Router>
         <Toaster />
         <VisualEditAgent />
