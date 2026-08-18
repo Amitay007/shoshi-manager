@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { GraduationCap, Plus, School, Users, BookOpen, Calendar, Calculator, Eye, Copy, Trash2, Search } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 import BackHomeButtons from "@/components/common/BackHomeButtons";
 import ProgramsFilterBar from "@/components/filters/ProgramsFilterBar";
